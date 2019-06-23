@@ -1,0 +1,20 @@
+{
+  "name": "giflang",
+  "version": "1.0.0",
+  "description": "A programming language out of substitutable GIFs.",
+  "private": true,
+  "scripts": {
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Roman Sobkuliak (sobkulir)",
+  "license": "ISC",
+  "devDependencies": {
+    "jison-gho": "^0.6.1-216",
+    "jison-gho-loader": "^1.0.1",
+    "ts-loader": "^6.0.4",
+    "typescript": "^3.5.2",
+    "webpack": "^4.35.0",
+    "webpack-cli": "^3.3.4"
+  }
+}
