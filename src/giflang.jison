@@ -1,5 +1,16 @@
 %lex
 
+%{
+
+/*  After reading a lexeme, go to "delimit" state to
+  	expect delimiter and return the lexeme. Arrow function
+	is used to bind this. */
+var delimit = (terminal) => 
+    { 
+        this.begin('delimit'); return terminal;
+    }
+%}
+
 DELIMITER   				";"
 VALID_CHAR					([A-Z]|[0-9])	
 
@@ -7,35 +18,49 @@ VALID_CHAR					([A-Z]|[0-9])
 
 %%
 
-"LT"						{ this.begin('delimit'); return 'LT'; }
-"LE"						{ this.begin('delimit'); return 'LE'; }
-"EQ"						{ this.begin('delimit'); return 'EQ'; }
-"NE"						{ this.begin('delimit'); return 'NE'; }
-"GE"						{ this.begin('delimit'); return 'GE'; }
-"GT"						{ this.begin('delimit'); return 'GT'; }
+"LT"						{ return delimit('LT'); }
+"LE"						{ return delimit('LE'); }
+"EQ"						{ return delimit('EQ'); }
+"NE"						{ return delimit('NE'); }
+"GE"						{ return delimit('GE'); }
+"GT"						{ return delimit('GT'); }
 
-"LPAR"						{ this.begin('delimit'); return 'LPAR'; }
-"RPAR"						{ this.begin('delimit'); return 'RPAR'; }
+"PLUS"						{ return delimit('PLUS'); }
+"MINUS"						{ return delimit('MINUS'); }
+"MUL"						{ return delimit('MUL'); }
+"DIV"						{ return delimit('DIV'); }
+"MOD"						{ return delimit('MOD'); }
 
-"PLUS"						{ this.begin('delimit'); return 'PLUS'; }
-"MINUS"						{ this.begin('delimit'); return 'MINUS'; }
-"MUL"						{ this.begin('delimit'); return 'MUL'; }
-"DIV"						{ this.begin('delimit'); return 'DIV'; }
-"MOD"						{ this.begin('delimit'); return 'MOD'; }
+"NOT"						{ return delimit('NOT'); }
+"OR"						{ return delimit('OR'); }
+"AND"						{ return delimit('AND'); }
 
-"TRUE"						{ this.begin('delimit'); return 'TRUE'; }
-"FALSE"						{ this.begin('delimit'); return 'FALSE'; }
+"ASSIGN"					{ return delimit('ASSIGN'); }
+"TRUE"						{ return delimit('TRUE'); }
+"FALSE"						{ return delimit('FALSE'); }
 
-"DOT"						{ this.begin('delimit'); return 'DOT'; }
-"QUOTE"						{ this.begin('delimit'); return 'QUOTE'; }
-[A-Z]						{ this.begin('delimit'); return 'LETTER'; }
-[0-9]						{ this.begin('delimit'); return 'DIGIT'; }
+"LPAR"						{ return delimit('LPAR'); }
+"RPAR"						{ return delimit('RPAR'); }
+"LBRA"						{ return delimit('LBRA'); }
+"RBRA"						{ return delimit('RBRA'); }
+"LCURLY"					{ return delimit('LCURLY'); }
+"RCURLY"					{ return delimit('RCURLY'); }
+
+"FUNCTION"					{ return delimit('FUNCTION'); }
+"RETURN"					{ return delimit('RETURN'); }
+
+"SEMICOLON"					{ return delimit('SEMICOLON'); }
+"DOT"						{ return delimit('DOT'); }
+"COMMA"						{ return delimit('COMMA'); }
+"QUOTE"						{ return delimit('QUOTE'); }
+[A-Z]						{ return delimit('LETTER'); }
+[0-9]						{ return delimit('DIGIT'); }
 
 <delimit>{DELIMITER}		this.popState();
 
 <delimit>\s+				/* ignore whitespace */
 \s+							/* ignore whitespace */
-<delimit>.					throw new Error('Delimiter expected');
+<delimit>.					throw new Error('Delimiter expected: ' + yytext);
 .							{console.log(yytext); throw new Error('Unknown gifcode'); }
 
 <delimit><<EOF>>			throw new Error('Delimiter expected');
@@ -43,19 +68,34 @@ VALID_CHAR					([A-Z]|[0-9])
 
 /lex
 
-%left PLUS MINUS OR
-%left MUL MOD DIV AND
+/* operator associations and precedence */
 
-%start expression
+%left OR
+%left AND
+%left EQ NE
+%left LT LE GE GT
+%left PLUS MINUS
+%left MUL DIV MOD
+
+%start Program
 
 %%
-
-id
-	: id_ {$$ = {type: 'id', value: $1};}
+/* Nezabudni:
+	 - v ArrayLiteral mozu byt aj priradenia
+*/
+Program
+	: Program FunctionNamed { $$ = $2; }
+	| Program Statement { $$ = $2; }
+	| Program EOF { $$ = $1; }
+	| %epsilon
 	;
 
-id_:
-	LETTER alfanum {$$ = $1 + $2;}
+Identifier
+	: Identifier_ {$$ = new yy.Identifier($1);}
+	;
+
+Identifier_
+	: LETTER alfanum {$$ = $1 + $2;}
 	;
 
 alfanum
@@ -63,72 +103,142 @@ alfanum
 	| {$$ = '';}
 	;
 
-alfanum_atom:
-	LETTER {$$ = $1;}
+alfanum_atom
+	: LETTER {$$ = $1;}
 	| DIGIT {$$ = $1;}
 	;
 
 ufloat
-	: ufloat_ {$$ = {type: 'ufloat', value: Number($1)};}
+	: ufloat_ {$$ = new yy.FloatLiteral($1);}
 	;
 
 ufloat_
-	: uint DOT uint {$$ = $1 + '.' + $3;}
+	: uint_ DOT uint_ {$$ = $1 + '.' + $3;}
 	;
 
 uint
-	: uint_ {$$ = {type: 'uint', value: Number($1)};}
+	: uint_ {$$ = new yy.UIntLiteral($1);}
 	;
 
 uint_
-	: DIGIT uint {$$ = $1 + $2;}
+	: uint DIGIT {$$ = $1 + $2;}
 	| DIGIT {$$ = $1;}
 	;
 
 string
-	: QUOTE alfanum QUOTE {$$ = {type: 'string', value: $2};}
+	: QUOTE alfanum QUOTE {$$ = new yy.StringLiteral($2);}
 	;
 
-constant
-	: uint {$$ = $1;}
-	| ufloat {$$ = $1;}
-	| string {$$ = $1;}
-	| TRUE {$$ = {type: 'bool', value: true};}
-	| FALSE {$$ = {type: 'bool', value: false};}
+PrimaryExpr
+    : Literal
+	| CallExpr
+    ;
+
+PrimaryComnon
+	: Identifier
+    | LPAR Expr RPAR
+    /* TODO:
+	| ArrayLiteral
+	*/
 	;
 
-factor
-	: constant {$$ = $1;}
-	| LPAR expression RPAR {$$ = $2;}
+Literal
+    : TRUE
+		{$$ = new yy.Identifier('TRUE');}
+    | FALSE
+		{$$ = new yy.Identifier('FALSE');}
+	| NULL
+		{$$ = new yy.NullLiteral();}
+    | ufloat
+		{$$ = $1;}
+	| uint
+		{$$ = $1;}
+    | string
+		{$$ = $1;}
+    ;
+
+MemberExpr
+    : PrimaryComnon
+	| CallExpr LBRA Expr RBRA
+    | CallExpr DOT Identifier
+    ;
+
+CallExpr
+    : MemberExpr Arguments
+	| MemberExpr
 	;
 
-expression
-	: simple_exp LT simple_exp {$$ = {type: 'comparison', kind: '<', left: $1, right: $3};}
-	| simple_exp LE simple_exp {$$ = {type: 'comparison', kind: '<=', left: $1, right: $3};}
-	| simple_exp EQ simple_exp {$$ = {type: 'comparison', kind: '==', left: $1, right: $3};}
-	| simple_exp NE simple_exp {$$ = {type: 'comparison', kind: '!=', left: $1, right: $3};}
-	| simple_exp GE simple_exp {$$ = {type: 'comparison', kind: '>=', left: $1, right: $3};}
-	| simple_exp GT simple_exp {$$ = {type: 'comparison', kind: '>', left: $1, right: $3};}
-	| simple_exp {$$ = $1;}
+Arguments
+    : LPAR RPAR
+    | LPAR ArgumentList RPAR
+    ;
+
+ArgumentList
+    : Expr
+    | ArgumentList COMMA Expr
+    ;
+
+UnaryExpr
+	: PLUS UnaryExpr
+		{$$ = new yy.UnaryExpression(yy.Operator.PLUS, $2);}
+	| MINUS UnaryExpr
+		{$$ = new yy.UnaryExpression(yy.Operator.MINUS, $2);}
+	| NOT UnaryExpr
+		{ $$ = new yy.UnaryExpression(yy.Operator.NOT, $2); }
+	| PrimaryExpr { $$ = $1; }
 	;
 
-simple_exp
-	: PLUS num_exp {$$ = {type: 'unarySign', kind: '+', operand: $2};}
-	| MINUS num_exp {$$ = {type: 'unarySign', kind: '-', operand: $2};}
-	| num_exp {$$ = $1;}
+Expr
+	: Expr MUL UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.MUL, $1, $3);}
+    | Expr DIV UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.DIV, $1, $3);}
+	| Expr MOD UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.MOD, $1, $3);}
+
+	| Expr PLUS UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.PLUS, $1, $3);}
+	| Expr MINUS UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.MINUS, $1, $3);}
+
+	| Expr LT UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.LT, $1, $3);}
+	| Expr LE UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.LE, $1, $3);}
+	| Expr GE UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.GE, $1, $3);}
+	| Expr GT UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.GT, $1, $3);}
+
+	| Expr EQ UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.EQ, $1, $3);}
+	| Expr NE UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.NE, $1, $3);}
+
+	| Expr AND UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.AND, $1, $3);}
+	| Expr OR UnaryExpr {$$ = new yy.BinaryExpression(yy.Operator.OR, $1, $3);}
+	| UnaryExpr { $$ = $1;}
 	;
 
-num_exp
-	: num_exp PLUS numP_exp {$$ = {type: 'operation', kind: '+', left: $1, right: $3};}
-	| num_exp MINUS numP_exp {$$ = {type: 'operation', kind: '-', left: $1, right: $3};}
-	| num_exp OR numP_exp {$$ = {type: 'operation', kind: '||', left: $1, right: $3};}
-	| numP_exp {$$ = $1;}
+SimpleStatement
+	: MemberExpr ASSIGN Expr { $$ = $1; }
+	| Expr { $$ = $1; }
+	;
+	
+Statement
+	: SimpleStatement SEMICOLON { $$ = $1; }
+	| EmptyStatement
+	/* TODO: A lot. */
 	;
 
-numP_exp
-	: numP_exp MUL factor {$$ = {type: 'operation', kind: '*', left: $1, right: $3};}
-    | numP_exp DIV factor {$$ = {type: 'operation', kind: '/', left: $1, right: $3};}
-	| numP_exp MOD factor {$$ = {type: 'operation', kind: '%', left: $1, right: $3};}
-	| numP_exp AND factor {$$ = {type: 'operation', kind: '&&', left: $1, right: $3};}
-	| factor
+EmptyStatement
+	: SEMICOLON
+	;
+FunctionNamed
+	: FUNCTION Identifier Parameters LCURLY FunctionBody RCURLY { $$ = $1; }
+	;
+
+IdentifierList
+	: Identifier { $$ = $1; }
+	| IdentifierList COMMA Identifier { $$ = $1; }
+	;
+
+Parameters
+	: LPAR IdentifierList RPAR { $$ = $1; }
+	| LPAR RPAR { $$ = $1; }
+	;
+
+FunctionBody
+	: FunctionBody Statement { $$ = $1; }
+	| FunctionBody RETURN Expr SEMICOLON { $$ = $1; }
+	| %epsilon
 	;
