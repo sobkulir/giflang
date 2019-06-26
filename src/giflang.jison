@@ -46,6 +46,11 @@ VALID_CHAR					([A-Z]|[0-9])
 "LCURLY"					{ return delimit('LCURLY'); }
 "RCURLY"					{ return delimit('RCURLY'); }
 
+"IF"						{ return delimit('IF'); }
+"ELSE"						{ return delimit('ELSE'); }
+"WHILE"						{ return delimit('WHILE'); }
+"FOR"						{ return delimit('FOR'); }
+
 "FUNCTION"					{ return delimit('FUNCTION'); }
 "RETURN"					{ return delimit('RETURN'); }
 
@@ -69,13 +74,15 @@ VALID_CHAR					([A-Z]|[0-9])
 /lex
 
 /* operator associations and precedence */
-
 %left OR
 %left AND
 %left EQ NE
 %left LT LE GE GT
 %left PLUS MINUS
 %left MUL DIV MOD
+
+%nonassoc IF_WITHOUT_ELSE
+%nonassoc ELSE
 
 %start Program
 
@@ -91,42 +98,34 @@ Program
 	;
 
 Identifier
-	: Identifier_ {$$ = new yy.Identifier($1);}
+	: LETTER Alfanum {$$ = new yy.Identifier($1 + $2);}
 	;
 
-Identifier_
-	: LETTER alfanum {$$ = $1 + $2;}
-	;
-
-alfanum
-	: alfanum_atom alfanum {$$ = $1 + $2;}
+Alfanum
+	: AlfanumAtom Alfanum {$$ = $1 + $2;}
 	| {$$ = '';}
 	;
 
-alfanum_atom
+AlfanumAtom
 	: LETTER {$$ = $1;}
 	| DIGIT {$$ = $1;}
 	;
 
-ufloat
-	: ufloat_ {$$ = new yy.FloatLiteral($1);}
+UFloat
+	: UInt_ DOT UInt_ {$$ = new yy.FloatLiteral($1 + '.' + $3);}
 	;
 
-ufloat_
-	: uint_ DOT uint_ {$$ = $1 + '.' + $3;}
+UInt
+	: UInt_ {$$ = new yy.UIntLiteral($1);}
 	;
 
-uint
-	: uint_ {$$ = new yy.UIntLiteral($1);}
-	;
-
-uint_
-	: uint DIGIT {$$ = $1 + $2;}
+UInt_
+	: UInt_ DIGIT {$$ = $1 + $2;}
 	| DIGIT {$$ = $1;}
 	;
 
-string
-	: QUOTE alfanum QUOTE {$$ = new yy.StringLiteral($2);}
+String
+	: QUOTE Alfanum QUOTE {$$ = new yy.StringLiteral($2);}
 	;
 
 PrimaryExpr
@@ -137,9 +136,7 @@ PrimaryExpr
 PrimaryComnon
 	: Identifier
     | LPAR Expr RPAR
-    /* TODO:
 	| ArrayLiteral
-	*/
 	;
 
 Literal
@@ -149,13 +146,18 @@ Literal
 		{$$ = new yy.Identifier('FALSE');}
 	| NULL
 		{$$ = new yy.NullLiteral();}
-    | ufloat
+    | UFloat
 		{$$ = $1;}
-	| uint
+	| UInt
 		{$$ = $1;}
-    | string
+    | String
 		{$$ = $1;}
     ;
+
+ArrayLiteral
+    : LBRA ElementList RBRA
+	| LBRA RBRA
+	;
 
 MemberExpr
     : PrimaryComnon
@@ -170,12 +172,12 @@ CallExpr
 
 Arguments
     : LPAR RPAR
-    | LPAR ArgumentList RPAR
+    | LPAR ElementList RPAR
     ;
 
-ArgumentList
+ElementList
     : Expr
-    | ArgumentList COMMA Expr
+    | ElementList COMMA Expr
     ;
 
 UnaryExpr
@@ -209,22 +211,84 @@ Expr
 	| UnaryExpr { $$ = $1;}
 	;
 
-SimpleStatement
-	: MemberExpr ASSIGN Expr { $$ = $1; }
-	| Expr { $$ = $1; }
-	;
-	
 Statement
-	: SimpleStatement SEMICOLON { $$ = $1; }
-	| EmptyStatement
-	/* TODO: A lot. */
+	: Block
+	| Assignment SEMICOLON
+	| Expr SEMICOLON
+	| /* Empty statement */ SEMICOLON
+	| IfStatement
+	| IterationStatement
+	| ReturnStatement
+	| ContinueStatement
+	| BreakStatement
 	;
 
-EmptyStatement
-	: SEMICOLON
+Block
+    : LCURLY RCURLY
+    | LCURLY StatementList RCURLY
+    ;
+
+StatementList
+	: Statement
+	| StatementList Statement
 	;
+
+Assignment
+	: MemberExpr ASSIGN Assignment
+	| MemberExpr ASSIGN Expr { $$ = $1; }
+	;
+
+IfStatement
+    : IF LPAR Expr RPAR Statement %prec IF_WITHOUT_ELSE
+    | IF LPAR Expr RPAR Statement ELSE Statement
+    ;
+
+IterationStatement
+    : WHILE LPAR Expr RPAR Statement
+    | FOR LPAR 
+		AssignmentListOptional SEMICOLON
+	  	ExprOptional SEMICOLON
+		AssignmenOrExprListOptional 
+		RPAR Statement
+    ;
+
+AssignmentList
+	: AssignmentList COMMA Assignment
+	| Assignment
+	;
+
+AssignmentListOptional
+	: AssignmentList
+	| %epsilon
+	;
+
+AssignmenOrExprList
+	: AssignmenOrExprList COMMA Assignment
+	| AssignmenOrExprList COMMA Expr
+	| Assignment
+	| Expr
+	;
+
+AssignmenOrExprListOptional
+	: AssignmenOrExprList
+	| %epsilon
+	;
+
+ReturnStatement
+	: RETURN SEMICOLON
+	| RETURN Expr SEMICOLON
+	;
+
+ContinueStatement
+    : CONTINUE SEMICOLON
+    ;
+
+BreakStatement
+    : BREAK SEMICOLON
+    ;
+
 FunctionNamed
-	: FUNCTION Identifier Parameters LCURLY FunctionBody RCURLY { $$ = $1; }
+	: FUNCTION Identifier Parameters Block { $$ = $1; }
 	;
 
 IdentifierList
@@ -235,10 +299,4 @@ IdentifierList
 Parameters
 	: LPAR IdentifierList RPAR { $$ = $1; }
 	| LPAR RPAR { $$ = $1; }
-	;
-
-FunctionBody
-	: FunctionBody Statement { $$ = $1; }
-	| FunctionBody RETURN Expr SEMICOLON { $$ = $1; }
-	| %epsilon
 	;
