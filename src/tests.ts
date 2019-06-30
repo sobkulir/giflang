@@ -34,6 +34,10 @@ test([
 /* Definition */
 `FUNCTION; D; LPAR; P;1; COMMA; P;2; RPAR;
 LCURLY; RETURN; 3; SEMICOLON; RCURLY;`,
+/* Function in function. */
+`FUNCTION; F;1; LPAR; RPAR; LCURLY;
+    FUNCTION; F;2; LPAR; RPAR; LCURLY; RCURLY;
+RCURLY;`,
 /* Call */
 `F;U;N;C; LPAR; A;R;G; RPAR; SEMICOLON;`,
 /* Assignment to function call should fail. */
@@ -43,6 +47,7 @@ LCURLY; RETURN; 3; SEMICOLON; RCURLY;`,
 /* Assignment to a member. */
 `F;U;N;C; LPAR; A;R;G; RPAR; LBRA; 0; RBRA; ASSIGN; 5; SEMICOLON;`,
 `F;U;N;C; LPAR; A;R;G; RPAR; DOT; P;R;O;P; ASSIGN; 5; SEMICOLON;`,
+
 
 /* Arrays */
 /* Literal */
@@ -56,5 +61,14 @@ LCURLY; RETURN; 3; SEMICOLON; RCURLY;`,
 
 /* Assignment */
 /* Multiassignment */
-`A; ASSIGN; B; ASSIGN; 0; SEMICOLON;`
+`A; ASSIGN; B; ASSIGN; 0; SEMICOLON;`,
+
+/* Classes */
+`CLASS; C; LCURLY;
+    X; ASSIGN; 3; SEMICOLON;
+    FUNCTION; M;E;T;H;O;D; LPAR; RPAR; LCURLY; RCURLY;
+RCURLY;`,
+
+/* Expressions */
+`NOT; PLUS; MINUS; 5; SEMICOLON;`
 ]);
