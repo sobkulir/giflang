@@ -98,7 +98,7 @@ Program
 	;
 
 Identifier
-	: LETTER Alfanum 			{ $$ = new yy.IdNode($1 + $2); }
+	: LETTER Alfanum 			{ $$ = $1 + $2 }
 	;
 
 Alfanum
@@ -134,14 +134,14 @@ PrimaryExpr
     ;
 
 PrimaryComnon
-	: Identifier 				{ $$ = $1; }
+	: Identifier 				{ $$ = new yy.ResolveNode($1); }
     | LPAR Expr RPAR 			{ $$ = $2; }
 	| ArrayLiteral 				{ $$ = $1; }
 	;
 
 Literal
-    : TRUE		{ $$ = new yy.IdNode('TRUE'); }
-    | FALSE		{ $$ = new yy.IdNode('FALSE'); }
+    : TRUE		{ $$ = new yy.ResolveNode('TRUE'); }
+    | FALSE		{ $$ = new yy.ResolveNode('FALSE'); }
 	| NULL		{ $$ = new yy.NullNode(); }
     | UFloat	{ $$ = $1; }
 	| UInt		{ $$ = $1; }
@@ -179,32 +179,32 @@ ElementList
 
 UnaryExpr
 	: PLUS UnaryExpr
-		{$$ = new yy.UnaryExprNode(yy.Operator.PLUS, $2);}
+		{$$ = new yy.UnaryPlusMinusNode(yy.Operator.PLUS, $2);}
 	| MINUS UnaryExpr
-		{$$ = new yy.UnaryExprNode(yy.Operator.MINUS, $2);}
+		{$$ = new yy.UnaryPlusMinusNode(yy.Operator.MINUS, $2);}
 	| NOT UnaryExpr
-		{ $$ = new yy.UnaryExprNode(yy.Operator.NOT, $2); }
+		{ $$ = new yy.LogigalNotNode($2); }
 	| PrimaryExpr { $$ = $1; }
 	;
 
 Expr
-	: Expr MUL UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.MUL, $1, $3);}
-    | Expr DIV UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.DIV, $1, $3);}
-	| Expr MOD UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.MOD, $1, $3);}
+	: Expr MUL UnaryExpr {$$ = new yy.MultiplicationNode(yy.Operator.MUL, $1, $3);}
+    | Expr DIV UnaryExpr {$$ = new yy.MultiplicationNode(yy.Operator.DIV, $1, $3);}
+	| Expr MOD UnaryExpr {$$ = new yy.MultiplicationNode(yy.Operator.MOD, $1, $3);}
 
-	| Expr PLUS UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.PLUS, $1, $3);}
-	| Expr MINUS UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.MINUS, $1, $3);}
+	| Expr PLUS UnaryExpr {$$ = new yy.AddNode(yy.Operator.PLUS, $1, $3);}
+	| Expr MINUS UnaryExpr {$$ = new yy.AddNode(yy.Operator.MINUS, $1, $3);}
 
-	| Expr LT UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.LT, $1, $3);}
-	| Expr LE UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.LE, $1, $3);}
-	| Expr GE UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.GE, $1, $3);}
-	| Expr GT UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.GT, $1, $3);}
+	| Expr LT UnaryExpr {$$ = new yy.RelationalNode(yy.Operator.LT, $1, $3);}
+	| Expr LE UnaryExpr {$$ = new yy.RelationalNode(yy.Operator.LE, $1, $3);}
+	| Expr GE UnaryExpr {$$ = new yy.RelationalNode(yy.Operator.GE, $1, $3);}
+	| Expr GT UnaryExpr {$$ = new yy.RelationalNode(yy.Operator.GT, $1, $3);}
 
-	| Expr EQ UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.EQ, $1, $3);}
-	| Expr NE UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.NE, $1, $3);}
+	| Expr EQ UnaryExpr {$$ = new yy.EqualNode(yy.Operator.EQ, $1, $3);}
+	| Expr NE UnaryExpr {$$ = new yy.EqualNode(yy.Operator.NE, $1, $3);}
 
-	| Expr AND UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.AND, $1, $3);}
-	| Expr OR UnaryExpr {$$ = new yy.BinaryExprNode(yy.Operator.OR, $1, $3);}
+	| Expr AND UnaryExpr {$$ = new yy.BinaryLogicalNode(yy.Operator.AND, $1, $3);}
+	| Expr OR UnaryExpr {$$ = new yy.BinaryLogicalNode(yy.Operator.OR, $1, $3);}
 	| UnaryExpr { $$ = $1;}
 	;
 
@@ -251,15 +251,12 @@ FunctionDeclaration
 
 Parameters
 	: LPAR IdentifierList RPAR		{ $$ = $2; }
-	| LPAR RPAR						{ $$ = new yy.ParameterListNode(); }
+	| LPAR RPAR						{ $$ = []; }
 	;
 
 IdentifierList
-	: Identifier {
-		$$ = new yy.ParameterListNode();
-		$$.elements.push($1); }
-	| IdentifierList COMMA Identifier
-		{ $1.elements.push($3); $$ = $1; }
+	: Identifier 						{ $$ = [$1]; }
+	| IdentifierList COMMA Identifier	{ $1.push($3); $$ = $1; }
 	;
 
 IfStatement
