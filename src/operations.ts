@@ -75,8 +75,32 @@ export function multiplicate(
 }
 
 export function isLessThan(left: Value, right: Value): boolean | undefined {
-  if ((left.isInt() || left.isFloat()) && (right.isInt() || right.isFloat())) {
+  if (
+    ((left.isInt() || left.isFloat()) && (right.isInt() || right.isFloat())) ||
+    (left.isString() && right.isString())
+  ) {
     return left.value < right.value
+  } else {
+    return undefined
+  }
+}
+
+// TODO: Implement with references.
+export function equals(left: Value, right: Value): boolean | undefined {
+  if (
+    (left.isInt() && right.isInt()) ||
+    (left.isString() && right.isString()) ||
+    (left.isBool() && right.isBool())
+  ) {
+    return left.value === right.value
+  } else if (
+    (left.isInt() || left.isFloat()) &&
+    (right.isInt() || right.isFloat())
+  ) {
+    // TODO: Cast to float once proper ints/floats are used.
+    return left.value === right.value
+  } else if (left.isNull() && right.isNull()) {
+    return true
   } else {
     return undefined
   }

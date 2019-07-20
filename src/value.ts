@@ -25,6 +25,10 @@ abstract class Value {
   isBool(): this is BoolValue {
     return this instanceof BoolValue
   }
+
+  isNull(): this is NullValue {
+    return this instanceof NullValue
+  }
 }
 
 class IntValue extends Value {

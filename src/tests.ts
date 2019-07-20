@@ -1,12 +1,9 @@
-import { parser } from './giflang.jison'
-import * as AstNodes from './ast-nodes'
-
-parser.yy = AstNodes
+import { ParseGiflang } from './parser'
 
 function should_fail(program: any) {
   let didFail: boolean = true
   try {
-    parser.parse(program)
+    ParseGiflang(program)
   } catch {
     didFail = false
   } finally {
@@ -15,7 +12,7 @@ function should_fail(program: any) {
 }
 
 function should_pass(program: any) {
-  parser.parse(program)
+  ParseGiflang(program)
   console.log('OK')
 }
 

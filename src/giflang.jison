@@ -38,6 +38,7 @@ VALID_CHAR					([A-Z]|[0-9])
 "ASSIGN"					{ return delimit('ASSIGN'); }
 "TRUE"						{ return delimit('TRUE'); }
 "FALSE"						{ return delimit('FALSE'); }
+"NONE"						{ return delimit('NONE'); }
 
 "LPAR"						{ return delimit('LPAR'); }
 "RPAR"						{ return delimit('RPAR'); }
@@ -90,11 +91,10 @@ VALID_CHAR					([A-Z]|[0-9])
 %%
 
 Program
-	: Program Statement			{ $1.body.push($2); $$ = $1; }
-	| Program ClassDefinition 	{ $1.body.push($2); $$ = $1; }
-	| Program EOF 				{ $$ = $1; }
-	| %epsilon
-		{ $$ = new yy.ProgramNode(); }
+	: Program Statement			{ $1.push($2); $$ = $1; }
+	| Program ClassDefinition	{ $1.push($2); $$ = $1; }
+	| Program EOF				{ $$ = new yy.Stmt.ProgramStmt($1); }
+	| %epsilon					{ $$ = []; }
 	;
 
 Identifier
@@ -112,11 +112,11 @@ AlfanumAtom
 	;
 
 UFloat
-	: UInt_ DOT UInt_			{ $$ = new yy.FloatNode($1 + '.' + $3); }
+	: UInt_ DOT UInt_			{ $$ = new yy.Expr.NumberExpr($1 + '.' + $3); }
 	;
 
 UInt
-	: UInt_ 	{ $$ = new yy.UIntNode($1); }
+	: UInt_ 	{ $$ = new yy.Expr.NumberExpr($1); }
 	;
 
 UInt_
@@ -125,7 +125,7 @@ UInt_
 	;
 
 String
-	: QUOTE Alfanum QUOTE 		{ $$ = new yy.StringNode($2); }
+	: QUOTE Alfanum QUOTE 		{ $$ = new yy.Expr.StringExpr($2); }
 	;
 
 PrimaryExpr
@@ -134,77 +134,76 @@ PrimaryExpr
     ;
 
 PrimaryComnon
-	: Identifier 				{ $$ = new yy.ResolveNode($1); }
+	: Identifier 				{ $$ = new yy.Expr.VariableExpr($1); }
     | LPAR Expr RPAR 			{ $$ = $2; }
 	| ArrayLiteral 				{ $$ = $1; }
 	;
 
 Literal
-    : TRUE		{ $$ = new yy.ResolveNode('TRUE'); }
-    | FALSE		{ $$ = new yy.ResolveNode('FALSE'); }
-	| NULL		{ $$ = new yy.NullNode(); }
+    : TRUE		{ $$ = new yy.Expr.VariableExpr('TRUE'); }
+    | FALSE		{ $$ = new yy.Expr.VariableExpr('FALSE'); }
+	| NONE		{ $$ = new yy.Expr.NoneExpr(); }
     | UFloat	{ $$ = $1; }
 	| UInt		{ $$ = $1; }
     | String	{ $$ = $1; }
     ;
 
 ArrayLiteral
-    : LBRA ElementList RBRA 	{ $$ = new yy.ArrayNode($2); }
-	| LBRA RBRA					{ $$ = new yy.ArrayNode(yy.ElementListNode()); }
+    : LBRA ElementList RBRA 	{ $$ = new yy.Expr.ArrayExpr($2); }
+	| LBRA RBRA					{ $$ = new yy.Expr.ArrayExpr([]); }
 	;
 
 MemberExpr
     : PrimaryComnon				{ $$ = $1; }
-	| CallExpr LBRA Expr RBRA	{ $$ = new yy.SquareAccessorNode($1, $3); }
-    | CallExpr DOT Identifier	{ $$ = new yy.DotAccessorNode($1, $3); }
+	| CallExpr LBRA Expr RBRA	{ $$ = new yy.Expr.SquareAccessorExpr($1, $3); }
+    | CallExpr DOT Identifier	{ $$ = new yy.Expr.DotAccessorExpr($1, $3); }
     ;
 
 CallExpr
-    : MemberExpr Arguments		{ $$ = new yy.FunctionCallNode($1, $2); }
+    : MemberExpr Arguments		{ $$ = new yy.Expr.CallExpr($1, $2); }
 	| MemberExpr				{ $$ = $1; }
 	;
 
 Arguments
-    : LPAR RPAR					{ $$ = new yy.ElementListNode(); }
+    : LPAR RPAR					{ $$ = []; }
     | LPAR ElementList RPAR		{ $$ = $2; }
     ;
 
 ElementList
     : Expr
-		{ $$ = new yy.ElementListNode();
-		  $$.elements.push($1); }
+		{ $$ = [$1] }
     | ElementList COMMA Expr
-		{ $1.elements.push($3); $$ = $1; }
+		{ $1.push($3); $$ = $1; }
     ;
 
 UnaryExpr
 	: PLUS UnaryExpr
-		{$$ = new yy.UnaryPlusMinusNode(yy.Operator.PLUS, $2);}
+		{$$ = new yy.Expr.UnaryPlusMinusExpr(yy.Operator.PLUS, $2);}
 	| MINUS UnaryExpr
-		{$$ = new yy.UnaryPlusMinusNode(yy.Operator.MINUS, $2);}
+		{$$ = new yy.Expr.UnaryPlusMinusExpr(yy.Operator.MINUS, $2);}
 	| NOT UnaryExpr
-		{ $$ = new yy.LogigalNotNode($2); }
+		{ $$ = new yy.Expr.UnaryNotExpr($2); }
 	| PrimaryExpr { $$ = $1; }
 	;
 
 Expr
-	: Expr MUL UnaryExpr {$$ = new yy.MultiplicationNode(yy.Operator.MUL, $1, $3);}
-    | Expr DIV UnaryExpr {$$ = new yy.MultiplicationNode(yy.Operator.DIV, $1, $3);}
-	| Expr MOD UnaryExpr {$$ = new yy.MultiplicationNode(yy.Operator.MOD, $1, $3);}
+	: Expr MUL UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.MUL, $1, $3);}
+    | Expr DIV UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.DIV, $1, $3);}
+	| Expr MOD UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.MOD, $1, $3);}
 
-	| Expr PLUS UnaryExpr {$$ = new yy.AddNode(yy.Operator.PLUS, $1, $3);}
-	| Expr MINUS UnaryExpr {$$ = new yy.AddNode(yy.Operator.MINUS, $1, $3);}
+	| Expr PLUS UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.PLUS, $1, $3);}
+	| Expr MINUS UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.MINUS, $1, $3);}
 
-	| Expr LT UnaryExpr {$$ = new yy.RelationalNode(yy.Operator.LT, $1, $3);}
-	| Expr LE UnaryExpr {$$ = new yy.RelationalNode(yy.Operator.LE, $1, $3);}
-	| Expr GE UnaryExpr {$$ = new yy.RelationalNode(yy.Operator.GE, $1, $3);}
-	| Expr GT UnaryExpr {$$ = new yy.RelationalNode(yy.Operator.GT, $1, $3);}
+	| Expr LT UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.LT, $1, $3);}
+	| Expr LE UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.LE, $1, $3);}
+	| Expr GE UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.GE, $1, $3);}
+	| Expr GT UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.GT, $1, $3);}
 
-	| Expr EQ UnaryExpr {$$ = new yy.EqualNode(yy.Operator.EQ, $1, $3);}
-	| Expr NE UnaryExpr {$$ = new yy.EqualNode(yy.Operator.NE, $1, $3);}
+	| Expr EQ UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.EQ, $1, $3);}
+	| Expr NE UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.NE, $1, $3);}
 
-	| Expr AND UnaryExpr {$$ = new yy.BinaryLogicalNode(yy.Operator.AND, $1, $3);}
-	| Expr OR UnaryExpr {$$ = new yy.BinaryLogicalNode(yy.Operator.OR, $1, $3);}
+	| Expr AND UnaryExpr {$$ = new yy.Expr.LogicalExpr(yy.Operator.AND, $1, $3);}
+	| Expr OR UnaryExpr {$$ = new yy.Expr.LogicalExpr(yy.Operator.OR, $1, $3);}
 	| UnaryExpr { $$ = $1;}
 	;
 
@@ -214,7 +213,7 @@ Statement
 	| FunctionDeclaration		{ $$ = $1; }
 	| Expr SEMICOLON			{ $$ = $1; }
 	| /* Empty statement */ SEMICOLON
-		{ $$ = new yy.EmptyStatementNode(); }
+		{ $$ = new yy.Expr.EmptyStatementExpr(); }
 	| IfStatement				{ $$ = $1; }
 	| IterationStatement		{ $$ = $1; }
 	| ReturnStatement			{ $$ = $1; }
@@ -224,29 +223,28 @@ Statement
 
 Block
     : LCURLY RCURLY
-		{ $$ = new yy.BlockNode(new yy.ElementListNode()); }
+		{ $$ = new yy.Stmt.BlockStmt([]); }
     | LCURLY StatementList RCURLY
-		{ $$ = new yy.BlockNode($2); }
+		{ $$ = new yy.Stmt.BlockStmt($2); }
     ;
 
 StatementList
 	: Statement
-		{ $$ = new yy.ElementListNode();
-		  $$.elements.push($1); }
+		{ $$ = [$1] }
 	| StatementList Statement
-		{ $1.elements.push($2); $$ = $1; }
+		{ $1.push($2); $$ = $1; }
 	;
 
 Assignment
 	: MemberExpr ASSIGN Assignment
-		{ $$ = new yy.AssignmentNode($1, $3); }
+		{ $$ = new yy.Expr.AssignmentExpr($1, $3); }
 	| MemberExpr ASSIGN Expr
-		{ $$ = new yy.AssignmentNode($1, $3); }
+		{ $$ = new yy.Expr.AssignmentExpr($1, $3); }
 	;
 
 FunctionDeclaration
 	: FUNCTION Identifier Parameters Block
-		{ $$ = new yy.FunctionDeclNode($2, $3, $4); }
+		{ $$ = new yy.Stmt.FunctionDeclStmt($2, $3, $4); }
 	;
 
 Parameters
@@ -261,20 +259,20 @@ IdentifierList
 
 IfStatement
     : IF LPAR Expr RPAR Statement %prec IF_WITHOUT_ELSE
-		{ $$ = new yy.IfNode($3, $5, null); }
+		{ $$ = new yy.Stmt.IfStmt($3, $5, null); }
     | IF LPAR Expr RPAR Statement ELSE Statement
-		{ $$ = new yy.IfNode($3, $5, $7); }
+		{ $$ = new yy.Stmt.IfStmt($3, $5, $7); }
     ;
 
 IterationStatement
     : WHILE LPAR Expr RPAR Statement
-		{ $$ = new yy.WhileNode($3, $5); }
+		{ $$ = new yy.Stmt.WhileStmt($3, $5); }
     | FOR LPAR
 		AssignmentOrExprListOptional SEMICOLON
 	  	ExprOptional SEMICOLON
 		AssignmentOrExprListOptional 
 		RPAR Statement
-		{ $$ = new yy.ForNode($3, $5, $7, $9); }
+		{ $$ = new yy.Stm.ForStmt($3, $5, $7, $9); }
     ;
 
 ExprOptional
@@ -284,52 +282,49 @@ ExprOptional
 
 AssignmentOrExprList
 	: AssignmentOrExprList COMMA Assignment
-		{ $1.elements.push($3); $$ = $1;}
+		{ $1.push($3); $$ = $1; }
 	| AssignmentOrExprList COMMA Expr
-		{ $1.elements.push($3); $$ = $1;}
+		{ $1.push($3); $$ = $1; }
 	| Assignment
-		{ $$ = new yy.ElementListNode();
-		  $$.elements.push($1);}
+		{ $$ = [$1]; }
 	| Expr
-		{ $$ = new yy.ElementListNode();
-		  $$.elements.push($1); }
+		{ $$ = [$1]; }
 	;
 
 AssignmentOrExprListOptional
 	: AssignmentOrExprList			{ $$ = $1; }
-	| %epsilon						{ $$ = new yy.ElementListNode(); }
+	| %epsilon						{ $$ = []; }
 	;
 
 ReturnStatement
-	: RETURN SEMICOLON				{ $$ = new yy.ReturnNode(null); }
-	| RETURN Expr SEMICOLON			{ $$ = new yy.ReturnNode($2); }
+	: RETURN SEMICOLON				{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.RETURN, null); }
+	| RETURN Expr SEMICOLON			{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.RETURN, $2); }
 	;
 
 ContinueStatement
-    : CONTINUE SEMICOLON			{ $$ = new yy.ContinueNode(); }
+    : CONTINUE SEMICOLON			{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.CONTINUE, null); }
     ;
 
 BreakStatement
-    : BREAK SEMICOLON				{ $$ = new yy.BreakNode(); }
+    : BREAK SEMICOLON				{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.BREAK, null); }
     ;
 
 ClassDefinition
-	: CLASS Identifier ClassBlock	{ $$ = new yy.ClassDeclNode($2, $3); }
+	: CLASS Identifier ClassBlock	{ $$ = new yy.Stmt.ClassDeclStmt($2, $3.assignments, $3.methods); }
 	;
 
 ClassBlock
 	: LCURLY RCURLY
-		{ $$ = new yy.ClassBodyNode(); }
+		{ $$ = []; }
 	| LCURLY InClassStatementList RCURLY
 		{ $$ = $2; }
 	;
 
 InClassStatementList
 	: InClassStatementList InClassStatement
-		{ $1.elements.push($2); $$ = $1; }
+		{ $$ = $1.concat($2); }
 	| InClassStatement
-		{ $$ = new yy.ClassBodyNode();
-		  $$.elements.push($1); }
+		{ $$ = [$1]; }
 	;
 
 InClassStatement
