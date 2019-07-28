@@ -2,13 +2,14 @@
 
 %{
 
-/*  After reading a lexeme, go to "delimit" state to
+/*  After reading a lexeme go to "delimit" state to
   	expect delimiter and return the lexeme. Arrow function
 	is used to bind this. */
 var delimit = (terminal) => 
     { 
         this.begin('delimit'); return terminal;
     }
+
 %}
 
 DELIMITER   				";"
@@ -112,11 +113,11 @@ AlfanumAtom
 	;
 
 UFloat
-	: UInt_ DOT UInt_			{ $$ = new yy.Expr.NumberExpr($1 + '.' + $3); }
+	: UInt_ DOT UInt_			{ $$ = new yy.Expr.NumberValueExpr($1 + '.' + $3); }
 	;
 
 UInt
-	: UInt_ 	{ $$ = new yy.Expr.NumberExpr($1); }
+	: UInt_ 	{ $$ = new yy.Expr.NumberValueExpr($1); }
 	;
 
 UInt_
@@ -125,7 +126,7 @@ UInt_
 	;
 
 String
-	: QUOTE Alfanum QUOTE 		{ $$ = new yy.Expr.StringExpr($2); }
+	: QUOTE Alfanum QUOTE 		{ $$ = new yy.Expr.StringValueExpr($2); }
 	;
 
 PrimaryExpr
@@ -134,33 +135,33 @@ PrimaryExpr
     ;
 
 PrimaryComnon
-	: Identifier 				{ $$ = new yy.Expr.VariableExpr($1); }
+	: Identifier 				{ $$ = new yy.Expr.VariableRefExpr($1); }
     | LPAR Expr RPAR 			{ $$ = $2; }
 	| ArrayLiteral 				{ $$ = $1; }
 	;
 
 Literal
-    : TRUE		{ $$ = new yy.Expr.VariableExpr('TRUE'); }
-    | FALSE		{ $$ = new yy.Expr.VariableExpr('FALSE'); }
-	| NONE		{ $$ = new yy.Expr.NoneExpr(); }
+    : TRUE		{ $$ = new yy.Expr.VariableRefExpr('TRUE'); }
+    | FALSE		{ $$ = new yy.Expr.VariableRefExpr('FALSE'); }
+	| NONE		{ $$ = new yy.Expr.NoneValueExpr(); }
     | UFloat	{ $$ = $1; }
 	| UInt		{ $$ = $1; }
     | String	{ $$ = $1; }
     ;
 
 ArrayLiteral
-    : LBRA ElementList RBRA 	{ $$ = new yy.Expr.ArrayExpr($2); }
-	| LBRA RBRA					{ $$ = new yy.Expr.ArrayExpr([]); }
+    : LBRA ElementList RBRA 	{ $$ = new yy.Expr.ArrayValueExpr($2); }
+	| LBRA RBRA					{ $$ = new yy.Expr.ArrayValueExpr([]); }
 	;
 
 MemberExpr
     : PrimaryComnon				{ $$ = $1; }
-	| CallExpr LBRA Expr RBRA	{ $$ = new yy.Expr.SquareAccessorExpr($1, $3); }
-    | CallExpr DOT Identifier	{ $$ = new yy.Expr.DotAccessorExpr($1, $3); }
+	| CallExpr LBRA Expr RBRA	{ $$ = new yy.Expr.SquareAccessorRefExpr($1, $3); }
+    | CallExpr DOT Identifier	{ $$ = new yy.Expr.DotAccessorRefExpr($1, $3); }
     ;
 
 CallExpr
-    : MemberExpr Arguments		{ $$ = new yy.Expr.CallExpr($1, $2); }
+    : MemberExpr Arguments		{ $$ = new yy.Expr.CallValueExpr($1, $2); }
 	| MemberExpr				{ $$ = $1; }
 	;
 
@@ -178,33 +179,33 @@ ElementList
 
 UnaryExpr
 	: PLUS UnaryExpr
-		{$$ = new yy.Expr.UnaryPlusMinusExpr(yy.Operator.PLUS, $2);}
+		{$$ = new yy.Expr.UnaryPlusMinusValueExpr(yy.Operator.PLUS, $2);}
 	| MINUS UnaryExpr
-		{$$ = new yy.Expr.UnaryPlusMinusExpr(yy.Operator.MINUS, $2);}
+		{$$ = new yy.Expr.UnaryPlusMinusValueExpr(yy.Operator.MINUS, $2);}
 	| NOT UnaryExpr
-		{ $$ = new yy.Expr.UnaryNotExpr($2); }
+		{ $$ = new yy.Expr.UnaryNotValueExpr($2); }
 	| PrimaryExpr { $$ = $1; }
 	;
 
 Expr
-	: Expr MUL UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.MUL, $1, $3);}
-    | Expr DIV UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.DIV, $1, $3);}
-	| Expr MOD UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.MOD, $1, $3);}
+	: Expr MUL UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MUL, $1, $3);}
+    | Expr DIV UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.DIV, $1, $3);}
+	| Expr MOD UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MOD, $1, $3);}
 
-	| Expr PLUS UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.PLUS, $1, $3);}
-	| Expr MINUS UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.MINUS, $1, $3);}
+	| Expr PLUS UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.PLUS, $1, $3);}
+	| Expr MINUS UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MINUS, $1, $3);}
 
-	| Expr LT UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.LT, $1, $3);}
-	| Expr LE UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.LE, $1, $3);}
-	| Expr GE UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.GE, $1, $3);}
-	| Expr GT UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.GT, $1, $3);}
+	| Expr LT UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.LT, $1, $3);}
+	| Expr LE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.LE, $1, $3);}
+	| Expr GE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.GE, $1, $3);}
+	| Expr GT UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.GT, $1, $3);}
 
-	| Expr EQ UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.EQ, $1, $3);}
-	| Expr NE UnaryExpr {$$ = new yy.Expr.BinaryExpr(yy.Operator.NE, $1, $3);}
+	| Expr EQ UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.EQ, $1, $3);}
+	| Expr NE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.NE, $1, $3);}
 
-	| Expr AND UnaryExpr {$$ = new yy.Expr.LogicalExpr(yy.Operator.AND, $1, $3);}
-	| Expr OR UnaryExpr {$$ = new yy.Expr.LogicalExpr(yy.Operator.OR, $1, $3);}
-	| UnaryExpr { $$ = $1;}
+	| Expr AND UnaryExpr 		{$$ = new yy.Expr.LogicalValueExpr(yy.Operator.AND, $1, $3);}
+	| Expr OR UnaryExpr 		{$$ = new yy.Expr.LogicalValueExpr(yy.Operator.OR, $1, $3);}
+	| UnaryExpr 				{ $$ = $1;}
 	;
 
 Statement
@@ -213,7 +214,7 @@ Statement
 	| FunctionDeclaration		{ $$ = $1; }
 	| Expr SEMICOLON			{ $$ = $1; }
 	| /* Empty statement */ SEMICOLON
-		{ $$ = new yy.Expr.EmptyStatementExpr(); }
+		{ $$ = new yy.Stmt.EmptyStmt(); }
 	| IfStatement				{ $$ = $1; }
 	| IterationStatement		{ $$ = $1; }
 	| ReturnStatement			{ $$ = $1; }
@@ -237,9 +238,9 @@ StatementList
 
 Assignment
 	: MemberExpr ASSIGN Assignment
-		{ $$ = new yy.Expr.AssignmentExpr($1, $3); }
+		{ $$ = new yy.Expr.AssignmentValueExpr($1, $3); }
 	| MemberExpr ASSIGN Expr
-		{ $$ = new yy.Expr.AssignmentExpr($1, $3); }
+		{ $$ = new yy.Expr.AssignmentValueExpr($1, $3); }
 	;
 
 FunctionDeclaration

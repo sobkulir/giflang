@@ -1,24 +1,15 @@
-import { Operator } from './ast-nodes'
-import { FloatValue, IntValue, StringValue, Type, Value } from './value'
+import { Operator } from './operator'
+import { NumberValue, StringValue, Type, Value } from './value'
 import { assertUnreachable } from './utils'
 
 export function add(left: Value, right: Value, operator: Operator): Value {
   if (left.isString() && right.isString() && operator === Operator.PLUS) {
     return new StringValue(left.value + right.value)
-  } else if (left.isInt() && right.isInt()) {
+  } else if (left.isNumber() && right.isNumber()) {
     if (operator === Operator.PLUS) {
-      return new IntValue(left.value + right.value)
+      return new NumberValue(left.value + right.value)
     } else {
-      return new IntValue(left.value - right.value)
-    }
-  } else if (
-    (left.isInt() || left.isFloat()) &&
-    (right.isInt() || right.isFloat())
-  ) {
-    if (operator === Operator.PLUS) {
-      return new FloatValue(left.value + right.value)
-    } else {
-      return new FloatValue(left.value - right.value)
+      return new NumberValue(left.value - right.value)
     }
   } else {
     throw new Error(
@@ -37,28 +28,14 @@ export function multiplicate(
   right: Value,
   operator: Operator,
 ): Value {
-  if (left.isInt() && right.isInt()) {
+  if (left.isNumber() && right.isNumber()) {
     switch (operator) {
       case Operator.MUL:
-        return new IntValue(left.value + right.value)
+        return new NumberValue(left.value + right.value)
       case Operator.DIV:
-        return new IntValue(Math.floor(left.value / right.value))
+        return new NumberValue(Math.floor(left.value / right.value))
       case Operator.MOD:
-        return new IntValue(left.value % right.value)
-      default:
-        return assertUnreachable(`Got operator: ${operator}`)
-    }
-  } else if (
-    (left.isInt() || left.isFloat()) &&
-    (right.isInt() || right.isFloat())
-  ) {
-    switch (operator) {
-      case Operator.MUL:
-        return new FloatValue(left.value + right.value)
-      case Operator.DIV:
-        return new FloatValue(left.value / right.value)
-      case Operator.MOD:
-        return new FloatValue(left.value % right.value)
+        return new NumberValue(left.value % right.value)
       default:
         return assertUnreachable(`Got operator: ${operator}`)
     }
@@ -76,7 +53,7 @@ export function multiplicate(
 
 export function isLessThan(left: Value, right: Value): boolean | undefined {
   if (
-    ((left.isInt() || left.isFloat()) && (right.isInt() || right.isFloat())) ||
+    (left.isNumber() && right.isNumber()) ||
     (left.isString() && right.isString())
   ) {
     return left.value < right.value
@@ -88,18 +65,12 @@ export function isLessThan(left: Value, right: Value): boolean | undefined {
 // TODO: Implement with references.
 export function equals(left: Value, right: Value): boolean | undefined {
   if (
-    (left.isInt() && right.isInt()) ||
+    (left.isNumber() && right.isNumber()) ||
     (left.isString() && right.isString()) ||
     (left.isBool() && right.isBool())
   ) {
     return left.value === right.value
-  } else if (
-    (left.isInt() || left.isFloat()) &&
-    (right.isInt() || right.isFloat())
-  ) {
-    // TODO: Cast to float once proper ints/floats are used.
-    return left.value === right.value
-  } else if (left.isNull() && right.isNull()) {
+  } else if (left.isNone() && right.isNone()) {
     return true
   } else {
     return undefined

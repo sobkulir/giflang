@@ -1,4 +1,4 @@
-import { AssignmentExpr, Expr } from './expr'
+import { AssignmentValueExpr, Expr } from './expr'
 import { CompletionType } from './completion'
 
 interface VisitorStmt<T> {
@@ -10,6 +10,7 @@ interface VisitorStmt<T> {
   visitClassDeclStmt(stmt: ClassDeclStmt): T
   visitCompletionStmt(stmt: CompletionStmt): T
   visitProgramNode(stmt: ProgramStmt): T
+  visitEmptyStmt(stmt: EmptyStmt): T
 }
 
 abstract class Stmt {
@@ -82,7 +83,7 @@ class FunctionDeclStmt extends Stmt {
 class ClassDeclStmt extends Stmt {
   constructor(
     readonly name: string,
-    readonly body: Array<FunctionConstructor | AssignmentExpr>,
+    readonly body: Array<FunctionConstructor | AssignmentValueExpr>,
   ) {
     super()
   }
@@ -115,6 +116,12 @@ class ProgramStmt extends Stmt {
   }
 }
 
+class EmptyStmt extends Stmt {
+  accept<T>(visitor: VisitorStmt<T>): T {
+    return visitor.visitEmptyStmt(this)
+  }
+}
+
 export {
   VisitorStmt,
   Stmt,
@@ -125,5 +132,6 @@ export {
   FunctionDeclStmt,
   ClassDeclStmt,
   CompletionStmt,
-  ProgramStmt
+  ProgramStmt,
+  EmptyStmt
 }

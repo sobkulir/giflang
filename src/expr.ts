@@ -1,48 +1,47 @@
 import { Operator } from './operator'
 
-interface VisitorExpr<T> {
-  visitAssignmentExpr(expr: AssignmentExpr): T
-  visitNumberExpr(expr: NumberExpr): T
-  visitStringExpr(expr: StringExpr): T
-  visitArrayExpr(expr: ArrayExpr): T
-  visitNoneExpr(expr: NoneExpr): T
-  visitVariableExpr(expr: VariableExpr): T
-  visitUnaryPlusMinusExpr(expr: UnaryPlusMinusExpr): T
-  visitUnaryNotExpr(expr: UnaryNotExpr): T
-  visitBinaryExpr(expr: BinaryExpr): T
-  visitLogicalExpr(expr: LogicalExpr): T
-  visitCallExpr(expr: CallExpr): T
-  visitSquareAccessorExpr(expr: SquareAccessorExpr): T
-  visitDotAccessorExpr(expr: DotAccessorExpr): T
+type Expr = RefExpr | ValueExpr
+
+abstract class ValueExpr {
+  abstract accept<T>(visitor: VisitorValueExpr<T>): T
 }
 
-abstract class Expr {
-  abstract accept<T>(visitor: VisitorExpr<T>): T
+interface VisitorValueExpr<T> {
+  visitAssignmentValueExpr(expr: AssignmentValueExpr): T
+  visitNumberValueExpr(expr: NumberValueExpr): T
+  visitStringValueExpr(expr: StringValueExpr): T
+  visitArrayValueExpr(expr: ArrayValueExpr): T
+  visitNoneValueExpr(expr: NoneValueExpr): T
+  visitUnaryPlusMinusValueExpr(expr: UnaryPlusMinusValueExpr): T
+  visitUnaryNotValueExpr(expr: UnaryNotValueExpr): T
+  visitBinaryValueExpr(expr: BinaryValueExpr): T
+  visitLogicalValueExpr(expr: LogicalValueExpr): T
+  visitCallValueExpr(expr: CallValueExpr): T
 }
 
-class AssignmentExpr extends Expr {
+class AssignmentValueExpr extends ValueExpr {
   constructor(readonly lhs: Expr, readonly rhs: Expr) {
     super()
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitAssignmentExpr(this)
+  accept<T>(visitor: VisitorValueExpr<T>): T {
+    return visitor.visitAssignmentValueExpr(this)
   }
 }
 
-class NumberExpr extends Expr {
+class NumberValueExpr extends ValueExpr {
   readonly value: number
   constructor(readonly rawValue: string) {
     super()
     this.value = Number(rawValue)
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitNumberExpr(this)
+  accept<T>(visitor: VisitorValueExpr<T>): T {
+    return visitor.visitNumberValueExpr(this)
   }
 }
 
-class StringExpr extends Expr {
+class StringValueExpr extends ValueExpr {
   readonly value: string
   constructor(readonly rawValue: string) {
     super()
@@ -50,62 +49,52 @@ class StringExpr extends Expr {
     this.value = rawValue
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitStringExpr(this)
+  accept<T>(visitor: VisitorValueExpr<T>): T {
+    return visitor.visitStringValueExpr(this)
   }
 }
 
-class ArrayExpr extends Expr {
+class ArrayValueExpr extends ValueExpr {
   constructor(readonly elements: Expr[]) {
     super()
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitArrayExpr(this)
+  accept<T>(visitor: VisitorValueExpr<T>): T {
+    return visitor.visitArrayValueExpr(this)
   }
 }
 
-class NoneExpr extends Expr {
+class NoneValueExpr extends ValueExpr {
   constructor() {
     super()
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitNoneExpr(this)
+  accept<T>(visitor: VisitorValueExpr<T>): T {
+    return visitor.visitNoneValueExpr(this)
   }
 }
 
-class VariableExpr extends Expr {
-  constructor(readonly name: string) {
-    super()
-  }
-
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitVariableExpr(this)
-  }
-}
-
-class UnaryPlusMinusExpr extends Expr {
+class UnaryPlusMinusValueExpr extends ValueExpr {
   constructor(readonly operator: Operator, readonly right: Expr) {
     super()
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitUnaryPlusMinusExpr(this)
+  accept<T>(visitor: VisitorValueExpr<T>): T {
+    return visitor.visitUnaryPlusMinusValueExpr(this)
   }
 }
 
-class UnaryNotExpr extends Expr {
+class UnaryNotValueExpr extends ValueExpr {
   constructor(readonly right: Expr) {
     super()
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitUnaryNotExpr(this)
+  accept<T>(visitor: VisitorValueExpr<T>): T {
+    return visitor.visitUnaryNotValueExpr(this)
   }
 }
 
-class BinaryExpr extends Expr {
+class BinaryValueExpr extends ValueExpr {
   constructor(
     readonly operator: Operator,
     readonly left: Expr,
@@ -114,12 +103,12 @@ class BinaryExpr extends Expr {
     super()
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitBinaryExpr(this)
+  accept<T>(visitor: VisitorValueExpr<T>): T {
+    return visitor.visitBinaryValueExpr(this)
   }
 }
 
-class LogicalExpr extends Expr {
+class LogicalValueExpr extends ValueExpr {
   constructor(
     readonly operator: Operator,
     readonly left: Expr,
@@ -128,55 +117,79 @@ class LogicalExpr extends Expr {
     super()
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitLogicalExpr(this)
+  accept<T>(visitor: VisitorValueExpr<T>): T {
+    return visitor.visitLogicalValueExpr(this)
   }
 }
 
-class CallExpr extends Expr {
+class CallValueExpr extends ValueExpr {
   constructor(readonly callee: Expr, readonly args: Expr[]) {
     super()
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitCallExpr(this)
+  accept<T>(visitor: VisitorValueExpr<T>): T {
+    return visitor.visitCallValueExpr(this)
   }
 }
 
-class SquareAccessorExpr extends Expr {
+/* Expressions that can appear on the left hand side of an assignment. */
+abstract class RefExpr {
+  abstract accept<T>(visitor: VisitorRefExpr<T>): T
+}
+
+interface VisitorRefExpr<T> {
+  visitVariableRefExpr(expr: VariableRefExpr): T
+  visitSquareAccessorRefExpr(expr: SquareAccessorRefExpr): T
+  visitDotAccessorRefExpr(expr: DotAccessorRefExpr): T
+}
+
+class VariableRefExpr extends RefExpr {
+  constructor(readonly name: string) {
+    super()
+  }
+
+  accept<T>(visitor: VisitorRefExpr<T>): T {
+    return visitor.visitVariableRefExpr(this)
+  }
+}
+
+class SquareAccessorRefExpr extends RefExpr {
   constructor(readonly object: Expr, readonly property: Expr) {
     super()
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitSquareAccessorExpr(this)
+  accept<T>(visitor: VisitorRefExpr<T>): T {
+    return visitor.visitSquareAccessorRefExpr(this)
   }
 }
 
-class DotAccessorExpr extends Expr {
+class DotAccessorRefExpr extends RefExpr {
   constructor(readonly object: Expr, readonly property: Expr) {
     super()
   }
 
-  accept<T>(visitor: VisitorExpr<T>): T {
-    return visitor.visitDotAccessorExpr(this)
+  accept<T>(visitor: VisitorRefExpr<T>): T {
+    return visitor.visitDotAccessorRefExpr(this)
   }
 }
 
 export {
-  VisitorExpr,
+  VisitorValueExpr,
+  VisitorRefExpr,
   Expr,
-  AssignmentExpr,
-  NumberExpr,
-  StringExpr,
-  ArrayExpr,
-  NoneExpr,
-  VariableExpr,
-  UnaryPlusMinusExpr,
-  UnaryNotExpr,
-  BinaryExpr,
-  LogicalExpr,
-  CallExpr,
-  SquareAccessorExpr,
-  DotAccessorExpr
+  ValueExpr,
+  RefExpr,
+  AssignmentValueExpr,
+  NumberValueExpr,
+  StringValueExpr,
+  ArrayValueExpr,
+  NoneValueExpr,
+  VariableRefExpr,
+  UnaryPlusMinusValueExpr,
+  UnaryNotValueExpr,
+  BinaryValueExpr,
+  LogicalValueExpr,
+  CallValueExpr,
+  SquareAccessorRefExpr,
+  DotAccessorRefExpr
 }

@@ -14,32 +14,22 @@ abstract class Value {
     return this instanceof StringValue
   }
 
-  isInt(): this is IntValue {
-    return this instanceof IntValue
-  }
-
-  isFloat(): this is FloatValue {
-    return this instanceof FloatValue
+  isNumber(): this is NumberValue {
+    return this instanceof NumberValue
   }
 
   isBool(): this is BoolValue {
     return this instanceof BoolValue
   }
 
-  isNull(): this is NullValue {
-    return this instanceof NullValue
+  isNone(): this is NoneValue {
+    return this instanceof NoneValue
   }
 }
 
-class IntValue extends Value {
+class NumberValue extends Value {
   constructor(readonly value: number) {
     super(Type.Int)
-  }
-}
-
-class FloatValue extends Value {
-  constructor(readonly value: number) {
-    super(Type.Float)
   }
 }
 
@@ -55,10 +45,10 @@ class BoolValue extends Value {
   }
 }
 
-class NullValue extends Value {
+class NoneValue extends Value {
   constructor() {
     super(Type.Null)
   }
 }
 
-export { Type, Value, IntValue, FloatValue, BoolValue, StringValue, NullValue }
+export { Type, Value, NumberValue, BoolValue, StringValue, NoneValue }
