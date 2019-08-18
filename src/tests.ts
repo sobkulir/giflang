@@ -63,7 +63,6 @@ RCURLY;`,
 
   /* Classes */
   `CLASS; C; LCURLY;
-    X; ASSIGN; 3; SEMICOLON;
     FUNCTION; M;E;T;H;O;D; LPAR; RPAR; LCURLY; RCURLY;
 RCURLY;`,
 

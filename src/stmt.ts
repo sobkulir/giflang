@@ -11,6 +11,7 @@ interface VisitorStmt<T> {
   visitCompletionStmt(stmt: CompletionStmt): T
   visitProgramNode(stmt: ProgramStmt): T
   visitEmptyStmt(stmt: EmptyStmt): T
+  visitExprStmt(stmt: ExprStmt): T
 }
 
 abstract class Stmt {
@@ -18,12 +19,17 @@ abstract class Stmt {
 }
 
 class IfStmt extends Stmt {
+  readonly consequent: BlockStmt
+  readonly alternate: BlockStmt | null
+
   constructor(
     readonly condition: Expr,
-    readonly consequent: Stmt,
-    readonly alternate: Stmt | null,
+    consequent: Stmt,
+    alternate: Stmt | null,
   ) {
     super()
+    this.consequent = ensureIsBlockStmt(consequent)
+    this.alternate = alternate !== null ? ensureIsBlockStmt(alternate) : null
   }
 
   accept<T>(visitor: VisitorStmt<T>): T {
@@ -42,8 +48,11 @@ class BlockStmt extends Stmt {
 }
 
 class WhileStmt extends Stmt {
-  constructor(readonly condition: Expr, readonly body: Stmt) {
+  readonly body: BlockStmt
+
+  constructor(readonly condition: Expr, body: Stmt) {
     super()
+    this.body = ensureIsBlockStmt(body)
   }
 
   accept<T>(visitor: VisitorStmt<T>): T {
@@ -52,13 +61,16 @@ class WhileStmt extends Stmt {
 }
 
 class ForStmt extends Stmt {
+  readonly body: BlockStmt
+
   constructor(
     readonly preamble: Expr[],
     readonly condition: Expr | null,
     readonly increments: Expr[],
-    readonly body: Stmt,
+    body: Stmt,
   ) {
     super()
+    this.body = ensureIsBlockStmt(body)
   }
 
   accept<T>(visitor: VisitorStmt<T>): T {
@@ -122,6 +134,25 @@ class EmptyStmt extends Stmt {
   }
 }
 
+class ExprStmt extends Stmt {
+  constructor(
+    readonly expr : Expr,
+  ) {
+    super()
+  }
+
+  accept<T>(visitor: VisitorStmt<T>): T {
+    return visitor.visitExprStmt(this)
+  }
+}
+
+// Function encapsulates a single statement into a block
+// if it's not a BlockStmt already.
+function ensureIsBlockStmt(stmt: Stmt): BlockStmt {
+  if (stmt instanceof BlockStmt) return stmt
+  else return new BlockStmt([stmt])
+}
+
 export {
   VisitorStmt,
   Stmt,
@@ -133,5 +164,6 @@ export {
   ClassDeclStmt,
   CompletionStmt,
   ProgramStmt,
-  EmptyStmt
+  EmptyStmt,
+  ExprStmt
 }

@@ -6,6 +6,11 @@ abstract class ValueExpr {
   abstract accept<T>(visitor: VisitorValueExpr<T>): T
 }
 
+/* Expressions that can appear on the left hand side of an assignment. */
+abstract class RefExpr {
+  abstract accept<T>(visitor: VisitorRefExpr<T>): T
+}
+
 interface VisitorValueExpr<T> {
   visitAssignmentValueExpr(expr: AssignmentValueExpr): T
   visitNumberValueExpr(expr: NumberValueExpr): T
@@ -20,7 +25,7 @@ interface VisitorValueExpr<T> {
 }
 
 class AssignmentValueExpr extends ValueExpr {
-  constructor(readonly lhs: Expr, readonly rhs: Expr) {
+  constructor(readonly lhs: RefExpr, readonly rhs: Expr) {
     super()
   }
 
@@ -130,11 +135,6 @@ class CallValueExpr extends ValueExpr {
   accept<T>(visitor: VisitorValueExpr<T>): T {
     return visitor.visitCallValueExpr(this)
   }
-}
-
-/* Expressions that can appear on the left hand side of an assignment. */
-abstract class RefExpr {
-  abstract accept<T>(visitor: VisitorRefExpr<T>): T
 }
 
 interface VisitorRefExpr<T> {

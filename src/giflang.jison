@@ -136,7 +136,7 @@ PrimaryExpr
 
 PrimaryComnon
 	: Identifier 				{ $$ = new yy.Expr.VariableRefExpr($1); }
-    | LPAR Expr RPAR 			{ $$ = $2; }
+	| LPAR Expr RPAR 			{ $$ = $2; }
 	| ArrayLiteral 				{ $$ = $1; }
 	;
 
@@ -187,32 +187,37 @@ UnaryExpr
 	| PrimaryExpr { $$ = $1; }
 	;
 
-Expr
-	: Expr MUL UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MUL, $1, $3);}
-    | Expr DIV UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.DIV, $1, $3);}
-	| Expr MOD UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MOD, $1, $3);}
+BinaryExpr
+	: BinaryExpr MUL UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MUL, $1, $3);}
+    | BinaryExpr DIV UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.DIV, $1, $3);}
+	| BinaryExpr MOD UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MOD, $1, $3);}
 
-	| Expr PLUS UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.PLUS, $1, $3);}
-	| Expr MINUS UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MINUS, $1, $3);}
+	| BinaryExpr PLUS UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.PLUS, $1, $3);}
+	| BinaryExpr MINUS UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MINUS, $1, $3);}
 
-	| Expr LT UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.LT, $1, $3);}
-	| Expr LE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.LE, $1, $3);}
-	| Expr GE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.GE, $1, $3);}
-	| Expr GT UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.GT, $1, $3);}
+	| BinaryExpr LT UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.LT, $1, $3);}
+	| BinaryExpr LE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.LE, $1, $3);}
+	| BinaryExpr GE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.GE, $1, $3);}
+	| BinaryExpr GT UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.GT, $1, $3);}
 
-	| Expr EQ UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.EQ, $1, $3);}
-	| Expr NE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.NE, $1, $3);}
+	| BinaryExpr EQ UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.EQ, $1, $3);}
+	| BinaryExpr NE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.NE, $1, $3);}
 
-	| Expr AND UnaryExpr 		{$$ = new yy.Expr.LogicalValueExpr(yy.Operator.AND, $1, $3);}
-	| Expr OR UnaryExpr 		{$$ = new yy.Expr.LogicalValueExpr(yy.Operator.OR, $1, $3);}
+	| BinaryExpr AND UnaryExpr 		{$$ = new yy.Expr.LogicalValueExpr(yy.Operator.AND, $1, $3);}
+	| BinaryExpr OR UnaryExpr 		{$$ = new yy.Expr.LogicalValueExpr(yy.Operator.OR, $1, $3);}
 	| UnaryExpr 				{ $$ = $1;}
+	;
+
+Expr
+	: MemberExpr ASSIGN Expr
+		{ $$ = new yy.Expr.AssignmentValueExpr($1, $3); }
+	| BinaryExpr { $$ = $1; }
 	;
 
 Statement
 	: Block 					{ $$ = $1; }
-	| Assignment SEMICOLON		{ $$ = $1; }
+	| Expr SEMICOLON	{ $$ = new yy.Stmt.ExprStmt($1); }
 	| FunctionDeclaration		{ $$ = $1; }
-	| Expr SEMICOLON			{ $$ = $1; }
 	| /* Empty statement */ SEMICOLON
 		{ $$ = new yy.Stmt.EmptyStmt(); }
 	| IfStatement				{ $$ = $1; }
@@ -234,13 +239,6 @@ StatementList
 		{ $$ = [$1] }
 	| StatementList Statement
 		{ $1.push($2); $$ = $1; }
-	;
-
-Assignment
-	: MemberExpr ASSIGN Assignment
-		{ $$ = new yy.Expr.AssignmentValueExpr($1, $3); }
-	| MemberExpr ASSIGN Expr
-		{ $$ = new yy.Expr.AssignmentValueExpr($1, $3); }
 	;
 
 FunctionDeclaration
@@ -269,9 +267,9 @@ IterationStatement
     : WHILE LPAR Expr RPAR Statement
 		{ $$ = new yy.Stmt.WhileStmt($3, $5); }
     | FOR LPAR
-		AssignmentOrExprListOptional SEMICOLON
+		ExprListOptional SEMICOLON
 	  	ExprOptional SEMICOLON
-		AssignmentOrExprListOptional 
+		ExprListOptional 
 		RPAR Statement
 		{ $$ = new yy.Stm.ForStmt($3, $5, $7, $9); }
     ;
@@ -281,20 +279,16 @@ ExprOptional
 	| %epsilon 	{ $$ = null; }
 	;
 
-AssignmentOrExprList
-	: AssignmentOrExprList COMMA Assignment
+ExprList
+	: ExprList COMMA Expr
 		{ $1.push($3); $$ = $1; }
-	| AssignmentOrExprList COMMA Expr
-		{ $1.push($3); $$ = $1; }
-	| Assignment
-		{ $$ = [$1]; }
 	| Expr
 		{ $$ = [$1]; }
 	;
 
-AssignmentOrExprListOptional
-	: AssignmentOrExprList			{ $$ = $1; }
-	| %epsilon						{ $$ = []; }
+ExprListOptional
+	: ExprList			{ $$ = $1; }
+	| %epsilon			{ $$ = []; }
 	;
 
 ReturnStatement
@@ -330,5 +324,8 @@ InClassStatementList
 
 InClassStatement
 	: FunctionDeclaration			{ $$ = $1; }
+	;
+/* TODO: Add support for static members. 	
 	| Assignment SEMICOLON			{ $$ = $1; }
 	;
+	*/

@@ -12,20 +12,39 @@ class Environment {
     this.values = {}
   }
 
-  get(name: string): Value {
+  public get(name: string): Value {
+    return this.getRecursive(name)
+  }
+
+  private getRecursive(name: string): Value {
     if (this.values.hasOwnProperty(name)) {
       return this.values[name]
     }
 
     if (this.enclosing != null) {
-      return this.enclosing.get(name)
+      return this.enclosing.getRecursive(name)
     }
 
     throw new Error('TODO: Unknown variable accessed')
   }
 
-  set(name: string, value: Value): void {
-    this.values[name] = value
+  private set(name: string, value: Value): void {
+    if (!this.setRecursive(name, value)) {
+      this.values[name] = value
+    }
+  }
+
+  private setRecursive(name: string, value: Value): boolean {
+    if (this.values.hasOwnProperty(name)) {
+      this.values[name] = value
+      return true
+    }
+
+    if (this.enclosing != null) {
+      return this.enclosing.setRecursive(name, value)
+    }
+
+    return false
   }
 
   getRef(name: string): ValueRef {

@@ -4,6 +4,8 @@ enum CompletionType {
   BREAK,
   CONTINUE,
 }
-class Completion {}
+class Completion {
+  constructor(readonly type: CompletionType) {}
+}
 
 export { Completion, CompletionType }

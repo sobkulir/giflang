@@ -4,7 +4,7 @@ import * as Stmt from './stmt'
 import { Operator } from './operator'
 import { CompletionType } from './completion'
 
-function ParseGiflang(input: string) {
+function ParseGiflang(input: string): Stmt.ProgramStmt {
   parser.yy = {
     Expr,
     Stmt,

@@ -1,9 +1,8 @@
 const enum Type {
-  Null,
+  None,
   Bool,
   String,
-  Int,
-  Float,
+  Number,
   Object,
 }
 
@@ -29,7 +28,7 @@ abstract class Value {
 
 class NumberValue extends Value {
   constructor(readonly value: number) {
-    super(Type.Int)
+    super(Type.Number)
   }
 }
 
@@ -47,7 +46,7 @@ class BoolValue extends Value {
 
 class NoneValue extends Value {
   constructor() {
-    super(Type.Null)
+    super(Type.None)
   }
 }
 
