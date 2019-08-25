@@ -7,9 +7,9 @@ interface VisitorStmt<T> {
   visitWhileStmt(stmt: WhileStmt): T
   visitForStmt(stmt: ForStmt): T
   visitFunctionDeclStmt(stmt: FunctionDeclStmt): T
-  visitClassDeclStmt(stmt: ClassDeclStmt): T
+  visitClassDefStmt(stmt: ClassDefStmt): T
   visitCompletionStmt(stmt: CompletionStmt): T
-  visitProgramNode(stmt: ProgramStmt): T
+  visitProgramStmt(stmt: ProgramStmt): T
   visitEmptyStmt(stmt: EmptyStmt): T
   visitExprStmt(stmt: ExprStmt): T
 }
@@ -92,7 +92,7 @@ class FunctionDeclStmt extends Stmt {
   }
 }
 
-class ClassDeclStmt extends Stmt {
+class ClassDefStmt extends Stmt {
   constructor(
     readonly name: string,
     readonly body: Array<FunctionConstructor | AssignmentValueExpr>,
@@ -101,7 +101,7 @@ class ClassDeclStmt extends Stmt {
   }
 
   accept<T>(visitor: VisitorStmt<T>): T {
-    return visitor.visitClassDeclStmt(this)
+    return visitor.visitClassDefStmt(this)
   }
 }
 
@@ -119,12 +119,12 @@ class CompletionStmt extends Stmt {
 }
 
 class ProgramStmt extends Stmt {
-  constructor(readonly body: Array<Stmt | Expr>) {
+  constructor(readonly body: Stmt[]) {
     super()
   }
 
   accept<T>(visitor: VisitorStmt<T>): T {
-    return visitor.visitProgramNode(this)
+    return visitor.visitProgramStmt(this)
   }
 }
 
@@ -135,9 +135,7 @@ class EmptyStmt extends Stmt {
 }
 
 class ExprStmt extends Stmt {
-  constructor(
-    readonly expr : Expr,
-  ) {
+  constructor(readonly expr: Expr) {
     super()
   }
 
@@ -161,7 +159,7 @@ export {
   WhileStmt,
   ForStmt,
   FunctionDeclStmt,
-  ClassDeclStmt,
+  ClassDefStmt,
   CompletionStmt,
   ProgramStmt,
   EmptyStmt,

@@ -20,7 +20,7 @@ import {
 } from './expr'
 import {
   BlockStmt,
-  ClassDeclStmt,
+  ClassDefStmt,
   CompletionStmt,
   EmptyStmt,
   ExprStmt,
@@ -34,7 +34,14 @@ import {
 } from './stmt'
 import { Operator } from './operator'
 import { Environment, ValueRef } from './environment'
-import { BoolValue, NoneValue, NumberValue, StringValue, Value } from './value'
+import {
+  BoolValue,
+  FunctionValue,
+  NoneValue,
+  NumberValue,
+  StringValue,
+  Value
+} from './value'
 import { Completion, CompletionType } from './completion'
 import {
   isEqual,
@@ -67,8 +74,20 @@ class Interpreter
     }
   }
 
-  private execute(stmt: Stmt): Completion {
+  execute(stmt: Stmt): Completion {
     return stmt.accept(this)
+  }
+
+  executeInEnvironment(stmts: Stmt[], excEnv: Environment): Completion {
+    const prevEnv = this.environment
+    this.environment = excEnv
+    let lastCompletion: Completion = new Completion(CompletionType.NORMAL)
+    for (const curStmt of stmts) {
+      lastCompletion = this.execute(curStmt)
+      if (lastCompletion.type !== CompletionType.NORMAL) break
+    }
+    this.environment = prevEnv
+    return lastCompletion
   }
 
   visitNumberValueExpr(expr: NumberValueExpr): Value {
@@ -166,7 +185,21 @@ class Interpreter
   }
 
   visitCallValueExpr(expr: CallValueExpr): Value {
-    throw new Error('Method not implemented.')
+    const callee = this.evaluate(expr.callee)
+    if (!callee.isFunction()) {
+      throw new Error('Callee must be of a function type.')
+    }
+    const args = []
+    for (const arg of expr.args) {
+      args.push(this.evaluate(arg))
+    }
+    const res = callee.call(this, args)
+    if (res.type !== CompletionType.RETURN) {
+      throw new Error(
+        'Internal -- completion of fucntion call must be of RETURN type.',
+      )
+    }
+    return res.value as Value
   }
   visitVariableRefExpr(expr: VariableRefExpr): ValueRef {
     return this.environment.getRef(expr.name)
@@ -190,17 +223,10 @@ class Interpreter
     }
   }
   visitBlockStmt(stmt: BlockStmt): Completion {
-    const prevEnv = this.environment
-    this.environment = new Environment(this.environment)
-
-    let lastCompletion: Completion = new Completion(CompletionType.NORMAL)
-    for (const curStmt of stmt.stmts) {
-      lastCompletion = this.execute(curStmt)
-      if (lastCompletion.type !== CompletionType.NORMAL) break
-    }
-
-    this.environment = prevEnv
-    return lastCompletion
+    return this.executeInEnvironment(
+      stmt.stmts,
+      new Environment(this.environment),
+    )
   }
   visitWhileStmt(stmt: WhileStmt): Completion {
     let lastCompletion: Completion = new Completion(CompletionType.NORMAL)
@@ -247,17 +273,30 @@ class Interpreter
     if (lastCompletion.type === CompletionType.RETURN) return lastCompletion
     else return new Completion(CompletionType.NORMAL)
   }
+
   visitFunctionDeclStmt(stmt: FunctionDeclStmt): Completion {
-    throw new Error('Method not implemented.')
+    const func = new FunctionValue(stmt, this.environment)
+    this.environment.getRef(stmt.name).set(func)
+    return new Completion(CompletionType.NORMAL)
   }
-  visitClassDeclStmt(stmt: ClassDeclStmt): Completion {
+  visitClassDefStmt(stmt: ClassDefStmt): Completion {
     throw new Error('Method not implemented.')
   }
   visitCompletionStmt(stmt: CompletionStmt): Completion {
-    throw new Error('Method not implemented.')
+    if (stmt.completionType === CompletionType.RETURN) {
+      const value =
+        stmt.right !== null ? this.evaluate(stmt.right) : new NoneValue()
+      return new Completion(CompletionType.RETURN, value)
+    } else {
+      return new Completion(stmt.completionType)
+    }
   }
-  visitProgramNode(stmt: ProgramStmt): Completion {
-    throw new Error('Method not implemented.')
+  visitProgramStmt(stmt: ProgramStmt): Completion {
+    /* TODO: Hoisting? i.e. separate fncs, classes, stmts. */
+    for (const s of stmt.body) {
+      this.execute(s)
+    }
+    return new Completion(CompletionType.NORMAL)
   }
 }
 

@@ -92,10 +92,13 @@ VALID_CHAR					([A-Z]|[0-9])
 %%
 
 Program
-	: Program Statement			{ $1.push($2); $$ = $1; }
-	| Program ClassDefinition	{ $1.push($2); $$ = $1; }
-	| Program EOF				{ $$ = new yy.Stmt.ProgramStmt($1); }
-	| %epsilon					{ $$ = []; }
+	: Primitives EOF				{ return new yy.Stmt.ProgramStmt($1); }
+	;
+
+Primitives
+	: Primitives Statement			{ $1.push($2); $$ = $1; }
+	| Primitives ClassDefinition	{ $1.push($2); $$ = $1; }
+	| %epsilon						{ $$ = []; }
 	;
 
 Identifier
@@ -215,16 +218,16 @@ Expr
 	;
 
 Statement
-	: Block 					{ $$ = $1; }
-	| Expr SEMICOLON	{ $$ = new yy.Stmt.ExprStmt($1); }
-	| FunctionDeclaration		{ $$ = $1; }
+	: Block 						{ $$ = $1; }
+	| Expr SEMICOLON				{ $$ = new yy.Stmt.ExprStmt($1); }
+	| FunctionDeclaration			{ $$ = $1; }
 	| /* Empty statement */ SEMICOLON
 		{ $$ = new yy.Stmt.EmptyStmt(); }
-	| IfStatement				{ $$ = $1; }
-	| IterationStatement		{ $$ = $1; }
-	| ReturnStatement			{ $$ = $1; }
-	| ContinueStatement			{ $$ = $1; }
-	| BreakStatement			{ $$ = $1; }
+	| IfStatement					{ $$ = $1; }
+	| IterationStatement			{ $$ = $1; }
+	| ReturnStatement SEMICOLON		{ $$ = $1; }
+	| ContinueStatement	SEMICOLON	{ $$ = $1; }
+	| BreakStatement SEMICOLON		{ $$ = $1; }
 	;
 
 Block
@@ -292,20 +295,20 @@ ExprListOptional
 	;
 
 ReturnStatement
-	: RETURN SEMICOLON				{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.RETURN, null); }
-	| RETURN Expr SEMICOLON			{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.RETURN, $2); }
+	: RETURN				{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.RETURN, null); }
+	| RETURN Expr			{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.RETURN, $2); }
 	;
 
 ContinueStatement
-    : CONTINUE SEMICOLON			{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.CONTINUE, null); }
+    : CONTINUE				{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.CONTINUE, null); }
     ;
 
 BreakStatement
-    : BREAK SEMICOLON				{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.BREAK, null); }
+    : BREAK 				{ $$ = new yy.Stmt.CompletionStmt(yy.CompletionType.BREAK, null); }
     ;
 
 ClassDefinition
-	: CLASS Identifier ClassBlock	{ $$ = new yy.Stmt.ClassDeclStmt($2, $3.assignments, $3.methods); }
+	: CLASS Identifier ClassBlock	{ $$ = new yy.Stmt.ClassDefStmt($2, $3.assignments, $3.methods); }
 	;
 
 ClassBlock
