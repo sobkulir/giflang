@@ -1,5 +1,5 @@
 import { AssignmentValueExpr, Expr } from './expr'
-import { CompletionType } from './completion'
+import { Completion, CompletionType } from '../completion'
 
 interface VisitorStmt<T> {
   visitIfStmt(stmt: IfStmt): T

@@ -1,4 +1,5 @@
 const path = require("path");
+const tsNameof = require("ts-nameof");
 
 module.exports = {
   mode: "development",
@@ -12,7 +13,8 @@ module.exports = {
       {
         test: /\.ts$/,
         use: "ts-loader",
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        getCustomTransformers: () => ({ before: [tsNameof] })
       },
       {
         test: /\.jison$/,

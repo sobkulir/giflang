@@ -17,7 +17,7 @@ import {
   VariableRefExpr,
   VisitorRefExpr,
   VisitorValueExpr
-} from './expr'
+} from './ast/expr'
 import {
   BlockStmt,
   ClassDefStmt,
@@ -31,29 +31,29 @@ import {
   Stmt,
   VisitorStmt,
   WhileStmt
-} from './stmt'
-import { Operator } from './operator'
+} from './ast/stmt'
+import { Operator } from './ast/operator'
 import { Environment, ValueRef } from './environment'
 import {
-  BoolValue,
-  FunctionValue,
-  NoneValue,
-  NumberValue,
-  StringValue,
-  Value
-} from './value'
-import { Completion, CompletionType } from './completion'
+  BreakCompletion,
+  Completion,
+  CompletionType,
+  ContinueCompletion,
+  NormalCompletion,
+  ReturnCompletion
+} from './completion'
 import {
   isEqual,
   isLessThan,
   isTruthy,
   numbersOnlyOperation
 } from './operations'
+import { Instance } from './object-model/instance'
 
 class Interpreter
   implements
     VisitorRefExpr<ValueRef>,
-    VisitorValueExpr<Value>,
+    VisitorValueExpr<Instance>,
     VisitorStmt<Completion> {
   private readonly globals: Environment
   private environment: Environment
@@ -66,11 +66,11 @@ class Interpreter
     return expr.accept(this)
   }
 
-  private evaluate(expr: Expr): Value {
+  private evaluate(expr: Expr): Instance {
     if (expr instanceof ValueExpr) {
       return expr.accept(this)
     } else {
-      return this.evaluateRef(expr).value()
+      return this.evaluateRef(expr).get()
     }
   }
 
@@ -81,34 +81,34 @@ class Interpreter
   executeInEnvironment(stmts: Stmt[], excEnv: Environment): Completion {
     const prevEnv = this.environment
     this.environment = excEnv
-    let lastCompletion: Completion = new Completion(CompletionType.NORMAL)
+    let lastCompletion: Completion = new NormalCompletion()
     for (const curStmt of stmts) {
       lastCompletion = this.execute(curStmt)
-      if (lastCompletion.type !== CompletionType.NORMAL) break
+      if (lastCompletion.isNormal()) break
     }
     this.environment = prevEnv
     return lastCompletion
   }
 
-  visitNumberValueExpr(expr: NumberValueExpr): Value {
+  visitNumberValueExpr(expr: NumberValueExpr): Instance {
     return new NumberValue(expr.value)
   }
-  visitStringValueExpr(expr: StringValueExpr): Value {
+  visitStringValueExpr(expr: StringValueExpr): Instance {
     return new StringValue(expr.value)
   }
-  visitNoneValueExpr(expr: NoneValueExpr): Value {
+  visitNoneValueExpr(expr: NoneValueExpr): Instance {
     return new NoneValue()
   }
-  visitAssignmentValueExpr(expr: AssignmentValueExpr): Value {
+  visitAssignmentValueExpr(expr: AssignmentValueExpr): Instance {
     const l = this.evaluateRef(expr.lhs)
     const r = this.evaluate(expr.rhs)
     l.set(r)
     return r
   }
-  visitArrayValueExpr(expr: ArrayValueExpr): Value {
+  visitArrayValueExpr(expr: ArrayValueExpr): Instance {
     throw new Error('Method not implemented.')
   }
-  visitUnaryPlusMinusValueExpr(expr: UnaryPlusMinusValueExpr): Value {
+  visitUnaryPlusMinusValueExpr(expr: UnaryPlusMinusValueExpr): Instance {
     const r = this.evaluate(expr.right)
 
     if (r.isNumber()) {
@@ -125,11 +125,11 @@ class Interpreter
       throw Error('Unary operator <op> applied to incompatible type <val>.')
     }
   }
-  visitUnaryNotValueExpr(expr: UnaryNotValueExpr): Value {
+  visitUnaryNotValueExpr(expr: UnaryNotValueExpr): Instance {
     const r = this.evaluate(expr.right)
     return new BoolValue(!isTruthy(r))
   }
-  visitBinaryValueExpr(expr: BinaryValueExpr): Value {
+  visitBinaryValueExpr(expr: BinaryValueExpr): Instance {
     const l = this.evaluate(expr.left)
     const r = this.evaluate(expr.right)
 
@@ -165,7 +165,7 @@ class Interpreter
         throw Error('Internal.')
     }
   }
-  visitLogicalValueExpr(expr: LogicalValueExpr): Value {
+  visitLogicalValueExpr(expr: LogicalValueExpr): Instance {
     const l = this.evaluate(expr.left)
 
     if (expr.operator === Operator.OR) {
@@ -181,10 +181,10 @@ class Interpreter
 
   visitExprStmt(stmt: ExprStmt): Completion {
     this.evaluate(stmt.expr)
-    return new Completion(CompletionType.NORMAL)
+    return new NormalCompletion()
   }
 
-  visitCallValueExpr(expr: CallValueExpr): Value {
+  visitCallValueExpr(expr: CallValueExpr): Instance {
     const callee = this.evaluate(expr.callee)
     if (!callee.isFunction()) {
       throw new Error('Callee must be of a function type.')
@@ -211,7 +211,7 @@ class Interpreter
     throw new Error('Method not implemented.')
   }
   visitEmptyStmt(stmt: EmptyStmt): Completion {
-    return new Completion(CompletionType.NORMAL)
+    return new NormalCompletion()
   }
   visitIfStmt(stmt: IfStmt): Completion {
     if (isTruthy(this.evaluate(stmt.condition))) {
@@ -219,7 +219,7 @@ class Interpreter
     } else if (stmt.alternate != null) {
       return this.execute(stmt.alternate)
     } else {
-      return new Completion(CompletionType.NORMAL)
+      return new NormalCompletion()
     }
   }
   visitBlockStmt(stmt: BlockStmt): Completion {
@@ -229,19 +229,16 @@ class Interpreter
     )
   }
   visitWhileStmt(stmt: WhileStmt): Completion {
-    let lastCompletion: Completion = new Completion(CompletionType.NORMAL)
+    let lastCompletion: Completion = new NormalCompletion()
     while (isTruthy(this.evaluate(stmt.condition))) {
       lastCompletion = this.execute(stmt.body)
-      if (
-        lastCompletion.type === CompletionType.BREAK ||
-        lastCompletion.type === CompletionType.RETURN
-      ) {
+      if (lastCompletion.isBreak() || lastCompletion.isReturn()) {
         break
       }
     }
 
-    if (lastCompletion.type === CompletionType.RETURN) return lastCompletion
-    else return new Completion(CompletionType.NORMAL)
+    if (lastCompletion.isReturn()) return lastCompletion
+    else return new NormalCompletion()
   }
 
   // Desugaring for-cycle to
@@ -257,27 +254,24 @@ class Interpreter
     this.environment = new Environment(prevEnv)
 
     for (const expr of stmt.preamble) this.evaluate(expr)
-    let lastCompletion: Completion = new Completion(CompletionType.NORMAL)
+    let lastCompletion: Completion = new NormalCompletion()
     while (stmt.condition === null || isTruthy(this.evaluate(stmt.condition))) {
       lastCompletion = this.execute(stmt.body)
-      if (
-        lastCompletion.type === CompletionType.BREAK ||
-        lastCompletion.type === CompletionType.RETURN
-      ) {
+      if (lastCompletion.isBreak() || lastCompletion.isReturn()) {
         break
       }
       for (const expr of stmt.increments) this.evaluate(expr)
     }
 
     this.environment = prevEnv
-    if (lastCompletion.type === CompletionType.RETURN) return lastCompletion
-    else return new Completion(CompletionType.NORMAL)
+    if (lastCompletion.isReturn()) return lastCompletion
+    else return new NormalCompletion()
   }
 
   visitFunctionDeclStmt(stmt: FunctionDeclStmt): Completion {
     const func = new FunctionValue(stmt, this.environment)
     this.environment.getRef(stmt.name).set(func)
-    return new Completion(CompletionType.NORMAL)
+    return new NormalCompletion()
   }
   visitClassDefStmt(stmt: ClassDefStmt): Completion {
     throw new Error('Method not implemented.')
@@ -286,9 +280,13 @@ class Interpreter
     if (stmt.completionType === CompletionType.RETURN) {
       const value =
         stmt.right !== null ? this.evaluate(stmt.right) : new NoneValue()
-      return new Completion(CompletionType.RETURN, value)
+      return new ReturnCompletion(value)
+    } else if (stmt.completionType === CompletionType.BREAK) {
+      return new BreakCompletion()
+    } else if (stmt.completionType === CompletionType.CONTINUE) {
+      return new ContinueCompletion()
     } else {
-      return new Completion(stmt.completionType)
+      return new NormalCompletion()
     }
   }
   visitProgramStmt(stmt: ProgramStmt): Completion {
@@ -296,7 +294,7 @@ class Interpreter
     for (const s of stmt.body) {
       this.execute(s)
     }
-    return new Completion(CompletionType.NORMAL)
+    return new NormalCompletion()
   }
 }
 

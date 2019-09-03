@@ -1,22 +1,23 @@
-import { Value } from './value'
+import { Instance } from './object-model/instance'
+import { Map as ImmutableMap } from 'immutable'
 
 interface ValueRef {
-  set(value: Value): void
-  value(): Value
+  set(value: Instance): void
+  get(): Instance
 }
 
 class Environment {
-  private readonly values: { [key: string]: Value }
+  private readonly values: ImmutableMap<string, Instance>
 
   constructor(private readonly enclosing: Environment | null) {
-    this.values = {}
+    this.values = ImmutableMap<string, Instance>()
   }
 
-  public get(name: string): Value {
+  public get(name: string): Instance {
     return this.getRecursive(name)
   }
 
-  private getRecursive(name: string): Value {
+  private getRecursive(name: string): Instance {
     if (this.values.hasOwnProperty(name)) {
       return this.values[name]
     }
@@ -28,13 +29,13 @@ class Environment {
     throw new Error('TODO: Unknown variable accessed')
   }
 
-  private set(name: string, value: Value): void {
+  private set(name: string, value: Instance): void {
     if (!this.setRecursive(name, value)) {
       this.values[name] = value
     }
   }
 
-  private setRecursive(name: string, value: Value): boolean {
+  private setRecursive(name: string, value: Instance): boolean {
     if (this.values.hasOwnProperty(name)) {
       this.values[name] = value
       return true
@@ -49,8 +50,8 @@ class Environment {
 
   getRef(name: string): ValueRef {
     return {
-      set: (value: Value) => this.set(name, value),
-      value: () => this.get(name),
+      set: (value: Instance) => this.set(name, value),
+      get: () => this.get(name),
     }
   }
 }

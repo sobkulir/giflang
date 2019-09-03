@@ -10,9 +10,12 @@
   "author": "Roman Sobkuliak (sobkulir)",
   "license": "ISC",
   "devDependencies": {
+    "@types/ts-nameof": "^3.2.0",
+    "immutable": "^4.0.0-rc.12",
     "jison-gho": "^0.6.1-216",
     "jison-gho-loader": "^1.0.1",
     "ts-loader": "^6.0.4",
+    "ts-nameof": "^3.2.0",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-config-standard": "^8.0.1",
