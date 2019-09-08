@@ -4,17 +4,18 @@ import { FunctionInstance } from './function-instance'
 import { WrappedFunctionClass } from './wrapped-function-class'
 import { ObjectInstance } from './object-instance'
 import { ObjectClass } from './object-class'
+import { Class } from './class'
 
-class WrappedFunctionInstance extends ObjectInstance
-  implements FunctionInstance {
-  constructor(
-    wrappedFunctionClass: WrappedFunctionClass,
-    readonly wrappedFunction: (
-      interpreter: Interpreter,
-      args: Instance[],
-    ) => Instance,
-  ) {
-    super(wrappedFunctionClass.base as ObjectClass)
+type TWrappedFunction = (
+  interpreter: Interpreter,
+  args: Instance[],
+) => Instance
+
+class WrappedFunctionInstance extends FunctionInstance {
+  constructor(klass: Class, public wrappedFunction: TWrappedFunction) {
+    // TODO:  Enforce at runtime that any one of klass.base
+    //        (recursively) is of type WrappedFunctionClass.
+    super(klass)
   }
 
   call(interpreter: Interpreter, args: Instance[]): Instance {
@@ -23,4 +24,4 @@ class WrappedFunctionInstance extends ObjectInstance
   }
 }
 
-export { WrappedFunctionInstance }
+export { WrappedFunctionInstance, TWrappedFunction }

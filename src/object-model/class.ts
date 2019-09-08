@@ -3,11 +3,21 @@ import { ObjectInstance } from './object-instance'
 import { Interpreter } from '../interpreter'
 import { WrappedFunctionInstance } from './wrapped-function-instance'
 import { WrappedFunctionClass } from './wrapped-function-class'
+import { MetaClass } from './meta-class'
 
 abstract class Class extends Instance {
-  // Null for initial bootstrapping.
-  constructor(klass: Class | null, public readonly base: Class | null) {
+  // Nulls for initial bootstrapping.
+  constructor(
+    klass: MetaClass | null,
+    readonly name: string,
+    public base: Class | null,
+  ) {
     super(klass)
+  }
+
+  // Classes that user can derive from (like StringClass) override this method.
+  createBlankUserInstance(): Instance {
+    throw new Error(`${this.name} cannot be instantiated by client.`)
   }
 
   has(name: string): boolean {

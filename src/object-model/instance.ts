@@ -2,7 +2,8 @@ import { Class } from './class'
 
 class Instance {
   public fields: Map<string, Instance> = new Map()
-  // Null for initial bootstrapping.
+
+  // Caller is responsible for setting the klass.
   constructor(public klass: Class | null) {}
 
   has(name: string): boolean {

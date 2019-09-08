@@ -1,5 +1,4 @@
 import { Instance } from './object-model/instance'
-import { Map as ImmutableMap } from 'immutable'
 
 interface ValueRef {
   set(value: Instance): void
@@ -7,10 +6,10 @@ interface ValueRef {
 }
 
 class Environment {
-  private readonly values: ImmutableMap<string, Instance>
+  private readonly values: Map<string, Instance>
 
   constructor(private readonly enclosing: Environment | null) {
-    this.values = ImmutableMap<string, Instance>()
+    this.values = new Map<string, Instance>()
   }
 
   public get(name: string): Instance {
@@ -18,8 +17,8 @@ class Environment {
   }
 
   private getRecursive(name: string): Instance {
-    if (this.values.hasOwnProperty(name)) {
-      return this.values[name]
+    if (this.values.has(name)) {
+      return this.values.get(name) as Instance
     }
 
     if (this.enclosing != null) {
@@ -31,13 +30,13 @@ class Environment {
 
   private set(name: string, value: Instance): void {
     if (!this.setRecursive(name, value)) {
-      this.values[name] = value
+      this.values.set(name, value)
     }
   }
 
   private setRecursive(name: string, value: Instance): boolean {
-    if (this.values.hasOwnProperty(name)) {
-      this.values[name] = value
+    if (this.values.has(name)) {
+      this.values.set(name, value)
       return true
     }
 

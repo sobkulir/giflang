@@ -1,20 +1,22 @@
 import { Instance } from './instance'
 import { UserFunctionClass } from './user-function-class'
 import { Interpreter } from '../interpreter'
-import { FunctionDeclStmt } from '../stmt'
+import { FunctionDeclStmt } from '../ast/stmt'
 import { Environment } from '../environment'
-import { CompletionType } from '../completion'
 import { FunctionInstance } from './function-instance'
 import { ObjectInstance } from './object-instance'
 import { ObjectClass } from './object-class'
+import { Class } from './class'
 
 class UserFunctionInstance extends ObjectInstance implements FunctionInstance {
   constructor(
-    userFunctionClass: UserFunctionClass,
-    readonly functionDef: FunctionDeclStmt,
-    readonly closure: Environment,
+    klass: Class,
+    public functionDef: FunctionDeclStmt,
+    public closure: Environment,
   ) {
-    super(userFunctionClass.base as ObjectClass)
+    // TODO:  Enforce at runtime that any one of klass.base
+    //        (recursively) is of type UserFunctionClass.
+    super(klass)
   }
 
   call(interpreter: Interpreter, args: Instance[]): Instance {
@@ -32,7 +34,7 @@ class UserFunctionInstance extends ObjectInstance implements FunctionInstance {
     if (completion.isReturn()) {
       return completion.value
     } else {
-      return /* TODO: Create NoneInstance */
+      return interpreter.natives.getNone()
     }
   }
 }

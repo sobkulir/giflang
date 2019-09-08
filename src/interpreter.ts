@@ -41,14 +41,16 @@ import {
   ContinueCompletion,
   NormalCompletion,
   ReturnCompletion
-} from './completion'
+} from './ast/completion'
 import {
   isEqual,
   isLessThan,
   isTruthy,
   numbersOnlyOperation
 } from './operations'
+import { NativesHelper } from './natives-helper'
 import { Instance } from './object-model/instance'
+import { FunctionInstance } from './object-model/function-instance'
 
 class Interpreter
   implements
@@ -57,9 +59,12 @@ class Interpreter
     VisitorStmt<Completion> {
   private readonly globals: Environment
   private environment: Environment
+  public natives: NativesHelper
+
   constructor() {
     this.globals = new Environment(null)
     this.environment = this.globals
+    this.natives = new NativesHelper()
   }
 
   private evaluateRef(expr: RefExpr): ValueRef {
@@ -91,13 +96,13 @@ class Interpreter
   }
 
   visitNumberValueExpr(expr: NumberValueExpr): Instance {
-    return new NumberValue(expr.value)
+    return this.natives.createNumber(expr.value)
   }
   visitStringValueExpr(expr: StringValueExpr): Instance {
-    return new StringValue(expr.value)
+    return this.natives.createString(expr.value)
   }
-  visitNoneValueExpr(expr: NoneValueExpr): Instance {
-    return new NoneValue()
+  visitNoneValueExpr(_expr: NoneValueExpr): Instance {
+    return this.natives.getNone()
   }
   visitAssignmentValueExpr(expr: AssignmentValueExpr): Instance {
     const l = this.evaluateRef(expr.lhs)
@@ -111,72 +116,79 @@ class Interpreter
   visitUnaryPlusMinusValueExpr(expr: UnaryPlusMinusValueExpr): Instance {
     const r = this.evaluate(expr.right)
 
-    if (r.isNumber()) {
-      switch (expr.operator) {
-        case Operator.PLUS:
-          return new NumberValue(-r.value)
-        case Operator.MINUS:
-          return new NumberValue(r.value)
-        default:
-          // TODO: Internal error
-          throw Error()
-      }
-    } else {
-      throw Error('Unary operator <op> applied to incompatible type <val>.')
-    }
+    // Will call __uminus__ or __uplus__ magic methods
+    throw new Error('Method not implemented.')
+
+    // if (r.isNumber()) {
+    //   switch (expr.operator) {
+    //     case Operator.PLUS:
+    //       return new NumberValue(-r.value)
+    //     case Operator.MINUS:
+    //       return new NumberValue(r.value)
+    //     default:
+    //       // TODO: Internal error
+    //       throw Error()
+    //   }
+    // } else {
+    //   throw Error('Unary operator <op> applied to incompatible type <val>.')
+    // }
   }
   visitUnaryNotValueExpr(expr: UnaryNotValueExpr): Instance {
     const r = this.evaluate(expr.right)
-    return new BoolValue(!isTruthy(r))
+    // Will call __bool__ and negate the value.
+    throw new Error('Method not implemented.')
   }
   visitBinaryValueExpr(expr: BinaryValueExpr): Instance {
     const l = this.evaluate(expr.left)
     const r = this.evaluate(expr.right)
 
-    switch (expr.operator) {
-      case Operator.LT:
-        return new BoolValue(isLessThan(l, r))
-      case Operator.LE:
-        return new BoolValue(!isLessThan(r, l))
-      case Operator.GE:
-        return new BoolValue(!isLessThan(l, r))
-      case Operator.GT:
-        return new BoolValue(isLessThan(r, l))
-      case Operator.EQ:
-        return new BoolValue(isEqual(l, r))
-      case Operator.NE:
-        return new BoolValue(isEqual(l, r))
-      case Operator.PLUS:
-        if (l.isNumber() && r.isNumber()) {
-          return new NumberValue(l.value + r.value)
-        } else if (l.isString() && r.isString()) {
-          return new StringValue(l.value + r.value)
-        } else {
-          // TODO: Arrays.
-          throw new Error('Operands must be two numbers or two strings.')
-        }
-      case Operator.MINUS:
-      case Operator.MUL:
-      case Operator.MOD:
-      case Operator.DIV:
-        return new NumberValue(numbersOnlyOperation(l, r, expr.operator))
-      default:
-        // TODO
-        throw Error('Internal.')
-    }
+    // Will call respective __op__ and negate the value.
+    throw new Error('Method not implemented.')
+    // switch (expr.operator) {
+    //   case Operator.LT:
+    //     return new BoolValue(isLessThan(l, r))
+    //   case Operator.LE:
+    //     return new BoolValue(!isLessThan(r, l))
+    //   case Operator.GE:
+    //     return new BoolValue(!isLessThan(l, r))
+    //   case Operator.GT:
+    //     return new BoolValue(isLessThan(r, l))
+    //   case Operator.EQ:
+    //     return new BoolValue(isEqual(l, r))
+    //   case Operator.NE:
+    //     return new BoolValue(isEqual(l, r))
+    //   case Operator.PLUS:
+    //     if (l.isNumber() && r.isNumber()) {
+    //       return new NumberValue(l.value + r.value)
+    //     } else if (l.isString() && r.isString()) {
+    //       return new StringValue(l.value + r.value)
+    //     } else {
+    //       // TODO: Arrays.
+    //       throw new Error('Operands must be two numbers or two strings.')
+    //     }
+    //   case Operator.MINUS:
+    //   case Operator.MUL:
+    //   case Operator.MOD:
+    //   case Operator.DIV:
+    //     return new NumberValue(numbersOnlyOperation(l, r, expr.operator))
+    //   default:
+    //     // TODO
+    //     throw Error('Internal.')
+    // }
   }
   visitLogicalValueExpr(expr: LogicalValueExpr): Instance {
     const l = this.evaluate(expr.left)
+    throw new Error('Method not implemented.')
 
-    if (expr.operator === Operator.OR) {
-      if (isTruthy(l)) return new BoolValue(true)
-    } else if (expr.operator === Operator.AND) {
-      if (!isTruthy(l)) return new BoolValue(true)
-    } else {
-      // TODO: Internal
-      throw new Error('Internal.')
-    }
-    return new BoolValue(isTruthy(this.evaluate(expr.right)))
+    // if (expr.operator === Operator.OR) {
+    //   if (isTruthy(l)) return new BoolValue(true)
+    // } else if (expr.operator === Operator.AND) {
+    //   if (!isTruthy(l)) return new BoolValue(true)
+    // } else {
+    //   // TODO: Internal
+    //   throw new Error('Internal.')
+    // }
+    // return new BoolValue(isTruthy(this.evaluate(expr.right)))
   }
 
   visitExprStmt(stmt: ExprStmt): Completion {
@@ -186,20 +198,16 @@ class Interpreter
 
   visitCallValueExpr(expr: CallValueExpr): Instance {
     const callee = this.evaluate(expr.callee)
-    if (!callee.isFunction()) {
+    // TODO: Use __call__
+    // callee = this.evaluate(expr.callee).get(__call__)
+    if (callee instanceof FunctionInstance) {
       throw new Error('Callee must be of a function type.')
     }
     const args = []
     for (const arg of expr.args) {
       args.push(this.evaluate(arg))
     }
-    const res = callee.call(this, args)
-    if (res.type !== CompletionType.RETURN) {
-      throw new Error(
-        'Internal -- completion of fucntion call must be of RETURN type.',
-      )
-    }
-    return res.value as Value
+    return (callee as FunctionInstance).call(this, args)
   }
   visitVariableRefExpr(expr: VariableRefExpr): ValueRef {
     return this.environment.getRef(expr.name)
@@ -269,7 +277,7 @@ class Interpreter
   }
 
   visitFunctionDeclStmt(stmt: FunctionDeclStmt): Completion {
-    const func = new FunctionValue(stmt, this.environment)
+    const func = this.natives.createUserFunction(stmt, this.environment)
     this.environment.getRef(stmt.name).set(func)
     return new NormalCompletion()
   }
@@ -279,7 +287,9 @@ class Interpreter
   visitCompletionStmt(stmt: CompletionStmt): Completion {
     if (stmt.completionType === CompletionType.RETURN) {
       const value =
-        stmt.right !== null ? this.evaluate(stmt.right) : new NoneValue()
+        stmt.right !== null
+          ? this.evaluate(stmt.right)
+          : this.natives.getNone()
       return new ReturnCompletion(value)
     } else if (stmt.completionType === CompletionType.BREAK) {
       return new BreakCompletion()

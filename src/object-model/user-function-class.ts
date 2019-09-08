@@ -5,13 +5,15 @@ import { UserFunctionInstance } from './user-function-instance'
 import { WrappedFunctionInstance } from './wrapped-function-instance'
 import { WrappedFunctionClass } from './wrapped-function-class'
 import { Interpreter } from '../interpreter'
+import { ObjectClass } from './object-class'
 
 class UserFunctionClass extends Class {
   constructor(
     metaClass: MetaClass,
     wrappedFunctionClass: WrappedFunctionClass,
   ) {
-    super(metaClass, metaClass.base)
+    super(metaClass, nameof(UserFunctionClass), metaClass.base as ObjectClass)
+
     this.fields.set(
       '__call__',
       new WrappedFunctionInstance(

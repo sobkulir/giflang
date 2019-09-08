@@ -12,9 +12,11 @@ module.exports = {
     rules: [
       {
         test: /\.ts$/,
-        use: "ts-loader",
-        exclude: /node_modules/,
-        getCustomTransformers: () => ({ before: [tsNameof] })
+        use: {
+          loader: "ts-loader",
+          options: { getCustomTransformers: () => ({ before: [tsNameof] }) }
+        },
+        exclude: /node_modules/
       },
       {
         test: /\.jison$/,

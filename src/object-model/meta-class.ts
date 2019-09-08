@@ -5,13 +5,11 @@ import { ObjectClass } from './object-class'
 class MetaClass extends Class {
   // Does not set base to Object.
   constructor() {
-    super(null, null)
+    super(null, nameof(MetaClass), null)
     this.klass = this
   }
 
-  // call goes through bases of klass until one with "nativeInstanceType"
-  // non-null is found. Then it instantiates it and calls constructor.
-  // __call__
+  // TODO: Implement __call__: calls "createBlankInstance" and calls __init__.
 }
 
 export { MetaClass }

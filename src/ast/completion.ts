@@ -1,4 +1,4 @@
-import { Instance } from './object-model/instance'
+import { Instance } from '../object-model/instance'
 
 enum CompletionType {
   NORMAL,

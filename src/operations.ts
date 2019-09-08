@@ -1,6 +1,5 @@
-import { Operator } from './operator'
+import { Operator } from './ast/operator'
 import { NumberValue, StringValue, Type, Value } from './value'
-import { assertUnreachable } from './utils'
 
 function isLessThan(left: Value, right: Value): boolean {
   if (

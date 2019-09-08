@@ -1,8 +1,12 @@
 import { Class } from './class'
 import { MetaClass } from './meta-class'
-import { WrappedFunctionInstance } from './wrapped-function-instance'
+import {
+  TWrappedFunction,
+  WrappedFunctionInstance
+} from './wrapped-function-instance'
 import { Interpreter } from '../interpreter'
 import { Instance } from './instance'
+import { ObjectClass } from './object-class'
 
 class WrappedFunctionClass extends Class {
   static __call__(
@@ -13,12 +17,12 @@ class WrappedFunctionClass extends Class {
     return self.call(interpreter, args.slice(1))
   }
 
-  /* Next up: Make Instance.InstantiateClass(klass) instantiate this
-              instanceType. */
-  static nativeInstanceType = WrappedFunctionInstance
-
   constructor(metaClass: MetaClass) {
-    super(metaClass, metaClass.base)
+    super(
+      metaClass,
+      nameof(WrappedFunctionClass),
+      metaClass.base as ObjectClass,
+    )
     this.addNativeMethod(
       '__call__',
       WrappedFunctionClass.__call__,
