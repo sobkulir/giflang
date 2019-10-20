@@ -1,5 +1,5 @@
+import { CompletionType } from './completion'
 import { AssignmentValueExpr, Expr } from './expr'
-import { Completion, CompletionType } from './completion'
 
 interface VisitorStmt<T> {
   visitIfStmt(stmt: IfStmt): T
@@ -25,7 +25,7 @@ class IfStmt extends Stmt {
   constructor(
     readonly condition: Expr,
     consequent: Stmt,
-    alternate: Stmt | null,
+    alternate: Stmt | null
   ) {
     super()
     this.consequent = ensureIsBlockStmt(consequent)
@@ -67,7 +67,7 @@ class ForStmt extends Stmt {
     readonly preamble: Expr[],
     readonly condition: Expr | null,
     readonly increments: Expr[],
-    body: Stmt,
+    body: Stmt
   ) {
     super()
     this.body = ensureIsBlockStmt(body)
@@ -82,7 +82,7 @@ class FunctionDeclStmt extends Stmt {
   constructor(
     readonly name: string,
     readonly parameters: string[],
-    readonly body: BlockStmt,
+    readonly body: BlockStmt
   ) {
     super()
   }
@@ -95,7 +95,7 @@ class FunctionDeclStmt extends Stmt {
 class ClassDefStmt extends Stmt {
   constructor(
     readonly name: string,
-    readonly body: Array<FunctionConstructor | AssignmentValueExpr>,
+    readonly body: Array<FunctionConstructor | AssignmentValueExpr>
   ) {
     super()
   }
@@ -108,7 +108,7 @@ class ClassDefStmt extends Stmt {
 class CompletionStmt extends Stmt {
   constructor(
     readonly completionType: CompletionType,
-    readonly right: Expr | null = null,
+    readonly right: Expr | null = null
   ) {
     super()
   }

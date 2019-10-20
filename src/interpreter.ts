@@ -1,70 +1,27 @@
-import {
-  ArrayValueExpr,
-  AssignmentValueExpr,
-  BinaryValueExpr,
-  CallValueExpr,
-  DotAccessorRefExpr,
-  Expr,
-  LogicalValueExpr,
-  NoneValueExpr,
-  NumberValueExpr,
-  RefExpr,
-  SquareAccessorRefExpr,
-  StringValueExpr,
-  UnaryNotValueExpr,
-  UnaryPlusMinusValueExpr,
-  ValueExpr,
-  VariableRefExpr,
-  VisitorRefExpr,
-  VisitorValueExpr
-} from './ast/expr'
-import {
-  BlockStmt,
-  ClassDefStmt,
-  CompletionStmt,
-  EmptyStmt,
-  ExprStmt,
-  ForStmt,
-  FunctionDeclStmt,
-  IfStmt,
-  ProgramStmt,
-  Stmt,
-  VisitorStmt,
-  WhileStmt
-} from './ast/stmt'
-import { Operator } from './ast/operator'
+import { BreakCompletion, Completion, CompletionType, ContinueCompletion, NormalCompletion, ReturnCompletion } from './ast/completion'
+import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, DotAccessorRefExpr, Expr, LogicalValueExpr, NoneValueExpr, NumberValueExpr, RefExpr, SquareAccessorRefExpr, StringValueExpr, UnaryNotValueExpr, UnaryPlusMinusValueExpr, ValueExpr, VariableRefExpr, VisitorRefExpr, VisitorValueExpr } from './ast/expr'
+import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, FunctionDeclStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
 import { Environment, ValueRef } from './environment'
-import {
-  BreakCompletion,
-  Completion,
-  CompletionType,
-  ContinueCompletion,
-  NormalCompletion,
-  ReturnCompletion
-} from './ast/completion'
-import {
-  isEqual,
-  isLessThan,
-  isTruthy,
-  numbersOnlyOperation
-} from './operations'
-import { NativesHelper } from './natives-helper'
-import { Instance } from './object-model/instance'
-import { FunctionInstance } from './object-model/function-instance'
+import { WrappedFunctionClass } from './object-model/class'
+import { FunctionInstance, Instance, WrappedFunctionInstance } from './object-model/instance'
+import { GiflangPrint, Natives } from './object-model/natives'
+import { isTruthy } from './operations'
 
 class Interpreter
   implements
-    VisitorRefExpr<ValueRef>,
-    VisitorValueExpr<Instance>,
-    VisitorStmt<Completion> {
+  VisitorRefExpr<ValueRef>,
+  VisitorValueExpr<Instance>,
+  VisitorStmt<Completion> {
   private readonly globals: Environment
   private environment: Environment
-  public natives: NativesHelper
 
   constructor() {
     this.globals = new Environment(null)
     this.environment = this.globals
-    this.natives = new NativesHelper()
+    Natives.Initialize()
+    this.globals.getRef('PRINT').set(
+      new WrappedFunctionInstance(
+        Natives.getInstance().getClass(WrappedFunctionClass), GiflangPrint))
   }
 
   private evaluateRef(expr: RefExpr): ValueRef {
@@ -96,13 +53,13 @@ class Interpreter
   }
 
   visitNumberValueExpr(expr: NumberValueExpr): Instance {
-    return this.natives.createNumber(expr.value)
+    return Natives.getInstance().createNumber(expr.value)
   }
   visitStringValueExpr(expr: StringValueExpr): Instance {
-    return this.natives.createString(expr.value)
+    return Natives.getInstance().createString(expr.value)
   }
   visitNoneValueExpr(_expr: NoneValueExpr): Instance {
-    return this.natives.getNone()
+    return Natives.getInstance().getNone()
   }
   visitAssignmentValueExpr(expr: AssignmentValueExpr): Instance {
     const l = this.evaluateRef(expr.lhs)
@@ -142,8 +99,7 @@ class Interpreter
     const l = this.evaluate(expr.left)
     const r = this.evaluate(expr.right)
 
-    // Will call respective __op__ and negate the value.
-    throw new Error('Method not implemented.')
+    return l.callMagicMethod('__add__', [l, r], this)
     // switch (expr.operator) {
     //   case Operator.LT:
     //     return new BoolValue(isLessThan(l, r))
@@ -233,7 +189,7 @@ class Interpreter
   visitBlockStmt(stmt: BlockStmt): Completion {
     return this.executeInEnvironment(
       stmt.stmts,
-      new Environment(this.environment),
+      new Environment(this.environment)
     )
   }
   visitWhileStmt(stmt: WhileStmt): Completion {
@@ -277,7 +233,10 @@ class Interpreter
   }
 
   visitFunctionDeclStmt(stmt: FunctionDeclStmt): Completion {
-    const func = this.natives.createUserFunction(stmt, this.environment)
+    const func = Natives.getInstance().createUserFunction(
+      stmt,
+      this.environment
+    )
     this.environment.getRef(stmt.name).set(func)
     return new NormalCompletion()
   }
@@ -289,7 +248,7 @@ class Interpreter
       const value =
         stmt.right !== null
           ? this.evaluate(stmt.right)
-          : this.natives.getNone()
+          : Natives.getInstance().getNone()
       return new ReturnCompletion(value)
     } else if (stmt.completionType === CompletionType.BREAK) {
       return new BreakCompletion()
@@ -309,3 +268,4 @@ class Interpreter
 }
 
 export { Interpreter }
+

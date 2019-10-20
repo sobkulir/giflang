@@ -1,5 +1,5 @@
-import { ObjectInstance } from '../object-instance'
 import { Class } from '../class'
+import { ObjectInstance } from '../instance'
 
 class StringInstance extends ObjectInstance {
   constructor(klass: Class, readonly value: string) {
@@ -10,3 +10,4 @@ class StringInstance extends ObjectInstance {
 }
 
 export { StringInstance }
+

@@ -1,5 +1,5 @@
-import { ParseGiflang } from './parser'
 import { Interpreter } from './interpreter'
+import { ParseGiflang } from './parser'
 
 const interpreter = new Interpreter()
 
@@ -13,6 +13,7 @@ LCURLY;
   RETURN; P;1; SEMICOLON;
 RCURLY;
 
-A; ASSIGN; D; LPAR; 8; RPAR; PLUS; J; SEMICOLON;`,
+A; ASSIGN; 8; PLUS; 8; SEMICOLON;
+PRINT; LPAR; A; RPAR;`,
 )
 interpreter.visitProgramStmt(root)

@@ -1,5 +1,5 @@
 import { Operator } from './ast/operator'
-import { NumberValue, StringValue, Type, Value } from './value'
+import { Value } from './value'
 
 function isLessThan(left: Value, right: Value): boolean {
   if (
@@ -66,3 +66,4 @@ function numbersOnlyOperation(
 }
 
 export { numbersOnlyOperation, isEqual, isTruthy, isLessThan }
+

@@ -1,9 +1,7 @@
-import { Instance } from './instance'
-import { ObjectInstance } from './object-instance'
 import { Interpreter } from '../interpreter'
-import { WrappedFunctionInstance } from './wrapped-function-instance'
-import { WrappedFunctionClass } from './wrapped-function-class'
-import { MetaClass } from './meta-class'
+import { Instance, ObjectInstance, UserFunctionInstance, WrappedFunctionInstance } from './instance'
+import { Natives } from './natives'
+import { StringInstance } from './std/string-instance'
 
 abstract class Class extends Instance {
   // Nulls for initial bootstrapping.
@@ -43,36 +41,114 @@ abstract class Class extends Instance {
     throw Error('TODO')
   }
 
-  addNativeMethod<TFirstArg>(
+  addNativeMethod(
     name: string,
     method: (
       interpreter: Interpreter,
-      self: TFirstArg,
       args: Instance[],
     ) => Instance,
     wrappedFunctionClass: WrappedFunctionClass,
-    TFirstArgConstructor: new (...args: any[]) => TFirstArg,
   ) {
     this.fields.set(
       name,
       new WrappedFunctionInstance(
         wrappedFunctionClass,
         (interpreter: Interpreter, args: Instance[]) => {
-          if (args.length === 0) {
-            throw Error('TODO: Requires at least 1 argument')
-          }
-          const callee = args[0]
-          if (callee instanceof TFirstArgConstructor) {
-            return method(interpreter, callee, args.slice(1))
-          } else {
-            throw Error(
-              'TODO: First argument must be instance of UserFunction.',
-            )
-          }
+          return method(interpreter, args)
         },
       ),
     )
   }
 }
 
-export { Class }
+class MetaClass extends Class {
+  // Does not set base to Object.
+  constructor() {
+    super(null, nameof(MetaClass), null)
+    this.klass = this
+  }
+
+  // TODO: Implement __call__: calls "createBlankInstance" and calls __init__.
+}
+
+class WrappedFunctionClass extends Class {
+  static __call__(
+    interpreter: Interpreter,
+    args: Instance[],
+  ): Instance {
+    // TODO: Check args length.
+    const self = args[0].castOrThrow(WrappedFunctionInstance)
+    return self.call(interpreter, args.slice(1))
+  }
+
+  constructor(metaClass: MetaClass) {
+    super(
+      metaClass,
+      nameof(WrappedFunctionClass),
+      metaClass.base as ObjectClass,
+    )
+    this.addNativeMethod(
+      '__call__',
+      WrappedFunctionClass.__call__,
+      this
+    )
+  }
+}
+
+class ObjectClass extends Class {
+  static __str__(
+    _interpreter: Interpreter,
+    args: Instance[]
+  ): StringInstance {
+    // TODO: Check arity.
+    const _self = args[0].castOrThrow(ObjectInstance)
+    return Natives.getInstance()
+      .createString('Object instance of class TODO at id TODO.')
+  }
+
+  constructor(metaClass: MetaClass) {
+    super(metaClass, nameof(ObjectClass), /* base = */ null)
+  }
+
+  createBlankUserInstance(): ObjectInstance {
+    return new ObjectInstance(this)
+  }
+}
+
+class NoneClass extends Class {
+  private instance: ObjectInstance
+  constructor(metaClass: MetaClass) {
+    super(metaClass, nameof(NoneClass), /* base = */ metaClass.base)
+    this.instance = new ObjectInstance(this)
+  }
+
+  createBlankUserInstance(): ObjectInstance {
+    return this.instance
+  }
+}
+
+class UserFunctionClass extends Class {
+  static __call__(
+    interpreter: Interpreter,
+    args: Instance[],
+  ) {
+    // TODO: Check args length.
+    const self = args[0].castOrThrow(UserFunctionInstance)
+    return self.call(interpreter, args.slice(1))
+  }
+
+  constructor(
+    metaClass: MetaClass,
+    wrappedFunctionClass: WrappedFunctionClass,
+  ) {
+    super(metaClass, nameof(UserFunctionClass), metaClass.base as ObjectClass)
+
+    this.addNativeMethod(
+      '__call__',
+      UserFunctionClass.__call__,
+      wrappedFunctionClass,
+    )
+  }
+}
+export { Class, MetaClass, WrappedFunctionClass, UserFunctionClass, NoneClass, ObjectClass }
+
