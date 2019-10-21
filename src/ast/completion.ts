@@ -34,36 +34,30 @@ class NormalCompletion extends Completion {
   private normalBrand: any
   constructor() {
     super()
-    this.normalBrand = ""
+    this.normalBrand = ''
   }
 }
 class BreakCompletion extends Completion {
   private breakBrand: any
   constructor() {
     super()
-    this.breakBrand = ""
+    this.breakBrand = ''
   }
 }
 class ContinueCompletion extends Completion {
   private continueBrand: any
   constructor() {
     super()
-    this.continueBrand = ""
+    this.continueBrand = ''
   }
 }
 class ReturnCompletion extends Completion {
   private returnBrand: any
   constructor(readonly value: Instance) {
     super()
-    this.returnBrand = ""
+    this.returnBrand = ''
   }
 }
 
-export {
-  Completion,
-  NormalCompletion,
-  BreakCompletion,
-  ContinueCompletion,
-  ReturnCompletion,
-  CompletionType
-}
+export { Completion, NormalCompletion, BreakCompletion, ContinueCompletion, ReturnCompletion, CompletionType }
+

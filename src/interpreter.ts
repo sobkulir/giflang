@@ -1,27 +1,30 @@
 import { BreakCompletion, Completion, CompletionType, ContinueCompletion, NormalCompletion, ReturnCompletion } from './ast/completion'
 import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, DotAccessorRefExpr, Expr, LogicalValueExpr, NoneValueExpr, NumberValueExpr, RefExpr, SquareAccessorRefExpr, StringValueExpr, UnaryNotValueExpr, UnaryPlusMinusValueExpr, ValueExpr, VariableRefExpr, VisitorRefExpr, VisitorValueExpr } from './ast/expr'
 import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, FunctionDeclStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
+import { CodeExecuter } from './code-executer'
 import { Environment, ValueRef } from './environment'
-import { WrappedFunctionClass } from './object-model/class'
-import { FunctionInstance, Instance, WrappedFunctionInstance } from './object-model/instance'
-import { GiflangPrint, Natives } from './object-model/natives'
+import { StringClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
+import { FunctionInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, WrappedFunctionInstance } from './object-model/instance'
+import { GiflangPrint } from './object-model/std/functions'
+import { NumberClass } from './object-model/std/number-class'
+import { NumberInstance } from './object-model/std/number-instance'
 import { isTruthy } from './operations'
 
 class Interpreter
   implements
   VisitorRefExpr<ValueRef>,
   VisitorValueExpr<Instance>,
-  VisitorStmt<Completion> {
+  VisitorStmt<Completion>,
+  CodeExecuter {
   private readonly globals: Environment
   private environment: Environment
 
   constructor() {
     this.globals = new Environment(null)
     this.environment = this.globals
-    Natives.Initialize()
     this.globals.getRef('PRINT').set(
       new WrappedFunctionInstance(
-        Natives.getInstance().getClass(WrappedFunctionClass), GiflangPrint))
+        WrappedFunctionClass.get(), GiflangPrint))
   }
 
   private evaluateRef(expr: RefExpr): ValueRef {
@@ -53,13 +56,13 @@ class Interpreter
   }
 
   visitNumberValueExpr(expr: NumberValueExpr): Instance {
-    return Natives.getInstance().createNumber(expr.value)
+    return new NumberInstance(NumberClass.get(), expr.value)
   }
   visitStringValueExpr(expr: StringValueExpr): Instance {
-    return Natives.getInstance().createString(expr.value)
+    return new StringInstance(StringClass.get(), expr.value)
   }
   visitNoneValueExpr(_expr: NoneValueExpr): Instance {
-    return Natives.getInstance().getNone()
+    return NoneInstance.getInstance()
   }
   visitAssignmentValueExpr(expr: AssignmentValueExpr): Instance {
     const l = this.evaluateRef(expr.lhs)
@@ -156,7 +159,7 @@ class Interpreter
     const callee = this.evaluate(expr.callee)
     // TODO: Use __call__
     // callee = this.evaluate(expr.callee).get(__call__)
-    if (callee instanceof FunctionInstance) {
+    if (!(callee instanceof FunctionInstance)) {
       throw new Error('Callee must be of a function type.')
     }
     const args = []
@@ -233,7 +236,8 @@ class Interpreter
   }
 
   visitFunctionDeclStmt(stmt: FunctionDeclStmt): Completion {
-    const func = Natives.getInstance().createUserFunction(
+    const func = new UserFunctionInstance(
+      UserFunctionClass.get(),
       stmt,
       this.environment
     )
@@ -248,7 +252,7 @@ class Interpreter
       const value =
         stmt.right !== null
           ? this.evaluate(stmt.right)
-          : Natives.getInstance().getNone()
+          : NoneInstance.getInstance()
       return new ReturnCompletion(value)
     } else if (stmt.completionType === CompletionType.BREAK) {
       return new BreakCompletion()

@@ -14,6 +14,6 @@ LCURLY;
 RCURLY;
 
 A; ASSIGN; 8; PLUS; 8; SEMICOLON;
-PRINT; LPAR; A; RPAR;`,
+P;R;I;N;T; LPAR; A; COMMA; A; RPAR; SEMICOLON;`,
 )
 interpreter.visitProgramStmt(root)

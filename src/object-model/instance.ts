@@ -1,8 +1,7 @@
 import { FunctionDeclStmt } from '../ast/stmt'
+import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
-import { Interpreter } from '../interpreter'
-import { Class } from './class'
-import { Natives } from './natives'
+import { Class, NoneClass } from './class'
 
 class Instance {
   public fields: Map<string, Instance> = new Map()
@@ -56,7 +55,7 @@ class Instance {
   callMagicMethod(
     functionName: string,
     args: Instance[],
-    interpreter: Interpreter
+    interpreter: CodeExecuter
   ): Instance {
     if (this.getClass().has(functionName)) {
       const method = this.getClass().get(functionName)
@@ -79,8 +78,21 @@ class ObjectInstance extends Instance {
   }
 }
 
+class NoneInstance extends Instance {
+  private constructor(noneClass: NoneClass) {
+    super(noneClass)
+  }
+  private static instance: NoneInstance
+  static getInstance() {
+    if (!NoneInstance.instance) {
+      NoneInstance.instance = new NoneInstance(NoneClass.get())
+    }
+    return NoneInstance.instance
+  }
+}
+
 abstract class FunctionInstance extends ObjectInstance {
-  abstract call(interpreter: Interpreter, args: Instance[]): Instance
+  abstract call(interpreter: CodeExecuter, args: Instance[]): Instance
 }
 
 class UserFunctionInstance extends FunctionInstance {
@@ -94,7 +106,7 @@ class UserFunctionInstance extends FunctionInstance {
     super(klass)
   }
 
-  call(interpreter: Interpreter, args: Instance[]): Instance {
+  call(interpreter: CodeExecuter, args: Instance[]): Instance {
     const environment = new Environment(this.closure)
     // TODO: Check arity.
     const params = this.functionDef.parameters
@@ -110,13 +122,13 @@ class UserFunctionInstance extends FunctionInstance {
     if (completion.isReturn()) {
       return completion.value
     } else {
-      return Natives.getInstance().getNone()
+      return NoneInstance.getInstance()
     }
   }
 }
 
 type TWrappedFunction = (
-  interpreter: Interpreter,
+  interpreter: CodeExecuter,
   args: Instance[],
 ) => Instance
 
@@ -127,11 +139,19 @@ class WrappedFunctionInstance extends FunctionInstance {
     super(klass)
   }
 
-  call(interpreter: Interpreter, args: Instance[]): Instance {
+  call(interpreter: CodeExecuter, args: Instance[]): Instance {
     // TODO: Check arity.
     return this.wrappedFunction(interpreter, args)
   }
 }
 
-export { Instance, WrappedFunctionInstance, FunctionInstance, UserFunctionInstance, ObjectInstance }
+class StringInstance extends ObjectInstance {
+  constructor(klass: Class, readonly value: string) {
+    // TODO:  Enforce at runtime that any one of klass.base
+    //        (recursively) is of type StringClass.
+    super(klass)
+  }
+}
+
+export { Instance, WrappedFunctionInstance, FunctionInstance, NoneInstance, UserFunctionInstance, ObjectInstance, TWrappedFunction, StringInstance }
 
