@@ -1,17 +1,17 @@
 import { CodeExecuter } from '../../code-executer'
-import { Instance, NoneInstance, StringInstance } from '../instance'
+import { Instance, NoneInstance, StringInstance, TWrappedFunction } from '../instance'
 
-function GiflangPrint(interpreter: CodeExecuter, args: Instance[]): Instance {
-  console.log(
-    args
+function GiflangPrint(print: (str: string) => void): TWrappedFunction {
+  return (interpreter: CodeExecuter, args: Instance[]): Instance => {
+    print(args
       .map(
         (arg) =>
           (arg.callMagicMethod('__str__', [arg], interpreter) as StringInstance)
             .value
       )
-      .join(' ')
-  )
-  return NoneInstance.getInstance()
+      .join(' '))
+    return NoneInstance.getInstance()
+  }
 }
 
 export { GiflangPrint }

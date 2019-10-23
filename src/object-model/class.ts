@@ -1,5 +1,6 @@
 import { CodeExecuter } from '../code-executer'
-import { Instance, NoneInstance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
+import { BoolInstance, Instance, NoneInstance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
+import { MagicMethods } from './magic-methods'
 
 abstract class Class extends Instance {
   // Nulls for initial bootstrapping.
@@ -102,6 +103,54 @@ class ObjectClass extends Class {
   }
 }
 
+class BoolClass extends Class {
+  static __str__(
+    _interpreter: CodeExecuter,
+    args: Instance[]
+  ): StringInstance {
+    // TODO: Check arity.
+    const self = args[0]
+    let str = ''
+    if (self === BoolInstance.getTrue()) {
+      str = 'True'
+    }
+    else if (self === BoolInstance.getFalse()) {
+      str = 'False'
+    }
+    else {
+      throw new Error('TODO: __str__ expected bool.')
+    }
+    return new StringInstance(StringClass.get(), str)
+  }
+
+  static __bool__(
+    _interpreter: CodeExecuter,
+    args: Instance[]
+  ): BoolInstance {
+    // TODO: Check this!! Arity and type.
+    const self = args[0] as BoolInstance
+    return self
+  }
+
+  private constructor() {
+    super(MetaClass.get(), nameof(NoneClass), ObjectClass.get())
+    this.addNativeMethods(
+      [
+        [MagicMethods.__str__, BoolClass.__str__],
+        [MagicMethods.__bool__, BoolClass.__bool__],
+      ],
+
+      WrappedFunctionClass.get())
+  }
+  private static instance: BoolClass
+  static get(): BoolClass {
+    if (!BoolClass.instance) {
+      BoolClass.instance = new BoolClass()
+    }
+    return BoolClass.instance
+  }
+}
+
 class WrappedFunctionClass extends Class {
   static __call__(
     interpreter: CodeExecuter,
@@ -134,6 +183,7 @@ class WrappedFunctionClass extends Class {
 }
 
 class NoneClass extends Class {
+  // TODO: Forbid deriving from None, Bool, ...
   private constructor() {
     super(MetaClass.get(), nameof(NoneClass), ObjectClass.get())
   }
@@ -204,5 +254,5 @@ class StringClass extends Class {
   }
 }
 
-export { Class, MetaClass, WrappedFunctionClass, UserFunctionClass, NoneClass, ObjectClass, StringClass }
+export { Class, MetaClass, WrappedFunctionClass, UserFunctionClass, NoneClass, ObjectClass, StringClass, BoolClass }
 

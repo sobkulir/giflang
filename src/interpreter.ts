@@ -1,14 +1,15 @@
 import { BreakCompletion, Completion, CompletionType, ContinueCompletion, NormalCompletion, ReturnCompletion } from './ast/completion'
-import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, DotAccessorRefExpr, Expr, LogicalValueExpr, NoneValueExpr, NumberValueExpr, RefExpr, SquareAccessorRefExpr, StringValueExpr, UnaryNotValueExpr, UnaryPlusMinusValueExpr, ValueExpr, VariableRefExpr, VisitorRefExpr, VisitorValueExpr } from './ast/expr'
+import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, DotAccessorRefExpr, Expr, NoneValueExpr, NumberValueExpr, RefExpr, SquareAccessorRefExpr, StringValueExpr, UnaryNotValueExpr, UnaryPlusMinusValueExpr, ValueExpr, VariableRefExpr, VisitorRefExpr, VisitorValueExpr } from './ast/expr'
+import { Operator } from './ast/operator'
 import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, FunctionDeclStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
 import { CodeExecuter } from './code-executer'
 import { Environment, ValueRef } from './environment'
 import { StringClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
-import { FunctionInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, WrappedFunctionInstance } from './object-model/instance'
+import { BoolInstance, FunctionInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, WrappedFunctionInstance } from './object-model/instance'
+import { MagicMethods } from './object-model/magic-methods'
 import { GiflangPrint } from './object-model/std/functions'
 import { NumberClass } from './object-model/std/number-class'
 import { NumberInstance } from './object-model/std/number-instance'
-import { isTruthy } from './operations'
 
 class Interpreter
   implements
@@ -19,12 +20,12 @@ class Interpreter
   private readonly globals: Environment
   private environment: Environment
 
-  constructor() {
+  constructor(print: (str: string) => void) {
     this.globals = new Environment(null)
     this.environment = this.globals
     this.globals.getRef('PRINT').set(
       new WrappedFunctionInstance(
-        WrappedFunctionClass.get(), GiflangPrint))
+        WrappedFunctionClass.get(), GiflangPrint(print)))
   }
 
   private evaluateRef(expr: RefExpr): ValueRef {
@@ -49,7 +50,10 @@ class Interpreter
     let lastCompletion: Completion = new NormalCompletion()
     for (const curStmt of stmts) {
       lastCompletion = this.execute(curStmt)
-      if (lastCompletion.isNormal()) break
+      if (lastCompletion.isReturn()) break
+      else if (lastCompletion.isContinue() || lastCompletion.isBreak()) {
+        throw new Error('TODO: Unexpected break or continue.')
+      }
     }
     this.environment = prevEnv
     return lastCompletion
@@ -75,79 +79,55 @@ class Interpreter
   }
   visitUnaryPlusMinusValueExpr(expr: UnaryPlusMinusValueExpr): Instance {
     const r = this.evaluate(expr.right)
-
-    // Will call __uminus__ or __uplus__ magic methods
-    throw new Error('Method not implemented.')
-
-    // if (r.isNumber()) {
-    //   switch (expr.operator) {
-    //     case Operator.PLUS:
-    //       return new NumberValue(-r.value)
-    //     case Operator.MINUS:
-    //       return new NumberValue(r.value)
-    //     default:
-    //       // TODO: Internal error
-    //       throw Error()
-    //   }
-    // } else {
-    //   throw Error('Unary operator <op> applied to incompatible type <val>.')
-    // }
+    switch (expr.operator) {
+      case Operator.PLUS:
+        return r.callMagicMethod(MagicMethods.__pos__, [r], this)
+      case Operator.LE:
+        return r.callMagicMethod(MagicMethods.__neg__, [r], this)
+      default:
+        throw new Error('TODO: Internal.')
+    }
   }
   visitUnaryNotValueExpr(expr: UnaryNotValueExpr): Instance {
     const r = this.evaluate(expr.right)
-    // Will call __bool__ and negate the value.
-    throw new Error('Method not implemented.')
+    // Converts value to bool and then negates it.
+    const boolRes = r.callMagicMethod(MagicMethods.__bool__, [r], this)
+    return (boolRes) ? BoolInstance.getFalse() : BoolInstance.getTrue()
   }
   visitBinaryValueExpr(expr: BinaryValueExpr): Instance {
     const l = this.evaluate(expr.left)
     const r = this.evaluate(expr.right)
 
-    return l.callMagicMethod('__add__', [l, r], this)
-    // switch (expr.operator) {
-    //   case Operator.LT:
-    //     return new BoolValue(isLessThan(l, r))
-    //   case Operator.LE:
-    //     return new BoolValue(!isLessThan(r, l))
-    //   case Operator.GE:
-    //     return new BoolValue(!isLessThan(l, r))
-    //   case Operator.GT:
-    //     return new BoolValue(isLessThan(r, l))
-    //   case Operator.EQ:
-    //     return new BoolValue(isEqual(l, r))
-    //   case Operator.NE:
-    //     return new BoolValue(isEqual(l, r))
-    //   case Operator.PLUS:
-    //     if (l.isNumber() && r.isNumber()) {
-    //       return new NumberValue(l.value + r.value)
-    //     } else if (l.isString() && r.isString()) {
-    //       return new StringValue(l.value + r.value)
-    //     } else {
-    //       // TODO: Arrays.
-    //       throw new Error('Operands must be two numbers or two strings.')
-    //     }
-    //   case Operator.MINUS:
-    //   case Operator.MUL:
-    //   case Operator.MOD:
-    //   case Operator.DIV:
-    //     return new NumberValue(numbersOnlyOperation(l, r, expr.operator))
-    //   default:
-    //     // TODO
-    //     throw Error('Internal.')
-    // }
-  }
-  visitLogicalValueExpr(expr: LogicalValueExpr): Instance {
-    const l = this.evaluate(expr.left)
-    throw new Error('Method not implemented.')
-
-    // if (expr.operator === Operator.OR) {
-    //   if (isTruthy(l)) return new BoolValue(true)
-    // } else if (expr.operator === Operator.AND) {
-    //   if (!isTruthy(l)) return new BoolValue(true)
-    // } else {
-    //   // TODO: Internal
-    //   throw new Error('Internal.')
-    // }
-    // return new BoolValue(isTruthy(this.evaluate(expr.right)))
+    switch (expr.operator) {
+      case Operator.LT:
+        return l.callMagicMethod(MagicMethods.__lt__, [l, r], this)
+      case Operator.LE:
+        return l.callMagicMethod(MagicMethods.__le__, [l, r], this)
+      case Operator.GE:
+        return l.callMagicMethod(MagicMethods.__ge__, [l, r], this)
+      case Operator.GT:
+        return l.callMagicMethod(MagicMethods.__gt__, [l, r], this)
+      case Operator.EQ:
+        return l.callMagicMethod(MagicMethods.__eq__, [l, r], this)
+      case Operator.NE:
+        return l.callMagicMethod(MagicMethods.__ne__, [l, r], this)
+      case Operator.PLUS:
+        return l.callMagicMethod(MagicMethods.__add__, [l, r], this)
+      case Operator.MINUS:
+        return l.callMagicMethod(MagicMethods.__sub__, [l, r], this)
+      case Operator.MUL:
+        return l.callMagicMethod(MagicMethods.__mul__, [l, r], this)
+      case Operator.MOD:
+        return l.callMagicMethod(MagicMethods.__mod__, [l, r], this)
+      case Operator.DIV:
+        return l.callMagicMethod(MagicMethods.__div__, [l, r], this)
+      case Operator.AND:
+        return l.callMagicMethod(MagicMethods.__and__, [l, r], this)
+      case Operator.OR:
+        return l.callMagicMethod(MagicMethods.__or__, [l, r], this)
+      default:
+        throw Error('TODO: Internal.')
+    }
   }
 
   visitExprStmt(stmt: ExprStmt): Completion {
@@ -181,7 +161,7 @@ class Interpreter
     return new NormalCompletion()
   }
   visitIfStmt(stmt: IfStmt): Completion {
-    if (isTruthy(this.evaluate(stmt.condition))) {
+    if (this.isTruthy(this.evaluate(stmt.condition))) {
       return this.execute(stmt.consequent)
     } else if (stmt.alternate != null) {
       return this.execute(stmt.alternate)
@@ -197,7 +177,7 @@ class Interpreter
   }
   visitWhileStmt(stmt: WhileStmt): Completion {
     let lastCompletion: Completion = new NormalCompletion()
-    while (isTruthy(this.evaluate(stmt.condition))) {
+    while (this.isTruthy(this.evaluate(stmt.condition))) {
       lastCompletion = this.execute(stmt.body)
       if (lastCompletion.isBreak() || lastCompletion.isReturn()) {
         break
@@ -222,7 +202,8 @@ class Interpreter
 
     for (const expr of stmt.preamble) this.evaluate(expr)
     let lastCompletion: Completion = new NormalCompletion()
-    while (stmt.condition === null || isTruthy(this.evaluate(stmt.condition))) {
+    while (stmt.condition === null
+      || this.isTruthy(this.evaluate(stmt.condition))) {
       lastCompletion = this.execute(stmt.body)
       if (lastCompletion.isBreak() || lastCompletion.isReturn()) {
         break
@@ -269,7 +250,13 @@ class Interpreter
     }
     return new NormalCompletion()
   }
+
+  isTruthy(r: Instance): boolean {
+    const boolRes = r.callMagicMethod(MagicMethods.__bool__, [r], this)
+    return (boolRes as BoolInstance).value
+  }
 }
+
 
 export { Interpreter }
 

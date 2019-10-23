@@ -20,7 +20,6 @@ interface VisitorValueExpr<T> {
   visitUnaryPlusMinusValueExpr(expr: UnaryPlusMinusValueExpr): T
   visitUnaryNotValueExpr(expr: UnaryNotValueExpr): T
   visitBinaryValueExpr(expr: BinaryValueExpr): T
-  visitLogicalValueExpr(expr: LogicalValueExpr): T
   visitCallValueExpr(expr: CallValueExpr): T
 }
 
@@ -113,20 +112,6 @@ class BinaryValueExpr extends ValueExpr {
   }
 }
 
-class LogicalValueExpr extends ValueExpr {
-  constructor(
-    readonly operator: Operator,
-    readonly left: Expr,
-    readonly right: Expr,
-  ) {
-    super()
-  }
-
-  accept<T>(visitor: VisitorValueExpr<T>): T {
-    return visitor.visitLogicalValueExpr(this)
-  }
-}
-
 class CallValueExpr extends ValueExpr {
   constructor(readonly callee: Expr, readonly args: Expr[]) {
     super()
@@ -173,23 +158,5 @@ class DotAccessorRefExpr extends RefExpr {
   }
 }
 
-export {
-  VisitorValueExpr,
-  VisitorRefExpr,
-  Expr,
-  ValueExpr,
-  RefExpr,
-  AssignmentValueExpr,
-  NumberValueExpr,
-  StringValueExpr,
-  ArrayValueExpr,
-  NoneValueExpr,
-  VariableRefExpr,
-  UnaryPlusMinusValueExpr,
-  UnaryNotValueExpr,
-  BinaryValueExpr,
-  LogicalValueExpr,
-  CallValueExpr,
-  SquareAccessorRefExpr,
-  DotAccessorRefExpr
-}
+export { VisitorValueExpr, VisitorRefExpr, Expr, ValueExpr, RefExpr, AssignmentValueExpr, NumberValueExpr, StringValueExpr, ArrayValueExpr, NoneValueExpr, VariableRefExpr, UnaryPlusMinusValueExpr, UnaryNotValueExpr, BinaryValueExpr, CallValueExpr, SquareAccessorRefExpr, DotAccessorRefExpr }
+

@@ -14,7 +14,9 @@ enum MagicMethods {
   __ge__ = '__ge__',
   __gt__ = '__gt__',
 
+  __bool__ = '__bool__',
   __neg__ = '__neg__',
+  __pos__ = '__pos__',
   __and__ = '__and__',
   __or__ = '__or__',
 }

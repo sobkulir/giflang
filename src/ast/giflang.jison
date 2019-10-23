@@ -56,6 +56,9 @@ VALID_CHAR					([A-Z]|[0-9])
 "CLASS"						{ return delimit('CLASS');}
 "FUNCTION"					{ return delimit('FUNCTION'); }
 "RETURN"					{ return delimit('RETURN'); }
+"CONTINUE"					{ return delimit('CONTINUE'); }
+"BREAK"						{ return delimit('BREAK'); }
+
 
 "SEMICOLON"					{ return delimit('SEMICOLON'); }
 "DOT"						{ return delimit('DOT'); }
@@ -191,24 +194,24 @@ UnaryExpr
 	;
 
 BinaryExpr
-	: BinaryExpr MUL UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MUL, $1, $3);}
-    | BinaryExpr DIV UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.DIV, $1, $3);}
-	| BinaryExpr MOD UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MOD, $1, $3);}
+	: BinaryExpr MUL BinaryExpr 	{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MUL, $1, $3);}
+    | BinaryExpr DIV BinaryExpr 	{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.DIV, $1, $3);}
+	| BinaryExpr MOD BinaryExpr 	{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MOD, $1, $3);}
 
-	| BinaryExpr PLUS UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.PLUS, $1, $3);}
-	| BinaryExpr MINUS UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MINUS, $1, $3);}
+	| BinaryExpr PLUS BinaryExpr 	{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.PLUS, $1, $3);}
+	| BinaryExpr MINUS BinaryExpr 	{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.MINUS, $1, $3);}
 
-	| BinaryExpr LT UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.LT, $1, $3);}
-	| BinaryExpr LE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.LE, $1, $3);}
-	| BinaryExpr GE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.GE, $1, $3);}
-	| BinaryExpr GT UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.GT, $1, $3);}
+	| BinaryExpr LT BinaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.LT, $1, $3);}
+	| BinaryExpr LE BinaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.LE, $1, $3);}
+	| BinaryExpr GE BinaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.GE, $1, $3);}
+	| BinaryExpr GT BinaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.GT, $1, $3);}
 
-	| BinaryExpr EQ UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.EQ, $1, $3);}
-	| BinaryExpr NE UnaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.NE, $1, $3);}
+	| BinaryExpr EQ BinaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.EQ, $1, $3);}
+	| BinaryExpr NE BinaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.NE, $1, $3);}
 
-	| BinaryExpr AND UnaryExpr 		{$$ = new yy.Expr.LogicalValueExpr(yy.Operator.AND, $1, $3);}
-	| BinaryExpr OR UnaryExpr 		{$$ = new yy.Expr.LogicalValueExpr(yy.Operator.OR, $1, $3);}
-	| UnaryExpr 				{ $$ = $1;}
+	| BinaryExpr AND BinaryExpr 	{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.AND, $1, $3);}
+	| BinaryExpr OR BinaryExpr 		{$$ = new yy.Expr.BinaryValueExpr(yy.Operator.OR, $1, $3);}
+	| UnaryExpr 					{ $$ = $1;}
 	;
 
 Expr
@@ -274,7 +277,7 @@ IterationStatement
 	  	ExprOptional SEMICOLON
 		ExprListOptional 
 		RPAR Statement
-		{ $$ = new yy.Stm.ForStmt($3, $5, $7, $9); }
+		{ $$ = new yy.Stmt.ForStmt($3, $5, $7, $9); }
     ;
 
 ExprOptional

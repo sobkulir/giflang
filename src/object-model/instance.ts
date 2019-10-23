@@ -1,7 +1,7 @@
 import { FunctionDeclStmt } from '../ast/stmt'
 import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
-import { Class, NoneClass } from './class'
+import { BoolClass, Class, NoneClass } from './class'
 
 class Instance {
   public fields: Map<string, Instance> = new Map()
@@ -62,10 +62,10 @@ class Instance {
       if (method instanceof FunctionInstance) {
         return method.call(interpreter, args)
       } else {
-        throw new Error('TODO: ToString(this.{functionName}) is not callable.')
+        throw new Error(`TODO: ToString(${functionName}) is not callable.`)
       }
     } else {
-      throw new Error('TODO: {functionName} not defined.')
+      throw new Error(`TODO: ${functionName} not defined.`)
     }
   }
 }
@@ -145,6 +145,26 @@ class WrappedFunctionInstance extends FunctionInstance {
   }
 }
 
+class BoolInstance extends ObjectInstance {
+  private constructor(boolClass: BoolClass, readonly value: boolean) {
+    super(boolClass)
+  }
+  private static trueInstance: BoolInstance
+  private static falseInstance: BoolInstance
+  static getTrue() {
+    if (!BoolInstance.trueInstance) {
+      BoolInstance.trueInstance = new BoolInstance(BoolClass.get(), true)
+    }
+    return BoolInstance.trueInstance
+  }
+  static getFalse() {
+    if (!BoolInstance.falseInstance) {
+      BoolInstance.falseInstance = new BoolInstance(BoolClass.get(), false)
+    }
+    return BoolInstance.falseInstance
+  }
+}
+
 class StringInstance extends ObjectInstance {
   constructor(klass: Class, readonly value: string) {
     // TODO:  Enforce at runtime that any one of klass.base
@@ -153,5 +173,5 @@ class StringInstance extends ObjectInstance {
   }
 }
 
-export { Instance, WrappedFunctionInstance, FunctionInstance, NoneInstance, UserFunctionInstance, ObjectInstance, TWrappedFunction, StringInstance }
+export { Instance, BoolInstance, WrappedFunctionInstance, FunctionInstance, NoneInstance, UserFunctionInstance, ObjectInstance, TWrappedFunction, StringInstance }
 
