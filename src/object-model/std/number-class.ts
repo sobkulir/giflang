@@ -97,8 +97,11 @@ class NumberClass extends Class {
     return NumberClass.instance
   }
 
-  createBlankUserInstance(): NumberInstance {
-    return new NumberInstance(this, /* value = */ 0)
+  canUserDeriveFrom(): boolean {
+    return true
+  }
+  createBlankUserInstance(klass: Class): NumberInstance {
+    return new NumberInstance(klass, /* value = */ 0)
   }
 }
 

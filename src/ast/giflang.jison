@@ -311,7 +311,9 @@ BreakStatement
     ;
 
 ClassDefinition
-	: CLASS Identifier ClassBlock	{ $$ = new yy.Stmt.ClassDefStmt($2, $3.assignments, $3.methods); }
+	: CLASS Identifier ClassBlock	{ $$ = new yy.Stmt.ClassDefStmt($2, null, $3); }
+	| CLASS Identifier LPAR Identifier RPAR ClassBlock	
+		{ $$ = new yy.Stmt.ClassDefStmt($2, $4, $6); }
 	;
 
 ClassBlock

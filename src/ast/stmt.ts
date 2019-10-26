@@ -1,5 +1,5 @@
 import { CompletionType } from './completion'
-import { AssignmentValueExpr, Expr } from './expr'
+import { Expr } from './expr'
 
 interface VisitorStmt<T> {
   visitIfStmt(stmt: IfStmt): T
@@ -95,7 +95,8 @@ class FunctionDeclStmt extends Stmt {
 class ClassDefStmt extends Stmt {
   constructor(
     readonly name: string,
-    readonly body: Array<FunctionConstructor | AssignmentValueExpr>
+    readonly baseName: string | null,
+    readonly methods: FunctionDeclStmt[]
   ) {
     super()
   }
@@ -151,17 +152,5 @@ function ensureIsBlockStmt(stmt: Stmt): BlockStmt {
   else return new BlockStmt([stmt])
 }
 
-export {
-  VisitorStmt,
-  Stmt,
-  IfStmt,
-  BlockStmt,
-  WhileStmt,
-  ForStmt,
-  FunctionDeclStmt,
-  ClassDefStmt,
-  CompletionStmt,
-  ProgramStmt,
-  EmptyStmt,
-  ExprStmt
-}
+export { VisitorStmt, Stmt, IfStmt, BlockStmt, WhileStmt, ForStmt, FunctionDeclStmt, ClassDefStmt, CompletionStmt, ProgramStmt, EmptyStmt, ExprStmt }
+

@@ -19,6 +19,9 @@ enum MagicMethods {
   __pos__ = '__pos__',
   __and__ = '__and__',
   __or__ = '__or__',
+
+  __call__ = '__call__',
+  __init__ = '__init__',
 }
 export { MagicMethods }
 

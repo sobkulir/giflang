@@ -14,5 +14,18 @@
       }
     },
     "tslint.autoFixOnSave": true,
+  },
+  "launch": {
+    "configurations": [
+      
+      {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Program",
+      "program": "${workspaceFolder}/giflang.ts",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+    }],
+    "compounds": []
   }
 }

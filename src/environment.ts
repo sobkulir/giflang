@@ -1,9 +1,4 @@
-import { Instance } from './object-model/instance'
-
-interface ValueRef {
-  set(value: Instance): void
-  get(): Instance
-}
+import { Instance, ValueRef } from './object-model/instance'
 
 class Environment {
   private readonly values: Map<string, Instance>
@@ -14,6 +9,10 @@ class Environment {
 
   public get(name: string): Instance {
     return this.getRecursive(name)
+  }
+
+  public shallowSet(name: string, value: Instance) {
+    this.values.set(name, value)
   }
 
   private getRecursive(name: string): Instance {

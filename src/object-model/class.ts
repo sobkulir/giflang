@@ -1,5 +1,7 @@
+import { FunctionDeclStmt } from '../ast/stmt'
 import { CodeExecuter } from '../code-executer'
-import { BoolInstance, Instance, NoneInstance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
+import { Environment } from '../environment'
+import { BoolInstance, Instance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
 import { MagicMethods } from './magic-methods'
 
 abstract class Class extends Instance {
@@ -12,32 +14,33 @@ abstract class Class extends Instance {
     super(klass)
   }
 
-  // Classes that user can derive from (like StringClass) override this method.
-  createBlankUserInstance(): Instance {
-    throw new Error(`${this.name} cannot be instantiated by client.`)
+  // Returns true if users can derive from given class.
+  abstract canUserDeriveFrom(): boolean
+  createBlankUserInstance(klass: Class): Instance {
+    throw new Error(`${this.name} class instance cannot be user-instantiated.`)
   }
 
-  has(name: string): boolean {
-    // TODO: This is ugly.
-    if (this.klass == null) throw Error('Internal -- klass == null')
-
-    return this.fields.has(name) || (this.base != null && this.base.has(name))
+  getInBases(name: string)
+    : Instance | null {
+    let curBase: Class | null = this
+    do {
+      if (curBase.fields.has(name)) {
+        return curBase.fields.get(name) as Instance
+      }
+      curBase = curBase.base
+    } while (curBase !== null)
+    return null
   }
 
-  get(name: string): Instance {
-    // TODO: This is ugly.
-    if (this.klass == null) throw Error('Internal -- klass == null')
 
-    if (this.fields.has(name)) {
-      return this.fields.get(name) as Instance
+  // TODO: Test if it works with getRef
+  getOrThrow(name: string): Instance {
+    // Walk up the bases and don't bind.
+    if (this instanceof Class) {
+      const value = this.getInBases(name)
+      if (value) return value
     }
-
-    if (this.base != null && this.base.has(name)) {
-      return this.base.get(name)
-    }
-
-    // Maybe return null?
-    throw Error('TODO')
+    return super.getOrThrow(name)
   }
 
   addNativeMethods(
@@ -59,6 +62,26 @@ abstract class Class extends Instance {
 }
 
 class MetaClass extends Class {
+  static __call__(
+    interpreter: CodeExecuter,
+    args: Instance[],
+  ): Instance {
+    // TODO: Check arity.
+    if (args[0] instanceof Class) {
+      const originalClass = args[0] as Class
+      let nativeBase = originalClass
+      while (nativeBase instanceof UserClass) {
+        nativeBase = nativeBase.base as Class
+      }
+      const instance = nativeBase.createBlankUserInstance(originalClass)
+      instance.callMagicMethod(
+        MagicMethods.__init__, args.slice(1), interpreter)
+      return instance
+    } else {
+      throw new Error('TODO: Cannot be instantiated.')
+    }
+
+  }
   private constructor() {
     super(/* klass = */ null, nameof(MetaClass), /* base = */ null)
   }
@@ -69,10 +92,17 @@ class MetaClass extends Class {
       MetaClass.instance = new MetaClass()
       MetaClass.instance.klass = MetaClass.instance
       MetaClass.instance.base = ObjectClass.get()
+      MetaClass.instance.addNativeMethods(
+        [[MagicMethods.__call__, MetaClass.__call__]],
+        WrappedFunctionClass.get()
+      )
     }
     return MetaClass.instance
   }
-  // TODO: Implement __call__: calls "createBlankInstance" and calls __init__.
+
+  canUserDeriveFrom(): boolean {
+    return false
+  }
 }
 
 class ObjectClass extends Class {
@@ -85,6 +115,14 @@ class ObjectClass extends Class {
     return new StringInstance(StringClass.get(), 'achjo')
   }
 
+  static __init__(
+    _interpreter: CodeExecuter,
+    args: Instance[]
+  ): Instance {
+    // Check arity.
+    return args[0]
+  }
+
   private constructor() {
     super(/* klass = */ null, nameof(ObjectClass), /* base = */ null)
   }
@@ -94,12 +132,22 @@ class ObjectClass extends Class {
     if (!ObjectClass.instance) {
       ObjectClass.instance = new ObjectClass()
       ObjectClass.instance.klass = MetaClass.get()
+      ObjectClass.instance.addNativeMethods(
+        [
+          [MagicMethods.__str__, ObjectClass.__str__],
+          [MagicMethods.__init__, ObjectClass.__init__]
+        ],
+        WrappedFunctionClass.get())
     }
+
     return ObjectClass.instance
   }
 
-  createBlankUserInstance(): ObjectInstance {
-    return new ObjectInstance(this)
+  canUserDeriveFrom(): boolean {
+    return true
+  }
+  createBlankUserInstance(klass: Class): ObjectInstance {
+    return new ObjectInstance(klass)
   }
 }
 
@@ -149,6 +197,10 @@ class BoolClass extends Class {
     }
     return BoolClass.instance
   }
+
+  canUserDeriveFrom(): boolean {
+    return false
+  }
 }
 
 class WrappedFunctionClass extends Class {
@@ -180,6 +232,10 @@ class WrappedFunctionClass extends Class {
     }
     return WrappedFunctionClass.instance
   }
+
+  canUserDeriveFrom(): boolean {
+    return false
+  }
 }
 
 class NoneClass extends Class {
@@ -195,8 +251,8 @@ class NoneClass extends Class {
     return NoneClass.instance
   }
 
-  createBlankUserInstance(): NoneInstance {
-    return NoneInstance.getInstance()
+  canUserDeriveFrom(): boolean {
+    return false
   }
 }
 
@@ -226,6 +282,10 @@ class UserFunctionClass extends Class {
     }
     return UserFunctionClass.instance
   }
+
+  canUserDeriveFrom(): boolean {
+    return false
+  }
 }
 
 class StringClass extends Class {
@@ -240,6 +300,10 @@ class StringClass extends Class {
 
   private constructor() {
     super(MetaClass.get(), nameof(StringClass), ObjectClass.get())
+    this.addNativeMethods(
+      [[MagicMethods.__str__, StringClass.__str__]],
+      WrappedFunctionClass.get()
+    )
   }
   private static instance: StringClass
   static get(): StringClass {
@@ -249,10 +313,39 @@ class StringClass extends Class {
     return StringClass.instance
   }
 
-  createBlankUserInstance(): StringInstance {
-    return new StringInstance(this, /* value = */ '')
+  canUserDeriveFrom(): boolean {
+    return true
+  }
+
+  createBlankUserInstance(klass: Class): StringInstance {
+    return new StringInstance(klass, /* value = */ '')
   }
 }
 
-export { Class, MetaClass, WrappedFunctionClass, UserFunctionClass, NoneClass, ObjectClass, StringClass, BoolClass }
+class UserClass extends Class {
+  constructor(
+    name: string,
+    base: Class, methods: FunctionDeclStmt[], env: Environment) {
+    super(MetaClass.get(), name, base)
+
+    // TODO: Super should be bound here.
+    for (const m of methods) {
+      this.fields.set(m.name,
+        new UserFunctionInstance(UserFunctionClass.get(), m, env))
+    }
+  }
+
+  canUserDeriveFrom(): boolean {
+    return true
+  }
+
+  createBlankUserInstance(klass: Class): Instance {
+    if (this.base === null) {
+      throw new Error('TODO: Internal error, user derived class has base null.')
+    }
+    return this.base.createBlankUserInstance(klass)
+  }
+}
+
+export { Class, MetaClass, UserClass, WrappedFunctionClass, UserFunctionClass, NoneClass, ObjectClass, StringClass, BoolClass }
 

@@ -4,8 +4,8 @@ import { Operator } from './ast/operator'
 import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, FunctionDeclStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
 import { CodeExecuter } from './code-executer'
 import { Environment, ValueRef } from './environment'
-import { StringClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
-import { BoolInstance, FunctionInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, WrappedFunctionInstance } from './object-model/instance'
+import { Class, ObjectClass, StringClass, UserClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
+import { BoolInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, WrappedFunctionInstance } from './object-model/instance'
 import { MagicMethods } from './object-model/magic-methods'
 import { GiflangPrint } from './object-model/std/functions'
 import { NumberClass } from './object-model/std/number-class'
@@ -50,10 +50,7 @@ class Interpreter
     let lastCompletion: Completion = new NormalCompletion()
     for (const curStmt of stmts) {
       lastCompletion = this.execute(curStmt)
-      if (lastCompletion.isReturn()) break
-      else if (lastCompletion.isContinue() || lastCompletion.isBreak()) {
-        throw new Error('TODO: Unexpected break or continue.')
-      }
+      if (!lastCompletion.isNormal()) break
     }
     this.environment = prevEnv
     return lastCompletion
@@ -81,9 +78,9 @@ class Interpreter
     const r = this.evaluate(expr.right)
     switch (expr.operator) {
       case Operator.PLUS:
-        return r.callMagicMethod(MagicMethods.__pos__, [r], this)
+        return r.callMagicMethod(MagicMethods.__pos__, [], this)
       case Operator.LE:
-        return r.callMagicMethod(MagicMethods.__neg__, [r], this)
+        return r.callMagicMethod(MagicMethods.__neg__, [], this)
       default:
         throw new Error('TODO: Internal.')
     }
@@ -91,7 +88,7 @@ class Interpreter
   visitUnaryNotValueExpr(expr: UnaryNotValueExpr): Instance {
     const r = this.evaluate(expr.right)
     // Converts value to bool and then negates it.
-    const boolRes = r.callMagicMethod(MagicMethods.__bool__, [r], this)
+    const boolRes = r.callMagicMethod(MagicMethods.__bool__, [], this)
     return (boolRes) ? BoolInstance.getFalse() : BoolInstance.getTrue()
   }
   visitBinaryValueExpr(expr: BinaryValueExpr): Instance {
@@ -100,31 +97,31 @@ class Interpreter
 
     switch (expr.operator) {
       case Operator.LT:
-        return l.callMagicMethod(MagicMethods.__lt__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__lt__, [r], this)
       case Operator.LE:
-        return l.callMagicMethod(MagicMethods.__le__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__le__, [r], this)
       case Operator.GE:
-        return l.callMagicMethod(MagicMethods.__ge__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__ge__, [r], this)
       case Operator.GT:
-        return l.callMagicMethod(MagicMethods.__gt__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__gt__, [r], this)
       case Operator.EQ:
-        return l.callMagicMethod(MagicMethods.__eq__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__eq__, [r], this)
       case Operator.NE:
-        return l.callMagicMethod(MagicMethods.__ne__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__ne__, [r], this)
       case Operator.PLUS:
-        return l.callMagicMethod(MagicMethods.__add__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__add__, [r], this)
       case Operator.MINUS:
-        return l.callMagicMethod(MagicMethods.__sub__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__sub__, [r], this)
       case Operator.MUL:
-        return l.callMagicMethod(MagicMethods.__mul__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__mul__, [r], this)
       case Operator.MOD:
-        return l.callMagicMethod(MagicMethods.__mod__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__mod__, [r], this)
       case Operator.DIV:
-        return l.callMagicMethod(MagicMethods.__div__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__div__, [r], this)
       case Operator.AND:
-        return l.callMagicMethod(MagicMethods.__and__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__and__, [r], this)
       case Operator.OR:
-        return l.callMagicMethod(MagicMethods.__or__, [l, r], this)
+        return l.callMagicMethod(MagicMethods.__or__, [r], this)
       default:
         throw Error('TODO: Internal.')
     }
@@ -136,18 +133,14 @@ class Interpreter
   }
 
   visitCallValueExpr(expr: CallValueExpr): Instance {
-    const callee = this.evaluate(expr.callee)
-    // TODO: Use __call__
-    // callee = this.evaluate(expr.callee).get(__call__)
-    if (!(callee instanceof FunctionInstance)) {
-      throw new Error('Callee must be of a function type.')
-    }
     const args = []
     for (const arg of expr.args) {
       args.push(this.evaluate(arg))
     }
-    return (callee as FunctionInstance).call(this, args)
+    return this.evaluate(expr.callee)
+      .callMagicMethod(MagicMethods.__call__, args, this)
   }
+
   visitVariableRefExpr(expr: VariableRefExpr): ValueRef {
     return this.environment.getRef(expr.name)
   }
@@ -155,7 +148,7 @@ class Interpreter
     throw new Error('Method not implemented.')
   }
   visitDotAccessorRefExpr(expr: DotAccessorRefExpr): ValueRef {
-    throw new Error('Method not implemented.')
+    return this.evaluate(expr.object).getRef(expr.property)
   }
   visitEmptyStmt(stmt: EmptyStmt): Completion {
     return new NormalCompletion()
@@ -226,7 +219,19 @@ class Interpreter
     return new NormalCompletion()
   }
   visitClassDefStmt(stmt: ClassDefStmt): Completion {
-    throw new Error('Method not implemented.')
+    let base: Class = ObjectClass.get()
+    if (stmt.baseName) {
+      const baseInstance = this.environment.get(stmt.baseName)
+      if (baseInstance instanceof Class) {
+        base = baseInstance as Class
+      } else {
+        throw new Error(`TODO: ${stmt.baseName} does not denote a class.`)
+      }
+    }
+
+    this.environment.getRef(stmt.name)
+      .set(new UserClass(stmt.name, base, stmt.methods, this.environment))
+    return new NormalCompletion()
   }
   visitCompletionStmt(stmt: CompletionStmt): Completion {
     if (stmt.completionType === CompletionType.RETURN) {
@@ -252,11 +257,11 @@ class Interpreter
   }
 
   isTruthy(r: Instance): boolean {
-    const boolRes = r.callMagicMethod(MagicMethods.__bool__, [r], this)
+    const boolRes = r.callMagicMethod(MagicMethods.__bool__, [], this)
+    // TODO: Enforce boolRes type
     return (boolRes as BoolInstance).value
   }
 }
-
 
 export { Interpreter }
 

@@ -1,7 +1,12 @@
 import { FunctionDeclStmt } from '../ast/stmt'
 import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
-import { BoolClass, Class, NoneClass } from './class'
+import { BoolClass, Class, NoneClass, WrappedFunctionClass } from './class'
+
+interface ValueRef {
+  set(value: Instance): void
+  get(): Instance
+}
 
 class Instance {
   public fields: Map<string, Instance> = new Map()
@@ -17,31 +22,37 @@ class Instance {
     }
   }
 
-  has(name: string): boolean {
+  getOrThrow(name: string): Instance {
     // TODO: This is ugly.
     if (this.klass == null) throw Error('Internal -- klass == null')
 
-    return this.fields.has(name) || this.klass.has(name)
-  }
-
-  get(name: string): Instance {
-    // TODO: This is ugly.
-    if (this.klass == null) throw Error('Internal -- klass == null')
-
+    let value: Instance | null = null
     if (this.fields.has(name)) {
-      return this.fields.get(name) as Instance
+      value = this.fields.get(name) as Instance
+    } else {
+      value = (this.klass as Class).getInBases(name)
     }
 
-    if (this.klass.has(name)) {
-      return this.klass.get(name)
+    if (value instanceof FunctionInstance) {
+      value = value.bind(this)
     }
 
-    // Maybe return null?
-    throw Error('TODO')
+    if (value) {
+      return value
+    } else {
+      throw new Error('TODO: Instance does not have ${name}')
+    }
   }
 
   set(name: string, value: Instance) {
     this.fields.set(name, value)
+  }
+
+  getRef(name: string): ValueRef {
+    return {
+      set: (value: Instance) => this.set(name, value),
+      get: () => this.getOrThrow(name),
+    }
   }
 
   castOrThrow<T extends Instance>(TConstructor: new (...args: any[]) => T): T {
@@ -52,14 +63,16 @@ class Instance {
     }
   }
 
+  // Calls magic method and adds this to args.
   callMagicMethod(
     functionName: string,
     args: Instance[],
     interpreter: CodeExecuter
   ): Instance {
-    if (this.getClass().has(functionName)) {
-      const method = this.getClass().get(functionName)
+    const method = this.getClass().getInBases(functionName)
+    if (method) {
       if (method instanceof FunctionInstance) {
+        args.unshift(this)
         return method.call(interpreter, args)
       } else {
         throw new Error(`TODO: ToString(${functionName}) is not callable.`)
@@ -78,7 +91,7 @@ class ObjectInstance extends Instance {
   }
 }
 
-class NoneInstance extends Instance {
+class NoneInstance extends ObjectInstance {
   private constructor(noneClass: NoneClass) {
     super(noneClass)
   }
@@ -93,6 +106,16 @@ class NoneInstance extends Instance {
 
 abstract class FunctionInstance extends ObjectInstance {
   abstract call(interpreter: CodeExecuter, args: Instance[]): Instance
+  bind(argToBind: Instance): FunctionInstance {
+    return new WrappedFunctionInstance(
+      WrappedFunctionClass.get(),
+      (interpreter: CodeExecuter,
+        args: Instance[]): Instance => {
+        args.unshift(argToBind)
+        return this.call(interpreter, args)
+      }
+    )
+  }
 }
 
 class UserFunctionInstance extends FunctionInstance {
@@ -111,8 +134,7 @@ class UserFunctionInstance extends FunctionInstance {
     // TODO: Check arity.
     const params = this.functionDef.parameters
     for (let i = 0; i < params.length; ++i) {
-      // TODO: getRef is recursive, introduce "shallowSet"
-      environment.getRef(params[i]).set(args[i])
+      environment.shallowSet(params[i], args[i])
     }
 
     const completion = interpreter.executeInEnvironment(
@@ -173,5 +195,5 @@ class StringInstance extends ObjectInstance {
   }
 }
 
-export { Instance, BoolInstance, WrappedFunctionInstance, FunctionInstance, NoneInstance, UserFunctionInstance, ObjectInstance, TWrappedFunction, StringInstance }
+export { Instance, ValueRef, BoolInstance, WrappedFunctionInstance, FunctionInstance, NoneInstance, UserFunctionInstance, ObjectInstance, TWrappedFunction, StringInstance }
 

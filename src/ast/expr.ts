@@ -149,7 +149,7 @@ class SquareAccessorRefExpr extends RefExpr {
 }
 
 class DotAccessorRefExpr extends RefExpr {
-  constructor(readonly object: Expr, readonly property: Expr) {
+  constructor(readonly object: Expr, readonly property: string) {
     super()
   }
 

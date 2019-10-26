@@ -306,12 +306,13 @@ A; ASSIGN; SEMICOLON;`,
 
 const runtime = {
   name: 'Runtime',
-  suites: [{
-    name: 'Functions',
-    tests: [
-      {
-        name: 'Fibonacci',
-        source: `
+  suites: [
+    {
+      name: 'Functions',
+      tests: [
+        {
+          name: 'Fibonacci',
+          source: `
 FUNCTION; F;I;B; LPAR; P; RPAR;
 LCURLY;  
   IF; LPAR; P; EQ; 0; RPAR; 
@@ -329,11 +330,12 @@ RCURLY;
 
 P;R;I;N;T; LPAR; F;I;B; LPAR; 1;0; RPAR; RPAR; SEMICOLON;
 `,
-        output: '55',
-        expected: ExpectedResult.MATCH_OUTPUT
-      }
-    ]
-  }]
+          output: '55',
+          expected: ExpectedResult.MATCH_OUTPUT
+        }
+      ]
+    },
+  ]
 }
 
 const results = testSuites([parser, runtime])
@@ -344,8 +346,5 @@ console.log(`
 //   /* Classes */
 //   `CLASS; C; LCURLY;
 //     FUNCTION; M;E;T;H;O;D; LPAR; RPAR; LCURLY; RCURLY;
-// RCURLY;`,
-
-//   /* Expressions */
-//   `NOT; PLUS; MINUS; 5; SEMICOLON;`,
+// RCURLY;`,m85; SEMICOLON;`,
 // ])
