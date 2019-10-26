@@ -188,7 +188,7 @@ F; LPAR; A;1; COMMA; A;2; RPAR; SEMICOLON;`,
             {
               name: 'Invalid name of a function',
               source: `
-1; LPAR; RPAR; SEMICOLON;`,
+1;A; LPAR; RPAR; SEMICOLON;`,
               expected: ExpectedResult.FAIL_PARSE,
             },
             {
@@ -218,7 +218,7 @@ F;U;N;C; LPAR; A;R;G; RPAR; LBRA; 0; RBRA; ASSIGN; 5; SEMICOLON;`,
             {
               name: 'Assignment to a member of a returned object value',
               source: `
-F;U;N;C; LPAR; A;R;G; RPAR; DOT; P;R;O;P; ASSIGN; 5; SEMICOLON;`,
+F;U;N;C; LPAR; A;R;G; RPAR; PROP; P;R;O;P; ASSIGN; 5; SEMICOLON;`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {

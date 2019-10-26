@@ -41,7 +41,7 @@ class Instance {
     if (value) {
       return value
     } else {
-      throw new Error('TODO: Instance does not have ${name}')
+      throw new Error(`TODO: Instance does not have ${name}`)
     }
   }
 
@@ -64,7 +64,7 @@ class Instance {
     }
   }
 
-  // Calls magic method and adds this to args.
+  // Calls magic method and binds 'this'.
   callMagicMethod(
     functionName: MagicMethod,
     args: Instance[],
@@ -73,8 +73,7 @@ class Instance {
     const method = this.getClass().getInBases(functionName)
     if (method) {
       if (method instanceof FunctionInstance) {
-        args.unshift(this)
-        return method.call(interpreter, args)
+        return method.bind(this).call(interpreter, args)
       } else {
         throw new Error(`TODO: ToString(${functionName}) is not callable.`)
       }
@@ -107,14 +106,26 @@ class NoneInstance extends ObjectInstance {
 
 abstract class FunctionInstance extends ObjectInstance {
   abstract call(interpreter: CodeExecuter, args: Instance[]): Instance
+
+  // Returns true if method has "this" bound.
+  abstract isBound(): boolean
+
+  // Gets original function name.
+  abstract getName(): string
+
   bind(argToBind: Instance): FunctionInstance {
+    if (this.isBound()) return this
+
     return new WrappedFunctionInstance(
       WrappedFunctionClass.get(),
       (interpreter: CodeExecuter,
         args: Instance[]): Instance => {
-        args.unshift(argToBind)
-        return this.call(interpreter, args)
-      }
+        const boundArgs = args.slice()
+        boundArgs.unshift(argToBind)
+        return this.call(interpreter, boundArgs)
+      },
+      this.getName(),
+      /* bound = */ true,
     )
   }
 }
@@ -122,8 +133,9 @@ abstract class FunctionInstance extends ObjectInstance {
 class UserFunctionInstance extends FunctionInstance {
   constructor(
     klass: Class,
-    public functionDef: FunctionDeclStmt,
-    public closure: Environment,
+    private readonly functionDef: FunctionDeclStmt,
+    private readonly closure: Environment,
+    private readonly name: string,
   ) {
     // TODO:  Enforce at runtime that any one of klass.base
     //        (recursively) is of type UserFunctionClass.
@@ -148,6 +160,15 @@ class UserFunctionInstance extends FunctionInstance {
       return NoneInstance.getInstance()
     }
   }
+
+  // UserFunctionInstance can't be bound.
+  isBound(): boolean {
+    return false
+  }
+
+  getName(): string {
+    return this.name
+  }
 }
 
 type TWrappedFunction = (
@@ -156,7 +177,11 @@ type TWrappedFunction = (
 ) => Instance
 
 class WrappedFunctionInstance extends FunctionInstance {
-  constructor(klass: Class, public wrappedFunction: TWrappedFunction) {
+  constructor(
+    klass: Class,
+    public wrappedFunction: TWrappedFunction,
+    private readonly name: string,
+    private readonly bound: boolean = false) {
     // TODO:  Enforce at runtime that any one of klass.base
     //        (recursively) is of type WrappedFunctionClass.
     super(klass)
@@ -166,10 +191,18 @@ class WrappedFunctionInstance extends FunctionInstance {
     // TODO: Check arity.
     return this.wrappedFunction(interpreter, args)
   }
+
+  isBound(): boolean {
+    return this.bound
+  }
+
+  getName(): string {
+    return this.name
+  }
 }
 
 class BoolInstance extends ObjectInstance {
-  private constructor(boolClass: BoolClass, readonly value: boolean) {
+  constructor(boolClass: BoolClass, readonly value: boolean) {
     super(boolClass)
   }
   private static trueInstance: BoolInstance
@@ -189,7 +222,7 @@ class BoolInstance extends ObjectInstance {
 }
 
 class StringInstance extends ObjectInstance {
-  constructor(klass: Class, readonly value: string) {
+  constructor(klass: Class, public value: string) {
     // TODO:  Enforce at runtime that any one of klass.base
     //        (recursively) is of type StringClass.
     super(klass)

@@ -25,7 +25,9 @@ class Interpreter
     this.environment = this.globals
     this.globals.getRef('PRINT').set(
       new WrappedFunctionInstance(
-        WrappedFunctionClass.get(), GiflangPrint(print)))
+        WrappedFunctionClass.get(), GiflangPrint(print), 'PRINT'))
+    this.globals.getRef('TRUE').set(BoolInstance.getTrue())
+    this.globals.getRef('FALSE').set(BoolInstance.getFalse())
   }
 
   private evaluateRef(expr: RefExpr): ValueRef {
@@ -88,8 +90,9 @@ class Interpreter
   visitUnaryNotValueExpr(expr: UnaryNotValueExpr): Instance {
     const r = this.evaluate(expr.right)
     // Converts value to bool and then negates it.
-    const boolRes = r.callMagicMethod(MagicMethod.__bool__, [], this)
-    return (boolRes) ? BoolInstance.getFalse() : BoolInstance.getTrue()
+    const boolRes = r.callMagicMethod(
+      MagicMethod.__bool__, [], this).castOrThrow(BoolInstance)
+    return (boolRes.value) ? BoolInstance.getFalse() : BoolInstance.getTrue()
   }
   visitBinaryValueExpr(expr: BinaryValueExpr): Instance {
     const l = this.evaluate(expr.left)
@@ -119,9 +122,19 @@ class Interpreter
       case Operator.DIV:
         return l.callMagicMethod(MagicMethod.__div__, [r], this)
       case Operator.AND:
-        return l.callMagicMethod(MagicMethod.__and__, [r], this)
+        {
+          const lRes = l.callMagicMethod(
+            MagicMethod.__bool__, [], this).castOrThrow(BoolInstance)
+          if (!lRes.value) return lRes
+          else return r.callMagicMethod(MagicMethod.__bool__, [], this)
+        }
       case Operator.OR:
-        return l.callMagicMethod(MagicMethod.__or__, [r], this)
+        {
+          const lRes = l.callMagicMethod(
+            MagicMethod.__bool__, [], this).castOrThrow(BoolInstance)
+          if (lRes.value) return lRes
+          else return r.callMagicMethod(MagicMethod.__bool__, [], this)
+        }
       default:
         throw Error('TODO: Internal.')
     }
@@ -213,7 +226,8 @@ class Interpreter
     const func = new UserFunctionInstance(
       UserFunctionClass.get(),
       stmt,
-      this.environment
+      this.environment,
+      stmt.name
     )
     this.environment.getRef(stmt.name).set(func)
     return new NormalCompletion()

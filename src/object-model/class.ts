@@ -4,6 +4,21 @@ import { Environment } from '../environment'
 import { BoolInstance, Instance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
 import { MagicMethod } from './magic-method'
 
+function CheckArityEq(args: Instance[], n: number) {
+  if (args.length !== n) {
+    throw Error(
+      `TODO: Wrong number of operands, expected ${n} got ${args.length}.`)
+  }
+}
+
+function CheckArityGe(args: Instance[], n: number) {
+  if (args.length < n) {
+    throw Error(
+      // tslint:disable-next-line:max-line-length
+      `TODO: Wrong number of operands, expected at least ${n} got ${args.length}.`)
+  }
+}
+
 abstract class Class extends Instance {
   // Nulls for initial bootstrapping.
   constructor(
@@ -20,8 +35,7 @@ abstract class Class extends Instance {
     throw new Error(`${this.name} class instance cannot be user-instantiated.`)
   }
 
-  getInBases(name: string)
-    : Instance | null {
+  getInBases(name: string): Instance | null {
     let curBase: Class | null = this
     do {
       if (curBase.fields.has(name)) {
@@ -32,8 +46,6 @@ abstract class Class extends Instance {
     return null
   }
 
-
-  // TODO: Test if it works with getRef
   getOrThrow(name: string): Instance {
     // Walk up the bases and don't bind.
     if (this instanceof Class) {
@@ -55,6 +67,7 @@ abstract class Class extends Instance {
           (interpreter: CodeExecuter, args: Instance[]) => {
             return m[1](interpreter, args)
           },
+          `${this.name}.${m[0]}`
         ),
       )
     }
@@ -62,11 +75,12 @@ abstract class Class extends Instance {
 }
 
 class MetaClass extends Class {
+  // MetaClass's __call__ is responsible for creation of new objects.
   static __call__(
     interpreter: CodeExecuter,
     args: Instance[],
   ): Instance {
-    // TODO: Check arity.
+    CheckArityGe(args, 1)
     if (args[0] instanceof Class) {
       const originalClass = args[0] as Class
       let nativeBase = originalClass
@@ -80,8 +94,8 @@ class MetaClass extends Class {
     } else {
       throw new Error('TODO: Cannot be instantiated.')
     }
-
   }
+
   private constructor() {
     super(/* klass = */ null, nameof(MetaClass), /* base = */ null)
   }
@@ -106,21 +120,30 @@ class MetaClass extends Class {
 }
 
 class ObjectClass extends Class {
-  static __str__(
-    _interpreter: CodeExecuter,
-    args: Instance[]
-  ): StringInstance {
-    // TODO: Check arity.
-    const _self = args[0].castOrThrow(ObjectInstance)
-    return new StringInstance(StringClass.get(), 'achjo')
-  }
-
   static __init__(
     _interpreter: CodeExecuter,
     args: Instance[]
   ): Instance {
-    // Check arity.
+    CheckArityEq(args, 1)
     return args[0]
+  }
+
+  static __str__(
+    _interpreter: CodeExecuter,
+    args: Instance[]
+  ): StringInstance {
+    CheckArityEq(args, 1)
+    const className = args[0].castOrThrow(ObjectInstance).getClass().name
+    return new StringInstance(
+      StringClass.get(), `Instance of class "${className}"`)
+  }
+
+  static __bool__(
+    _interpreter: CodeExecuter,
+    args: Instance[]
+  ): Instance {
+    CheckArityEq(args, 1)
+    return BoolInstance.getTrue()
   }
 
   private constructor() {
@@ -134,12 +157,12 @@ class ObjectClass extends Class {
       ObjectClass.instance.klass = MetaClass.get()
       ObjectClass.instance.addNativeMethods(
         [
+          [MagicMethod.__init__, ObjectClass.__init__],
           [MagicMethod.__str__, ObjectClass.__str__],
-          [MagicMethod.__init__, ObjectClass.__init__]
+          [MagicMethod.__bool__, ObjectClass.__bool__]
         ],
         WrappedFunctionClass.get())
     }
-
     return ObjectClass.instance
   }
 
@@ -151,12 +174,152 @@ class ObjectClass extends Class {
   }
 }
 
+class WrappedFunctionClass extends Class {
+  static __str__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): StringInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(WrappedFunctionInstance)
+    return new StringInstance(
+      StringClass.get(),
+      `${self.isBound() ? 'Bound' : 'Unbound'} function ${self.getName()}`
+    )
+  }
+
+  static __call__(
+    interpreter: CodeExecuter,
+    args: Instance[],
+  ): Instance {
+    CheckArityGe(args, 1)
+    const self = args[0].castOrThrow(WrappedFunctionInstance)
+    return self.call(interpreter, args.slice(1))
+  }
+
+  private constructor() {
+    super(
+      MetaClass.get(),
+      nameof(WrappedFunctionClass),
+      ObjectClass.get(),
+    )
+    this.addNativeMethods(
+      [
+        [MagicMethod.__call__, WrappedFunctionClass.__call__],
+        [MagicMethod.__str__, WrappedFunctionClass.__str__],
+      ],
+      this
+    )
+  }
+
+  private static instance: WrappedFunctionClass
+  static get(): WrappedFunctionClass {
+    if (!WrappedFunctionClass.instance) {
+      WrappedFunctionClass.instance = new WrappedFunctionClass()
+    }
+    return WrappedFunctionClass.instance
+  }
+
+  canUserDeriveFrom(): boolean {
+    return false
+  }
+}
+
+class UserFunctionClass extends Class {
+  static __str__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): StringInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(UserFunctionInstance)
+    return new StringInstance(
+      StringClass.get(),
+      `${self.isBound() ? 'Bound' : 'Unbound'} function ${self.getName()}`
+    )
+  }
+
+  static __call__(
+    interpreter: CodeExecuter,
+    args: Instance[],
+  ) {
+    CheckArityGe(args, 1)
+    const self = args[0].castOrThrow(UserFunctionInstance)
+    return self.call(interpreter, args.slice(1))
+  }
+
+  private constructor() {
+    super(MetaClass.get(), nameof(UserFunctionClass), ObjectClass.get())
+
+    this.addNativeMethods(
+      [
+        [MagicMethod.__call__, UserFunctionClass.__call__],
+        [MagicMethod.__str__, UserFunctionClass.__str__]
+      ],
+      WrappedFunctionClass.get()
+    )
+  }
+
+  private static instance: UserFunctionClass
+  static get(): UserFunctionClass {
+    if (!UserFunctionClass.instance) {
+      UserFunctionClass.instance = new UserFunctionClass()
+    }
+    return UserFunctionClass.instance
+  }
+
+  canUserDeriveFrom(): boolean {
+    return false
+  }
+}
+
+class NoneClass extends Class {
+  static __str__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): StringInstance {
+    CheckArityEq(args, 1)
+    return new StringInstance(
+      StringClass.get(),
+      'None'
+    )
+  }
+
+  static __bool__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): BoolInstance {
+    CheckArityEq(args, 1)
+    return BoolInstance.getFalse()
+  }
+
+  private constructor() {
+    super(MetaClass.get(), nameof(NoneClass), ObjectClass.get())
+    this.addNativeMethods(
+      [
+        [MagicMethod.__str__, BoolClass.__str__],
+        [MagicMethod.__bool__, BoolClass.__bool__],
+      ],
+      WrappedFunctionClass.get()
+    )
+  }
+  private static instance: NoneClass
+  static get(): NoneClass {
+    if (!NoneClass.instance) {
+      NoneClass.instance = new NoneClass()
+    }
+    return NoneClass.instance
+  }
+
+  canUserDeriveFrom(): boolean {
+    return false
+  }
+}
+
 class BoolClass extends Class {
   static __str__(
     _interpreter: CodeExecuter,
     args: Instance[]
   ): StringInstance {
-    // TODO: Check arity.
+    CheckArityEq(args, 1)
     const self = args[0]
     let str = ''
     if (self === BoolInstance.getTrue()) {
@@ -175,8 +338,8 @@ class BoolClass extends Class {
     _interpreter: CodeExecuter,
     args: Instance[]
   ): BoolInstance {
-    // TODO: Check this!! Arity and type.
-    const self = args[0] as BoolInstance
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(BoolInstance)
     return self
   }
 
@@ -202,105 +365,78 @@ class BoolClass extends Class {
   }
 }
 
-class WrappedFunctionClass extends Class {
-  static __call__(
-    interpreter: CodeExecuter,
-    args: Instance[],
-  ): Instance {
-    // TODO: Check args length.
-    const self = args[0].castOrThrow(WrappedFunctionInstance)
-    return self.call(interpreter, args.slice(1))
-  }
-
-  private constructor() {
-    super(
-      MetaClass.get(),
-      nameof(WrappedFunctionClass),
-      ObjectClass.get(),
-    )
-    this.addNativeMethods(
-      [[MagicMethod.__call__, WrappedFunctionClass.__call__]],
-      this
-    )
-  }
-
-  private static instance: WrappedFunctionClass
-  static get(): WrappedFunctionClass {
-    if (!WrappedFunctionClass.instance) {
-      WrappedFunctionClass.instance = new WrappedFunctionClass()
-    }
-    return WrappedFunctionClass.instance
-  }
-
-  canUserDeriveFrom(): boolean {
-    return false
-  }
-}
-
-class NoneClass extends Class {
-  // TODO: Forbid deriving from None, Bool, ...
-  private constructor() {
-    super(MetaClass.get(), nameof(NoneClass), ObjectClass.get())
-  }
-  private static instance: NoneClass
-  static get(): NoneClass {
-    if (!NoneClass.instance) {
-      NoneClass.instance = new NoneClass()
-    }
-    return NoneClass.instance
-  }
-
-  canUserDeriveFrom(): boolean {
-    return false
-  }
-}
-
-class UserFunctionClass extends Class {
-  static __call__(
-    interpreter: CodeExecuter,
-    args: Instance[],
-  ) {
-    // TODO: Check args length.
-    const self = args[0].castOrThrow(UserFunctionInstance)
-    return self.call(interpreter, args.slice(1))
-  }
-
-  private constructor() {
-    super(MetaClass.get(), nameof(UserFunctionClass), ObjectClass.get())
-
-    this.addNativeMethods(
-      [[MagicMethod.__call__, UserFunctionClass.__call__]],
-      WrappedFunctionClass.get()
-    )
-  }
-
-  private static instance: UserFunctionClass
-  static get(): UserFunctionClass {
-    if (!UserFunctionClass.instance) {
-      UserFunctionClass.instance = new UserFunctionClass()
-    }
-    return UserFunctionClass.instance
-  }
-
-  canUserDeriveFrom(): boolean {
-    return false
-  }
-}
-
 class StringClass extends Class {
+  static __init__(
+    _interpreter: CodeExecuter,
+    args: Instance[]
+  ): StringInstance {
+    CheckArityEq(args, 2)
+    const self = args[0].castOrThrow(StringInstance)
+    const rhs = args[1].castOrThrow(StringInstance)
+    self.value = rhs.value.slice(0)
+    return self
+  }
+
   static __str__(
     _interpreter: CodeExecuter,
     args: Instance[]
   ): StringInstance {
-    // TODO: Check arity.
+    CheckArityEq(args, 1)
     const self = args[0].castOrThrow(StringInstance)
     return self
+  }
+
+  static __bool__(
+    _interpreter: CodeExecuter,
+    args: Instance[]
+  ): BoolInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(StringInstance)
+    if (self.value.length === 0) return BoolInstance.getFalse()
+    else return BoolInstance.getTrue()
+  }
+
+  static __add__(
+    _interpreter: CodeExecuter,
+    args: Instance[]
+  ): StringInstance {
+    CheckArityEq(args, 2)
+    const self = args[0].castOrThrow(StringInstance)
+    const rhs = args[1].castOrThrow(StringInstance)
+    return new StringInstance(
+      StringClass.get(),
+      self.value + rhs.value
+    )
+  }
+
+  static comparatorOp(
+    action: (lhs: string, rhs: string) => boolean,
+  ): (_interpreter: CodeExecuter, args: Instance[]) => BoolInstance {
+    return (_interpreter: CodeExecuter, args: Instance[]) => {
+      CheckArityEq(args, 2)
+      const self = args[0].castOrThrow(StringInstance)
+      const rhs = args[1].castOrThrow(StringInstance)
+      if (action(self.value, rhs.value)) return BoolInstance.getTrue()
+      else return BoolInstance.getFalse()
+    }
   }
 
   private constructor() {
     super(MetaClass.get(), nameof(StringClass), ObjectClass.get())
     this.addNativeMethods(
-      [[MagicMethod.__str__, StringClass.__str__]],
+      [
+        [MagicMethod.__init__, StringClass.__init__],
+        [MagicMethod.__str__, StringClass.__str__],
+        [MagicMethod.__bool__, StringClass.__bool__],
+        [MagicMethod.__add__, StringClass.__add__],
+        [MagicMethod.__bool__, StringClass.__bool__],
+        [MagicMethod.__lt__, StringClass.comparatorOp((l, r) => l < r)],
+        [MagicMethod.__le__, StringClass.comparatorOp((l, r) => l <= r)],
+        [MagicMethod.__eq__, StringClass.comparatorOp((l, r) => l === r)],
+        [MagicMethod.__ne__, StringClass.comparatorOp((l, r) => l !== r)],
+        [MagicMethod.__ge__, StringClass.comparatorOp((l, r) => l >= r)],
+        [MagicMethod.__gt__, StringClass.comparatorOp((l, r) => l > r)],
+      ],
       WrappedFunctionClass.get()
     )
   }
@@ -315,7 +451,6 @@ class StringClass extends Class {
   canUserDeriveFrom(): boolean {
     return true
   }
-
   createBlankUserInstance(klass: Class): StringInstance {
     return new StringInstance(klass, /* value = */ '')
   }
@@ -330,14 +465,17 @@ class UserClass extends Class {
     // TODO: Super should be bound here.
     for (const m of methods) {
       this.fields.set(m.name,
-        new UserFunctionInstance(UserFunctionClass.get(), m, env))
+        new UserFunctionInstance(
+          UserFunctionClass.get(),
+          m,
+          env,
+          `${this.name}.${m.name}`))
     }
   }
 
   canUserDeriveFrom(): boolean {
     return true
   }
-
   createBlankUserInstance(klass: Class): Instance {
     if (this.base === null) {
       throw new Error('TODO: Internal error, user derived class has base null.')
@@ -346,5 +484,5 @@ class UserClass extends Class {
   }
 }
 
-export { Class, MetaClass, UserClass, WrappedFunctionClass, UserFunctionClass, NoneClass, ObjectClass, StringClass, BoolClass }
+export { Class, MetaClass, CheckArityEq, UserClass, WrappedFunctionClass, UserFunctionClass, NoneClass, ObjectClass, StringClass, BoolClass }
 

@@ -1,21 +1,15 @@
 import { CodeExecuter } from '../../code-executer'
-import { Class, MetaClass, ObjectClass, StringClass, WrappedFunctionClass } from '../class'
+import { CheckArityEq, Class, MetaClass, ObjectClass, StringClass, WrappedFunctionClass } from '../class'
 import { BoolInstance, Instance, StringInstance } from '../instance'
 import { MagicMethod } from '../magic-method'
 import { NumberInstance } from './number-instance'
-
-function checkArity(args: Instance[], n: number) {
-  if (args.length !== n) {
-    throw Error('TODO: Wrong number of operands, expected {} got {}.')
-  }
-}
 
 class NumberClass extends Class {
   static __str__(
     _interpreter: CodeExecuter,
     args: Instance[],
   ): StringInstance {
-    checkArity(args, 1)
+    CheckArityEq(args, 1)
     const self = args[0].castOrThrow(NumberInstance)
     return new StringInstance(StringClass.get(), self.value.toString())
   }
@@ -24,7 +18,7 @@ class NumberClass extends Class {
     _interpreter: CodeExecuter,
     args: Instance[],
   ): NumberInstance {
-    checkArity(args, 1)
+    CheckArityEq(args, 1)
     const self = args[0].castOrThrow(NumberInstance)
     return new NumberInstance(NumberClass.get(), - self.value)
   }
@@ -33,7 +27,7 @@ class NumberClass extends Class {
     _interpreter: CodeExecuter,
     args: Instance[],
   ): BoolInstance {
-    checkArity(args, 1)
+    CheckArityEq(args, 1)
     const self = args[0].castOrThrow(NumberInstance)
     return (self.value === 0) ? BoolInstance.getFalse() : BoolInstance.getTrue()
   }
@@ -42,7 +36,7 @@ class NumberClass extends Class {
     action: (lhs: number, rhs: number) => number,
   ): (_interpreter: CodeExecuter, args: Instance[]) => NumberInstance {
     return (_interpreter: CodeExecuter, args: Instance[]) => {
-      checkArity(args, 2)
+      CheckArityEq(args, 2)
       const lhs = args[0].castOrThrow(NumberInstance)
       const rhs = args[1].castOrThrow(NumberInstance)
       return new NumberInstance(NumberClass.get(), action(lhs.value, rhs.value))
@@ -53,7 +47,7 @@ class NumberClass extends Class {
     action: (lhs: number, rhs: number) => boolean,
   ): (_interpreter: CodeExecuter, args: Instance[]) => BoolInstance {
     return (_interpreter: CodeExecuter, args: Instance[]) => {
-      checkArity(args, 2)
+      CheckArityEq(args, 2)
       const lhs = args[0].castOrThrow(NumberInstance)
       const rhs = args[1].castOrThrow(NumberInstance)
       return (action(lhs.value, rhs.value))

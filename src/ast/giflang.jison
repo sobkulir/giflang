@@ -62,6 +62,7 @@ VALID_CHAR					([A-Z]|[0-9])
 
 "SEMICOLON"					{ return delimit('SEMICOLON'); }
 "DOT"						{ return delimit('DOT'); }
+"PROP"						{ return delimit('PROP'); }
 "COMMA"						{ return delimit('COMMA'); }
 "QUOTE"						{ return delimit('QUOTE'); }
 [A-Z]						{ return delimit('LETTER'); }
@@ -120,62 +121,38 @@ AlfanumAtom
 	;
 
 UFloat
-	: UInt_ DOT UInt_			{ $$ = new yy.Expr.NumberValueExpr($1 + '.' + $3); }
+	: UInt DOT UInt				{ $$ = $1 + '.' + $3; }
 	;
 
 UInt
-	: UInt_ 	{ $$ = new yy.Expr.NumberValueExpr($1); }
-	;
-
-UInt_
-	: UInt_ DIGIT 				{ $$ = $1 + $2; }
+	: UInt DIGIT 				{ $$ = $1 + $2; }
 	| DIGIT 					{ $$ = $1; }
 	;
 
 String
-	: QUOTE Alfanum QUOTE 		{ $$ = new yy.Expr.StringValueExpr($2); }
+	: QUOTE Alfanum QUOTE 		{ $$ = $2; }
 	;
-
-PrimaryExpr
-    : Literal 	{ $$ = $1; }
-	| CallExpr 	{ $$ = $1; }
-    ;
 
 PrimaryComnon
 	: Identifier 				{ $$ = new yy.Expr.VariableRefExpr($1); }
 	| LPAR Expr RPAR 			{ $$ = $2; }
 	| ArrayLiteral 				{ $$ = $1; }
+	| Literal 					{ $$ = $1; }
 	;
 
 Literal
     : TRUE		{ $$ = new yy.Expr.VariableRefExpr('TRUE'); }
     | FALSE		{ $$ = new yy.Expr.VariableRefExpr('FALSE'); }
 	| NONE		{ $$ = new yy.Expr.NoneValueExpr(); }
-    | UFloat	{ $$ = $1; }
-	| UInt		{ $$ = $1; }
-    | String	{ $$ = $1; }
+	| UInt		{ $$ = new yy.Expr.NumberValueExpr($1); }
+	| UFloat	{ $$ = new yy.Expr.NumberValueExpr($1); }
+    | String	{ $$ = new yy.Expr.StringValueExpr($1); }
     ;
 
 ArrayLiteral
     : LBRA ElementList RBRA 	{ $$ = new yy.Expr.ArrayValueExpr($2); }
 	| LBRA RBRA					{ $$ = new yy.Expr.ArrayValueExpr([]); }
 	;
-
-MemberExpr
-    : PrimaryComnon				{ $$ = $1; }
-	| CallExpr LBRA Expr RBRA	{ $$ = new yy.Expr.SquareAccessorRefExpr($1, $3); }
-    | CallExpr DOT Identifier	{ $$ = new yy.Expr.DotAccessorRefExpr($1, $3); }
-    ;
-
-CallExpr
-    : MemberExpr Arguments		{ $$ = new yy.Expr.CallValueExpr($1, $2); }
-	| MemberExpr				{ $$ = $1; }
-	;
-
-Arguments
-    : LPAR RPAR					{ $$ = []; }
-    | LPAR ElementList RPAR		{ $$ = $2; }
-    ;
 
 ElementList
     : Expr
@@ -184,6 +161,29 @@ ElementList
 		{ $1.push($3); $$ = $1; }
     ;
 
+MemberExpr
+	: MemberExpr PROP Identifier		{ $$ = new yy.Expr.DotAccessorRefExpr($1, $3); }
+	| MemberExpr LBRA Expr RBRA		{ $$ = new yy.Expr.SquareAccessorRefExpr($1, $3); }
+	| PrimaryComnon					{ $$ = $1; }
+    ;
+
+CallExpr
+    : MemberExpr Arguments		{ $$ = new yy.Expr.CallValueExpr($1, $2); }
+	| CallExpr Arguments		{ $$ = new yy.Expr.CallValueExpr($1, $2); }
+	| CallExpr PROP Identifier	{ $$ = new yy.Expr.DotAccessorRefExpr($1, $3); }
+	| CallExpr LBRA Expr RBRA	{ $$ = new yy.Expr.SquareAccessorRefExpr($1, $3); }
+	;
+
+Arguments
+    : LPAR RPAR					{ $$ = []; }
+    | LPAR ElementList RPAR		{ $$ = $2; }
+    ;
+
+PrimaryExpr
+	: CallExpr 	 { $$ = $1; }
+	| MemberExpr { $$ = $1; }
+    ;
+	
 UnaryExpr
 	: PLUS UnaryExpr
 		{$$ = new yy.Expr.UnaryPlusMinusValueExpr(yy.Operator.PLUS, $2);}
@@ -216,8 +216,17 @@ BinaryExpr
 	;
 
 Expr
-	: MemberExpr ASSIGN Expr
-		{ $$ = new yy.Expr.AssignmentValueExpr($1, $3); }
+	: PrimaryExpr ASSIGN Expr { 
+		if ($1 instanceof yy.Expr.VariableRefExpr
+			|| $1 instanceof yy.Expr.DotAccessorRefExpr
+			|| $1 instanceof yy.Expr.SquareAccessorRefExpr) {
+			$$ = new yy.Expr.AssignmentValueExpr($1, $3);
+		} else {
+			// TODO: Update this when working on error reporting.
+			throw new Error('TODO: Cannot assign to non-lvalue type.')
+			YYABORT;
+		}
+	 }
 	| BinaryExpr { $$ = $1; }
 	;
 
