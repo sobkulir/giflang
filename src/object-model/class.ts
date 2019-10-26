@@ -2,7 +2,7 @@ import { FunctionDeclStmt } from '../ast/stmt'
 import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
 import { BoolInstance, Instance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
-import { MagicMethods } from './magic-methods'
+import { MagicMethod } from './magic-method'
 
 abstract class Class extends Instance {
   // Nulls for initial bootstrapping.
@@ -75,7 +75,7 @@ class MetaClass extends Class {
       }
       const instance = nativeBase.createBlankUserInstance(originalClass)
       instance.callMagicMethod(
-        MagicMethods.__init__, args.slice(1), interpreter)
+        MagicMethod.__init__, args.slice(1), interpreter)
       return instance
     } else {
       throw new Error('TODO: Cannot be instantiated.')
@@ -93,7 +93,7 @@ class MetaClass extends Class {
       MetaClass.instance.klass = MetaClass.instance
       MetaClass.instance.base = ObjectClass.get()
       MetaClass.instance.addNativeMethods(
-        [[MagicMethods.__call__, MetaClass.__call__]],
+        [[MagicMethod.__call__, MetaClass.__call__]],
         WrappedFunctionClass.get()
       )
     }
@@ -134,8 +134,8 @@ class ObjectClass extends Class {
       ObjectClass.instance.klass = MetaClass.get()
       ObjectClass.instance.addNativeMethods(
         [
-          [MagicMethods.__str__, ObjectClass.__str__],
-          [MagicMethods.__init__, ObjectClass.__init__]
+          [MagicMethod.__str__, ObjectClass.__str__],
+          [MagicMethod.__init__, ObjectClass.__init__]
         ],
         WrappedFunctionClass.get())
     }
@@ -184,10 +184,9 @@ class BoolClass extends Class {
     super(MetaClass.get(), nameof(NoneClass), ObjectClass.get())
     this.addNativeMethods(
       [
-        [MagicMethods.__str__, BoolClass.__str__],
-        [MagicMethods.__bool__, BoolClass.__bool__],
+        [MagicMethod.__str__, BoolClass.__str__],
+        [MagicMethod.__bool__, BoolClass.__bool__],
       ],
-
       WrappedFunctionClass.get())
   }
   private static instance: BoolClass
@@ -220,7 +219,7 @@ class WrappedFunctionClass extends Class {
       ObjectClass.get(),
     )
     this.addNativeMethods(
-      [['__call__', WrappedFunctionClass.__call__]],
+      [[MagicMethod.__call__, WrappedFunctionClass.__call__]],
       this
     )
   }
@@ -270,7 +269,7 @@ class UserFunctionClass extends Class {
     super(MetaClass.get(), nameof(UserFunctionClass), ObjectClass.get())
 
     this.addNativeMethods(
-      [['__call__', UserFunctionClass.__call__]],
+      [[MagicMethod.__call__, UserFunctionClass.__call__]],
       WrappedFunctionClass.get()
     )
   }
@@ -301,7 +300,7 @@ class StringClass extends Class {
   private constructor() {
     super(MetaClass.get(), nameof(StringClass), ObjectClass.get())
     this.addNativeMethods(
-      [[MagicMethods.__str__, StringClass.__str__]],
+      [[MagicMethod.__str__, StringClass.__str__]],
       WrappedFunctionClass.get()
     )
   }

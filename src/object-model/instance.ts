@@ -2,6 +2,7 @@ import { FunctionDeclStmt } from '../ast/stmt'
 import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
 import { BoolClass, Class, NoneClass, WrappedFunctionClass } from './class'
+import { MagicMethod } from './magic-method'
 
 interface ValueRef {
   set(value: Instance): void
@@ -65,7 +66,7 @@ class Instance {
 
   // Calls magic method and adds this to args.
   callMagicMethod(
-    functionName: string,
+    functionName: MagicMethod,
     args: Instance[],
     interpreter: CodeExecuter
   ): Instance {

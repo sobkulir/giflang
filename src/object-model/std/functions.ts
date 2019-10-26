@@ -1,6 +1,6 @@
 import { CodeExecuter } from '../../code-executer'
 import { Instance, NoneInstance, StringInstance, TWrappedFunction } from '../instance'
-import { MagicMethods } from '../magic-methods'
+import { MagicMethod } from '../magic-method'
 
 function GiflangPrint(print: (str: string) => void): TWrappedFunction {
   return (interpreter: CodeExecuter, args: Instance[]): Instance => {
@@ -8,7 +8,7 @@ function GiflangPrint(print: (str: string) => void): TWrappedFunction {
       .map(
         (arg) =>
           (arg.callMagicMethod(
-            MagicMethods.__str__, [], interpreter) as StringInstance)
+            MagicMethod.__str__, [], interpreter) as StringInstance)
             .value
       )
       .join(' '))

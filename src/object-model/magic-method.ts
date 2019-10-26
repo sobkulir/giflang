@@ -1,4 +1,4 @@
-enum MagicMethods {
+enum MagicMethod {
   __str__ = '__str__',
 
   __add__ = '__add__',
@@ -20,8 +20,8 @@ enum MagicMethods {
   __and__ = '__and__',
   __or__ = '__or__',
 
-  __call__ = '__call__',
+  __call__ = '__CALL__',
   __init__ = '__init__',
 }
-export { MagicMethods }
+export { MagicMethod }
 

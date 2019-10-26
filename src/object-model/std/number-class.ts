@@ -1,7 +1,7 @@
 import { CodeExecuter } from '../../code-executer'
 import { Class, MetaClass, ObjectClass, StringClass, WrappedFunctionClass } from '../class'
 import { BoolInstance, Instance, StringInstance } from '../instance'
-import { MagicMethods } from '../magic-methods'
+import { MagicMethod } from '../magic-method'
 import { NumberInstance } from './number-instance'
 
 function checkArity(args: Instance[], n: number) {
@@ -65,26 +65,26 @@ class NumberClass extends Class {
     super(MetaClass.get(), nameof(NumberClass), ObjectClass.get())
     this.addNativeMethods(
       [
-        [MagicMethods.__str__, NumberClass.__str__],
-        [MagicMethods.__neg__, NumberClass.__neg__],
-        [MagicMethods.__bool__, NumberClass.__bool__],
-        [MagicMethods.__add__, NumberClass.binaryOpNumber((x, y) => x + y)],
-        [MagicMethods.__sub__, NumberClass.binaryOpNumber((x, y) => x - y)],
-        [MagicMethods.__mul__, NumberClass.binaryOpNumber((x, y) => x * y)],
-        [MagicMethods.__div__, NumberClass.binaryOpNumber((x, y) => {
+        [MagicMethod.__str__, NumberClass.__str__],
+        [MagicMethod.__neg__, NumberClass.__neg__],
+        [MagicMethod.__bool__, NumberClass.__bool__],
+        [MagicMethod.__add__, NumberClass.binaryOpNumber((x, y) => x + y)],
+        [MagicMethod.__sub__, NumberClass.binaryOpNumber((x, y) => x - y)],
+        [MagicMethod.__mul__, NumberClass.binaryOpNumber((x, y) => x * y)],
+        [MagicMethod.__div__, NumberClass.binaryOpNumber((x, y) => {
           if (y === 0) throw Error('TODO: Division by zero')
           else return x / y
         })],
-        [MagicMethods.__div__, NumberClass.binaryOpNumber((x, y) => {
+        [MagicMethod.__div__, NumberClass.binaryOpNumber((x, y) => {
           if (y === 0) throw Error('TODO: Modulo by zero')
           else return x % y
         })],
-        [MagicMethods.__lt__, NumberClass.binaryOpBool((x, y) => x < y)],
-        [MagicMethods.__le__, NumberClass.binaryOpBool((x, y) => x <= y)],
-        [MagicMethods.__eq__, NumberClass.binaryOpBool((x, y) => x === y)],
-        [MagicMethods.__ne__, NumberClass.binaryOpBool((x, y) => x !== y)],
-        [MagicMethods.__ge__, NumberClass.binaryOpBool((x, y) => x >= y)],
-        [MagicMethods.__gt__, NumberClass.binaryOpBool((x, y) => x > y)],
+        [MagicMethod.__lt__, NumberClass.binaryOpBool((x, y) => x < y)],
+        [MagicMethod.__le__, NumberClass.binaryOpBool((x, y) => x <= y)],
+        [MagicMethod.__eq__, NumberClass.binaryOpBool((x, y) => x === y)],
+        [MagicMethod.__ne__, NumberClass.binaryOpBool((x, y) => x !== y)],
+        [MagicMethod.__ge__, NumberClass.binaryOpBool((x, y) => x >= y)],
+        [MagicMethod.__gt__, NumberClass.binaryOpBool((x, y) => x > y)],
       ],
       WrappedFunctionClass.get()
     )

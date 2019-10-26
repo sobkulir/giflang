@@ -6,7 +6,7 @@ import { CodeExecuter } from './code-executer'
 import { Environment, ValueRef } from './environment'
 import { Class, ObjectClass, StringClass, UserClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
 import { BoolInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, WrappedFunctionInstance } from './object-model/instance'
-import { MagicMethods } from './object-model/magic-methods'
+import { MagicMethod } from './object-model/magic-method'
 import { GiflangPrint } from './object-model/std/functions'
 import { NumberClass } from './object-model/std/number-class'
 import { NumberInstance } from './object-model/std/number-instance'
@@ -78,9 +78,9 @@ class Interpreter
     const r = this.evaluate(expr.right)
     switch (expr.operator) {
       case Operator.PLUS:
-        return r.callMagicMethod(MagicMethods.__pos__, [], this)
+        return r.callMagicMethod(MagicMethod.__pos__, [], this)
       case Operator.LE:
-        return r.callMagicMethod(MagicMethods.__neg__, [], this)
+        return r.callMagicMethod(MagicMethod.__neg__, [], this)
       default:
         throw new Error('TODO: Internal.')
     }
@@ -88,7 +88,7 @@ class Interpreter
   visitUnaryNotValueExpr(expr: UnaryNotValueExpr): Instance {
     const r = this.evaluate(expr.right)
     // Converts value to bool and then negates it.
-    const boolRes = r.callMagicMethod(MagicMethods.__bool__, [], this)
+    const boolRes = r.callMagicMethod(MagicMethod.__bool__, [], this)
     return (boolRes) ? BoolInstance.getFalse() : BoolInstance.getTrue()
   }
   visitBinaryValueExpr(expr: BinaryValueExpr): Instance {
@@ -97,31 +97,31 @@ class Interpreter
 
     switch (expr.operator) {
       case Operator.LT:
-        return l.callMagicMethod(MagicMethods.__lt__, [r], this)
+        return l.callMagicMethod(MagicMethod.__lt__, [r], this)
       case Operator.LE:
-        return l.callMagicMethod(MagicMethods.__le__, [r], this)
+        return l.callMagicMethod(MagicMethod.__le__, [r], this)
       case Operator.GE:
-        return l.callMagicMethod(MagicMethods.__ge__, [r], this)
+        return l.callMagicMethod(MagicMethod.__ge__, [r], this)
       case Operator.GT:
-        return l.callMagicMethod(MagicMethods.__gt__, [r], this)
+        return l.callMagicMethod(MagicMethod.__gt__, [r], this)
       case Operator.EQ:
-        return l.callMagicMethod(MagicMethods.__eq__, [r], this)
+        return l.callMagicMethod(MagicMethod.__eq__, [r], this)
       case Operator.NE:
-        return l.callMagicMethod(MagicMethods.__ne__, [r], this)
+        return l.callMagicMethod(MagicMethod.__ne__, [r], this)
       case Operator.PLUS:
-        return l.callMagicMethod(MagicMethods.__add__, [r], this)
+        return l.callMagicMethod(MagicMethod.__add__, [r], this)
       case Operator.MINUS:
-        return l.callMagicMethod(MagicMethods.__sub__, [r], this)
+        return l.callMagicMethod(MagicMethod.__sub__, [r], this)
       case Operator.MUL:
-        return l.callMagicMethod(MagicMethods.__mul__, [r], this)
+        return l.callMagicMethod(MagicMethod.__mul__, [r], this)
       case Operator.MOD:
-        return l.callMagicMethod(MagicMethods.__mod__, [r], this)
+        return l.callMagicMethod(MagicMethod.__mod__, [r], this)
       case Operator.DIV:
-        return l.callMagicMethod(MagicMethods.__div__, [r], this)
+        return l.callMagicMethod(MagicMethod.__div__, [r], this)
       case Operator.AND:
-        return l.callMagicMethod(MagicMethods.__and__, [r], this)
+        return l.callMagicMethod(MagicMethod.__and__, [r], this)
       case Operator.OR:
-        return l.callMagicMethod(MagicMethods.__or__, [r], this)
+        return l.callMagicMethod(MagicMethod.__or__, [r], this)
       default:
         throw Error('TODO: Internal.')
     }
@@ -138,7 +138,7 @@ class Interpreter
       args.push(this.evaluate(arg))
     }
     return this.evaluate(expr.callee)
-      .callMagicMethod(MagicMethods.__call__, args, this)
+      .callMagicMethod(MagicMethod.__call__, args, this)
   }
 
   visitVariableRefExpr(expr: VariableRefExpr): ValueRef {
@@ -257,7 +257,7 @@ class Interpreter
   }
 
   isTruthy(r: Instance): boolean {
-    const boolRes = r.callMagicMethod(MagicMethods.__bool__, [], this)
+    const boolRes = r.callMagicMethod(MagicMethod.__bool__, [], this)
     // TODO: Enforce boolRes type
     return (boolRes as BoolInstance).value
   }
