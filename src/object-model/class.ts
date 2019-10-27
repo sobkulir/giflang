@@ -5,6 +5,7 @@ import { BoolInstance, Instance, ObjectInstance, StringInstance, TWrappedFunctio
 import { MagicMethod } from './magic-method'
 
 function CheckArityEq(args: Instance[], n: number) {
+  // TODO: Add fcn name.
   if (args.length !== n) {
     throw Error(
       `TODO: Wrong number of operands, expected ${n} got ${args.length}.`)
@@ -12,6 +13,7 @@ function CheckArityEq(args: Instance[], n: number) {
 }
 
 function CheckArityGe(args: Instance[], n: number) {
+  // TODO: Add fcn name.
   if (args.length < n) {
     throw Error(
       // tslint:disable-next-line:max-line-length

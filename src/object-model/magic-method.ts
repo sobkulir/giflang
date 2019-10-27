@@ -17,6 +17,8 @@ enum MagicMethod {
   __bool__ = '__BOOL__',
   __neg__ = '__neg__',
   __pos__ = '__pos__',
+  __getitem__ = '__getitem__',
+  __setitem__ = '__setitem__',
 
   __call__ = '__CALL__',
   __init__ = '__INIT__',

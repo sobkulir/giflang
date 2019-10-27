@@ -14,6 +14,15 @@ class NumberClass extends Class {
     return new StringInstance(StringClass.get(), self.value.toString())
   }
 
+  static __pos__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): NumberInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(NumberInstance)
+    return self
+  }
+
   static __neg__(
     _interpreter: CodeExecuter,
     args: Instance[],

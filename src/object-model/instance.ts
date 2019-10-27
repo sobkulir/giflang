@@ -1,7 +1,7 @@
 import { FunctionDeclStmt } from '../ast/stmt'
 import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
-import { BoolClass, Class, NoneClass, WrappedFunctionClass } from './class'
+import { BoolClass, CheckArityEq, Class, NoneClass, WrappedFunctionClass } from './class'
 import { MagicMethod } from './magic-method'
 
 interface ValueRef {
@@ -24,7 +24,6 @@ class Instance {
   }
 
   getOrThrow(name: string): Instance {
-    // TODO: This is ugly.
     if (this.klass == null) throw Error('Internal -- klass == null')
 
     let value: Instance | null = null
@@ -85,8 +84,6 @@ class Instance {
 
 class ObjectInstance extends Instance {
   constructor(klass: Class) {
-    // TODO:  Enforce at runtime that any one of klass.base
-    //        (recursively) is of type ObjectClass.
     super(klass)
   }
 }
@@ -137,15 +134,14 @@ class UserFunctionInstance extends FunctionInstance {
     private readonly closure: Environment,
     private readonly name: string,
   ) {
-    // TODO:  Enforce at runtime that any one of klass.base
-    //        (recursively) is of type UserFunctionClass.
     super(klass)
   }
 
   call(interpreter: CodeExecuter, args: Instance[]): Instance {
     const environment = new Environment(this.closure)
-    // TODO: Check arity.
     const params = this.functionDef.parameters
+    CheckArityEq(args, params.length)
+
     for (let i = 0; i < params.length; ++i) {
       environment.shallowSet(params[i], args[i])
     }
@@ -182,13 +178,10 @@ class WrappedFunctionInstance extends FunctionInstance {
     public wrappedFunction: TWrappedFunction,
     private readonly name: string,
     private readonly bound: boolean = false) {
-    // TODO:  Enforce at runtime that any one of klass.base
-    //        (recursively) is of type WrappedFunctionClass.
     super(klass)
   }
 
   call(interpreter: CodeExecuter, args: Instance[]): Instance {
-    // TODO: Check arity.
     return this.wrappedFunction(interpreter, args)
   }
 
@@ -223,8 +216,6 @@ class BoolInstance extends ObjectInstance {
 
 class StringInstance extends ObjectInstance {
   constructor(klass: Class, public value: string) {
-    // TODO:  Enforce at runtime that any one of klass.base
-    //        (recursively) is of type StringClass.
     super(klass)
   }
 }

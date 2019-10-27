@@ -7,6 +7,8 @@ import { Environment, ValueRef } from './environment'
 import { Class, ObjectClass, StringClass, UserClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
 import { BoolInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, WrappedFunctionInstance } from './object-model/instance'
 import { MagicMethod } from './object-model/magic-method'
+import { ArrayClass } from './object-model/std/array-class'
+import { ArrayInstance } from './object-model/std/array-instance'
 import { GiflangPrint } from './object-model/std/functions'
 import { NumberClass } from './object-model/std/number-class'
 import { NumberInstance } from './object-model/std/number-instance'
@@ -74,7 +76,11 @@ class Interpreter
     return r
   }
   visitArrayValueExpr(expr: ArrayValueExpr): Instance {
-    throw new Error('Method not implemented.')
+    const arr: Instance[] = []
+    for (const e of expr.elements) {
+      arr.push(this.evaluate(e))
+    }
+    return new ArrayInstance(ArrayClass.get(), arr)
   }
   visitUnaryPlusMinusValueExpr(expr: UnaryPlusMinusValueExpr): Instance {
     const r = this.evaluate(expr.right)
@@ -158,7 +164,13 @@ class Interpreter
     return this.environment.getRef(expr.name)
   }
   visitSquareAccessorRefExpr(expr: SquareAccessorRefExpr): ValueRef {
-    throw new Error('Method not implemented.')
+    const arr = this.evaluate(expr.object)
+    const key = this.evaluate(expr.property)
+    return {
+      set: (value: Instance) =>
+        arr.callMagicMethod(MagicMethod.__setitem__, [key, value], this),
+      get: () => arr.callMagicMethod(MagicMethod.__getitem__, [key], this),
+    }
   }
   visitDotAccessorRefExpr(expr: DotAccessorRefExpr): ValueRef {
     return this.evaluate(expr.object).getRef(expr.property)
