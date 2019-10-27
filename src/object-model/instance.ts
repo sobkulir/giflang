@@ -11,9 +11,13 @@ interface ValueRef {
 
 class Instance {
   public fields: Map<string, Instance> = new Map()
+  private static nextId: number = 0
+  public id: number
 
   // Caller is responsible for setting the klass.
-  constructor(public klass: Class | null) { }
+  constructor(public klass: Class | null) {
+    this.id = Instance.nextId++
+  }
 
   getClass(): Class {
     if (this.klass instanceof Class) {
@@ -70,9 +74,21 @@ class Instance {
     interpreter: CodeExecuter
   ): Instance {
     const method = this.getClass().getInBases(functionName)
+
     if (method) {
       if (method instanceof FunctionInstance) {
-        return method.bind(this).call(interpreter, args)
+
+        let descriptiveName = ''
+        if (this instanceof FunctionInstance) {
+          descriptiveName = this.getName()
+        } else {
+          descriptiveName = method.getName()
+        }
+
+        interpreter.callStack.push(descriptiveName)
+        const retValue = method.bind(this).call(interpreter, args)
+        interpreter.callStack.pop()
+        return retValue
       } else {
         throw new Error(`TODO: ToString(${functionName}) is not callable.`)
       }

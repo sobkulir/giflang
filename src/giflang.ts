@@ -3,29 +3,23 @@ import { ParseGiflang } from './parser'
 
 const interpreter = new Interpreter((str) => console.log(str))
 const root = ParseGiflang(`
-X; ASSIGN; LBRA;
-  LBRA; 1; COMMA; 2; COMMA; 3; RBRA; COMMA;
-  LBRA; 4; COMMA; 5; COMMA; 6; RBRA; RBRA; SEMICOLON;
-
-FOR; LPAR;
-    I; ASSIGN; 0; SEMICOLON;
-    I; LT; X; PROP; l;e;n;g;t;h; LPAR; RPAR; SEMICOLON;
-    I; ASSIGN; I; PLUS; 1;
-  RPAR; LCURLY;
-  FOR; LPAR;
-    J; ASSIGN; 0; SEMICOLON;
-    J; LT; X; LBRA; I; RBRA; PROP; l;e;n;g;t;h; LPAR; RPAR; SEMICOLON;
-    J; ASSIGN; J; PLUS; 1;
-  RPAR; LCURLY;
-    P;R;I;N;T; LPAR; X; LBRA; I; RBRA; LBRA; J; RBRA; RPAR; SEMICOLON;
+FUNCTION; F; LPAR; x; RPAR;
+LCURLY;
+  IF; LPAR; x; EQ; 0; RPAR;
+  LCURLY;
+   5; DIV; 0; SEMICOLON;
   RCURLY;
+  F; LPAR; x; MINUS; 1; RPAR; SEMICOLON;
 RCURLY;
 
-j; ASSIGN; QUOTE; a;c;h; QUOTE; SEMICOLON;
-P;R;I;N;T; LPAR; j; LBRA; 3; RBRA; RPAR; SEMICOLON;
+F; LPAR; 2; RPAR; SEMICOLON;
 `,
 )
-interpreter.visitProgramStmt(root)
+try {
+  interpreter.visitProgramStmt(root)
+} finally {
+  console.log(interpreter.callStack)
+}
 
 const parkPlatz = `
 CLASS; C; LCURLY;

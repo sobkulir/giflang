@@ -4,6 +4,8 @@ import { Environment } from './environment'
 
 interface CodeExecuter {
   executeInEnvironment(stmts: Stmt[], excEnv: Environment): Completion
+  callStack: string[]
 }
 
 export { CodeExecuter }
+

@@ -1,5 +1,5 @@
 enum MagicMethod {
-  __str__ = '__STR__',
+  __str__ = '__str__',
 
   __add__ = '__add__',
   __mul__ = '__mul__',
@@ -14,14 +14,14 @@ enum MagicMethod {
   __ge__ = '__ge__',
   __gt__ = '__gt__',
 
-  __bool__ = '__BOOL__',
+  __bool__ = '__bool__',
   __neg__ = '__neg__',
   __pos__ = '__pos__',
   __getitem__ = '__getitem__',
   __setitem__ = '__setitem__',
 
-  __call__ = '__CALL__',
-  __init__ = '__INIT__',
+  __call__ = '__call__',
+  __init__ = '__init__',
 }
 export { MagicMethod }
 

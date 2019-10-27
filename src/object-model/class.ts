@@ -149,6 +149,24 @@ class ObjectClass extends Class {
     return BoolInstance.getTrue()
   }
 
+  static __eq__(
+    _interpreter: CodeExecuter,
+    args: Instance[]
+  ): BoolInstance {
+    CheckArityEq(args, 2)
+    if (args[0].id === args[1].id) return BoolInstance.getTrue()
+    else return BoolInstance.getFalse()
+  }
+
+  static __ne__(
+    _interpreter: CodeExecuter,
+    args: Instance[]
+  ): BoolInstance {
+    CheckArityEq(args, 2)
+    if (args[0].id !== args[1].id) return BoolInstance.getTrue()
+    else return BoolInstance.getFalse()
+  }
+
   private constructor() {
     super(/* klass = */ null, nameof(ObjectClass), /* base = */ null)
   }
@@ -162,7 +180,10 @@ class ObjectClass extends Class {
         [
           [MagicMethod.__init__, ObjectClass.__init__],
           [MagicMethod.__str__, ObjectClass.__str__],
-          [MagicMethod.__bool__, ObjectClass.__bool__]
+          [MagicMethod.__bool__, ObjectClass.__bool__],
+          [MagicMethod.__eq__, ObjectClass.__eq__],
+          [MagicMethod.__ne__, ObjectClass.__ne__],
+
         ],
         WrappedFunctionClass.get())
     }
@@ -491,13 +512,15 @@ class UserClass extends Class {
     base: Class, methods: FunctionDeclStmt[], env: Environment) {
     super(MetaClass.get(), name, base)
 
-    // TODO: Super should be bound here.
+    const superEnv = new Environment(env)
+    superEnv.shallowSet('super', base)
+
     for (const m of methods) {
       this.fields.set(m.name,
         new UserFunctionInstance(
           UserFunctionClass.get(),
           m,
-          env,
+          superEnv,
           `${this.name}.${m.name}`))
     }
   }

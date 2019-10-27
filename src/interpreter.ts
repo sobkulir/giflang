@@ -21,6 +21,7 @@ class Interpreter
   CodeExecuter {
   private readonly globals: Environment
   private environment: Environment
+  public callStack: string[] = []
 
   constructor(print: (str: string) => void) {
     this.globals = new Environment(null)
