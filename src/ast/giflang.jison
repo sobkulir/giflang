@@ -65,8 +65,7 @@ VALID_CHAR					([A-Z]|[0-9])
 "PROP"						{ return delimit('PROP'); }
 "COMMA"						{ return delimit('COMMA'); }
 "QUOTE"						{ return delimit('QUOTE'); }
-[A-Z]						{ return delimit('LETTER'); }
-"_"							{ return delimit('LETTER'); }
+[A-Za-z_]						{ return delimit('LETTER'); }
 [0-9]						{ return delimit('DIGIT'); }
 
 <delimit>{DELIMITER}		this.popState();

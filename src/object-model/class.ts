@@ -3,6 +3,7 @@ import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
 import { BoolInstance, Instance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
 import { MagicMethod } from './magic-method'
+import { NumberInstance } from './std/number-instance'
 
 function CheckArityEq(args: Instance[], n: number) {
   // TODO: Add fcn name.
@@ -411,6 +412,30 @@ class StringClass extends Class {
     )
   }
 
+  static __getitem__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): StringInstance {
+    CheckArityEq(args, 2)
+    const self = args[0].castOrThrow(StringInstance)
+    const key = args[1].castOrThrow(NumberInstance)
+    if (key.value >= 0 && key.value < self.value.length) {
+      return new StringInstance(
+        StringClass.get(),
+        self.value[key.value]
+      )
+    } else {
+      throw new Error('TODO: Index out of range.')
+    }
+  }
+
+  static __setitem__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): StringInstance {
+    throw new Error('Strings are immutable.')
+  }
+
   static comparatorOp(
     action: (lhs: string, rhs: string) => boolean,
   ): (_interpreter: CodeExecuter, args: Instance[]) => BoolInstance {
@@ -438,6 +463,8 @@ class StringClass extends Class {
         [MagicMethod.__ne__, StringClass.comparatorOp((l, r) => l !== r)],
         [MagicMethod.__ge__, StringClass.comparatorOp((l, r) => l >= r)],
         [MagicMethod.__gt__, StringClass.comparatorOp((l, r) => l > r)],
+        [MagicMethod.__getitem__, StringClass.__getitem__],
+        [MagicMethod.__setitem__, StringClass.__setitem__]
       ],
       WrappedFunctionClass.get()
     )
