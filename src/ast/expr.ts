@@ -1,13 +1,14 @@
+import { AstNode, JisonLocator } from './ast-node'
 import { Operator } from './operator'
 
 type Expr = RefExpr | ValueExpr
 
-abstract class ValueExpr {
+abstract class ValueExpr extends AstNode {
   abstract accept<T>(visitor: VisitorValueExpr<T>): T
 }
 
 /* Expressions that can appear on the left hand side of an assignment. */
-abstract class RefExpr {
+abstract class RefExpr extends AstNode {
   abstract accept<T>(visitor: VisitorRefExpr<T>): T
 }
 
@@ -24,8 +25,10 @@ interface VisitorValueExpr<T> {
 }
 
 class AssignmentValueExpr extends ValueExpr {
-  constructor(readonly lhs: RefExpr, readonly rhs: Expr) {
-    super()
+  constructor(
+    readonly lhs: RefExpr,
+    readonly rhs: Expr, loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorValueExpr<T>): T {
@@ -35,8 +38,9 @@ class AssignmentValueExpr extends ValueExpr {
 
 class NumberValueExpr extends ValueExpr {
   readonly value: number
-  constructor(readonly rawValue: string) {
-    super()
+  constructor(
+    readonly rawValue: string, loc: JisonLocator) {
+    super(loc)
     this.value = Number(rawValue)
   }
 
@@ -47,8 +51,9 @@ class NumberValueExpr extends ValueExpr {
 
 class StringValueExpr extends ValueExpr {
   readonly value: string
-  constructor(readonly rawValue: string) {
-    super()
+  constructor(
+    readonly rawValue: string, loc: JisonLocator) {
+    super(loc)
     // TODO: Account for escaping.
     this.value = rawValue
   }
@@ -59,8 +64,9 @@ class StringValueExpr extends ValueExpr {
 }
 
 class ArrayValueExpr extends ValueExpr {
-  constructor(readonly elements: Expr[]) {
-    super()
+  constructor(
+    readonly elements: Expr[], loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorValueExpr<T>): T {
@@ -69,8 +75,8 @@ class ArrayValueExpr extends ValueExpr {
 }
 
 class NoneValueExpr extends ValueExpr {
-  constructor() {
-    super()
+  constructor(loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorValueExpr<T>): T {
@@ -79,8 +85,10 @@ class NoneValueExpr extends ValueExpr {
 }
 
 class UnaryPlusMinusValueExpr extends ValueExpr {
-  constructor(readonly operator: Operator, readonly right: Expr) {
-    super()
+  constructor(
+    readonly operator: Operator,
+    readonly right: Expr, loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorValueExpr<T>): T {
@@ -89,8 +97,8 @@ class UnaryPlusMinusValueExpr extends ValueExpr {
 }
 
 class UnaryNotValueExpr extends ValueExpr {
-  constructor(readonly right: Expr) {
-    super()
+  constructor(readonly right: Expr, loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorValueExpr<T>): T {
@@ -103,8 +111,9 @@ class BinaryValueExpr extends ValueExpr {
     readonly operator: Operator,
     readonly left: Expr,
     readonly right: Expr,
+    loc: JisonLocator
   ) {
-    super()
+    super(loc)
   }
 
   accept<T>(visitor: VisitorValueExpr<T>): T {
@@ -113,8 +122,10 @@ class BinaryValueExpr extends ValueExpr {
 }
 
 class CallValueExpr extends ValueExpr {
-  constructor(readonly callee: Expr, readonly args: Expr[]) {
-    super()
+  constructor(
+    readonly callee: Expr,
+    readonly args: Expr[], loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorValueExpr<T>): T {
@@ -129,8 +140,8 @@ interface VisitorRefExpr<T> {
 }
 
 class VariableRefExpr extends RefExpr {
-  constructor(readonly name: string) {
-    super()
+  constructor(readonly name: string, loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorRefExpr<T>): T {
@@ -139,8 +150,10 @@ class VariableRefExpr extends RefExpr {
 }
 
 class SquareAccessorRefExpr extends RefExpr {
-  constructor(readonly object: Expr, readonly property: Expr) {
-    super()
+  constructor(
+    readonly object: Expr,
+    readonly property: Expr, loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorRefExpr<T>): T {
@@ -149,8 +162,10 @@ class SquareAccessorRefExpr extends RefExpr {
 }
 
 class DotAccessorRefExpr extends RefExpr {
-  constructor(readonly object: Expr, readonly property: string) {
-    super()
+  constructor(
+    readonly object: Expr,
+    readonly property: string, loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorRefExpr<T>): T {

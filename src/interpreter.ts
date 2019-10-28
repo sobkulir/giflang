@@ -1,3 +1,4 @@
+import { JisonLocator } from './ast/ast-node'
 import { BreakCompletion, Completion, CompletionType, ContinueCompletion, NormalCompletion, ReturnCompletion } from './ast/completion'
 import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, DotAccessorRefExpr, Expr, NoneValueExpr, NumberValueExpr, RefExpr, SquareAccessorRefExpr, StringValueExpr, UnaryNotValueExpr, UnaryPlusMinusValueExpr, ValueExpr, VariableRefExpr, VisitorRefExpr, VisitorValueExpr } from './ast/expr'
 import { Operator } from './ast/operator'
@@ -22,6 +23,8 @@ class Interpreter
   private readonly globals: Environment
   private environment: Environment
   public callStack: string[] = []
+  public locator: JisonLocator =
+    { first_column: 0, first_line: 0, last_column: 0, last_line: 0 }
 
   constructor(print: (str: string) => void) {
     this.globals = new Environment(null)
@@ -34,10 +37,12 @@ class Interpreter
   }
 
   private evaluateRef(expr: RefExpr): ValueRef {
+    this.locator = expr.locator
     return expr.accept(this)
   }
 
   private evaluate(expr: Expr): Instance {
+    this.locator = expr.locator
     if (expr instanceof ValueExpr) {
       return expr.accept(this)
     } else {
@@ -46,6 +51,7 @@ class Interpreter
   }
 
   execute(stmt: Stmt): Completion {
+    this.locator = stmt.locator
     return stmt.accept(this)
   }
 

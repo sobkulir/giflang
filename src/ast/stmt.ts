@@ -1,3 +1,4 @@
+import { AstNode, JisonLocator } from './ast-node'
 import { CompletionType } from './completion'
 import { Expr } from './expr'
 
@@ -14,7 +15,7 @@ interface VisitorStmt<T> {
   visitExprStmt(stmt: ExprStmt): T
 }
 
-abstract class Stmt {
+abstract class Stmt extends AstNode {
   abstract accept<T>(visitor: VisitorStmt<T>): T
 }
 
@@ -25,9 +26,10 @@ class IfStmt extends Stmt {
   constructor(
     readonly condition: Expr,
     consequent: Stmt,
-    alternate: Stmt | null
+    alternate: Stmt | null,
+    loc: JisonLocator
   ) {
-    super()
+    super(loc)
     this.consequent = ensureIsBlockStmt(consequent)
     this.alternate = alternate !== null ? ensureIsBlockStmt(alternate) : null
   }
@@ -38,8 +40,8 @@ class IfStmt extends Stmt {
 }
 
 class BlockStmt extends Stmt {
-  constructor(readonly stmts: Stmt[]) {
-    super()
+  constructor(readonly stmts: Stmt[], loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorStmt<T>): T {
@@ -50,8 +52,10 @@ class BlockStmt extends Stmt {
 class WhileStmt extends Stmt {
   readonly body: BlockStmt
 
-  constructor(readonly condition: Expr, body: Stmt) {
-    super()
+  constructor(
+    readonly condition: Expr,
+    body: Stmt, loc: JisonLocator) {
+    super(loc)
     this.body = ensureIsBlockStmt(body)
   }
 
@@ -67,9 +71,10 @@ class ForStmt extends Stmt {
     readonly preamble: Expr[],
     readonly condition: Expr | null,
     readonly increments: Expr[],
-    body: Stmt
+    body: Stmt,
+    loc: JisonLocator
   ) {
-    super()
+    super(loc)
     this.body = ensureIsBlockStmt(body)
   }
 
@@ -82,9 +87,10 @@ class FunctionDeclStmt extends Stmt {
   constructor(
     readonly name: string,
     readonly parameters: string[],
-    readonly body: BlockStmt
+    readonly body: BlockStmt,
+    loc: JisonLocator
   ) {
-    super()
+    super(loc)
   }
 
   accept<T>(visitor: VisitorStmt<T>): T {
@@ -96,9 +102,10 @@ class ClassDefStmt extends Stmt {
   constructor(
     readonly name: string,
     readonly baseName: string | null,
-    readonly methods: FunctionDeclStmt[]
+    readonly methods: FunctionDeclStmt[],
+    loc: JisonLocator
   ) {
-    super()
+    super(loc)
   }
 
   accept<T>(visitor: VisitorStmt<T>): T {
@@ -109,9 +116,10 @@ class ClassDefStmt extends Stmt {
 class CompletionStmt extends Stmt {
   constructor(
     readonly completionType: CompletionType,
-    readonly right: Expr | null = null
+    readonly right: Expr | null = null,
+    loc: JisonLocator
   ) {
-    super()
+    super(loc)
   }
 
   accept<T>(visitor: VisitorStmt<T>): T {
@@ -120,8 +128,8 @@ class CompletionStmt extends Stmt {
 }
 
 class ProgramStmt extends Stmt {
-  constructor(readonly body: Stmt[]) {
-    super()
+  constructor(readonly body: Stmt[], loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorStmt<T>): T {
@@ -136,8 +144,8 @@ class EmptyStmt extends Stmt {
 }
 
 class ExprStmt extends Stmt {
-  constructor(readonly expr: Expr) {
-    super()
+  constructor(readonly expr: Expr, loc: JisonLocator) {
+    super(loc)
   }
 
   accept<T>(visitor: VisitorStmt<T>): T {
@@ -149,7 +157,7 @@ class ExprStmt extends Stmt {
 // if it's not a BlockStmt already.
 function ensureIsBlockStmt(stmt: Stmt): BlockStmt {
   if (stmt instanceof BlockStmt) return stmt
-  else return new BlockStmt([stmt])
+  else return new BlockStmt([stmt], stmt.locator)
 }
 
 export { VisitorStmt, Stmt, IfStmt, BlockStmt, WhileStmt, ForStmt, FunctionDeclStmt, ClassDefStmt, CompletionStmt, ProgramStmt, EmptyStmt, ExprStmt }

@@ -3,16 +3,16 @@ import { ParseGiflang } from './parser'
 
 const interpreter = new Interpreter((str) => console.log(str))
 const root = ParseGiflang(`
-FUNCTION; F; LPAR; x; RPAR;
-LCURLY;
-  IF; LPAR; x; EQ; 0; RPAR;
+FUNCTION; F; LPAR; P; RPAR;
+LCURLY;  
+  IF; LPAR; P; EQ; 0; RPAR; 
   LCURLY;
-   5; DIV; 0; SEMICOLON;
+    RETURN; 0; DIV; 0; SEMICOLON;
   RCURLY;
-  F; LPAR; x; MINUS; 1; RPAR; SEMICOLON;
+  F; LPAR; P; MINUS; 1; RPAR; SEMICOLON;
 RCURLY;
 
-F; LPAR; 2; RPAR; SEMICOLON;
+F; LPAR; 3; RPAR; SEMICOLON;
 `,
 )
 try {
@@ -22,7 +22,7 @@ try {
 }
 
 const parkPlatz = `
-CLASS; C; LCURLY;
+CLASS; C; LCURLY; 
   FUNCTION; _;_;C;A;L;L;_;_; LPAR; S; RPAR; LCURLY;
     P;R;I;N;T; LPAR; QUOTE; X; QUOTE; RPAR; SEMICOLON;
   RCURLY;

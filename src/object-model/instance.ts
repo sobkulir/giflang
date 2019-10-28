@@ -85,7 +85,8 @@ class Instance {
           descriptiveName = method.getName()
         }
 
-        interpreter.callStack.push(descriptiveName)
+        interpreter.callStack.push(
+          `${descriptiveName} called at line ${interpreter.locator.first_line}`)
         const retValue = method.bind(this).call(interpreter, args)
         interpreter.callStack.pop()
         return retValue

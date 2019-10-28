@@ -300,6 +300,23 @@ A; ASSIGN; SEMICOLON;`,
           expected: ExpectedResult.FAIL_PARSE
         }
       ]
+    },
+    {
+      name: 'Spaces',
+      tests: [
+        {
+          name: 'Spaces in string literal are ok',
+          source: `
+QUOTE; SPACE; QUOTE; SEMICOLON;`,
+          expected: ExpectedResult.PASS_PARSE
+        },
+        {
+          name: 'Spaces outside of string literal are ignored',
+          source: `
+SPACE; SPACE; A; SPACE; ASSIGN; SPACE; 1; SPACE; SEMICOLON; SPACE;`,
+          expected: ExpectedResult.PASS_PARSE
+        }
+      ]
     }
   ],
 }
