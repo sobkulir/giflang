@@ -13,11 +13,18 @@
         "source.fixAll": true,
       }
     },
+    "[typescriptreact]": {
+      "editor.formatOnSave": true,
+      "editor.tabSize": 2,
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
+        "source.fixAll": true,
+      } 
+    },
     "tslint.autoFixOnSave": true,
   },
   "launch": {
     "configurations": [
-      
       {
       "type": "node",
       "request": "launch",

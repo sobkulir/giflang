@@ -5,19 +5,32 @@
   "private": true,
   "scripts": {
     "build": "webpack",
-    "test": "node dist/test.js"
+    "test": "node dist/test.js",
+    "start": "webpack-dev-server -d --watch"
   },
   "author": "Roman Sobkuliak (sobkulir)",
   "license": "ISC",
   "devDependencies": {
     "@types/ts-nameof": "^3.2.0",
+    "css-loader": "^3.2.0",
     "jison-gho-loader": "^1.0.1",
+    "node-sass": "^4.13.0",
+    "sass-loader": "^8.0.0",
+    "style-loader": "^1.0.0",
     "ts-loader": "^6.0.4",
     "ts-nameof": "^3.2.0",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-config-standard": "^8.0.1",
     "typescript": "^3.5.2",
-    "webpack": "^4.35.0"
+    "webpack": "^4.35.0",
+    "webpack-cli": "^3.3.9",
+    "webpack-dev-server": "^3.9.0"
+  },
+  "dependencies": {
+    "@types/react": "^16.9.11",
+    "@types/react-dom": "^16.9.3",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0"
   }
 }
