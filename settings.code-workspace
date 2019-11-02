@@ -13,6 +13,7 @@
         "source.fixAll": true,
       }
     },
+    "tslint.autoFixOnSave": true,
     "[typescriptreact]": {
       "editor.formatOnSave": true,
       "editor.tabSize": 2,
@@ -21,7 +22,6 @@
         "source.fixAll": true,
       } 
     },
-    "tslint.autoFixOnSave": true,
   },
   "launch": {
     "configurations": [
