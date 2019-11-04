@@ -7,12 +7,13 @@ const getInitialState = (): State => (
   {
     editor: {
       cursorPosition: { row: 0, col: 0 },
-      letterSize: { edgePx: 80, marginPx: 8 },
+      letterSize: { edgePx: 90, marginPx: 6 },
       signToGifMap: new Map(
-        [
-          [Sign.A, 'trump.webp'],
-          [Sign.B, 'borat.webp']
-        ]),
+
+        (Object.keys(Sign).map((key) => Sign[key as any])
+          .filter((value) => typeof value === 'string') as string[])
+          .map((key) => [Sign[key as any] as unknown as Sign, `${key}.webp`])
+      ),
       text: [
         new LetterRowImp([new LetterImp(Sign.A), new LetterImp(Sign.B), new LetterImp(Sign.A), new LetterImp(Sign.A), new LetterImp(Sign.A)]),
         new LetterRowImp([new LetterImp(Sign.A), new LetterImp(Sign.B)]),

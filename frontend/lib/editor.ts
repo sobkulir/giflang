@@ -98,5 +98,6 @@ function MoveCursorDown(position: PositionRowCol, text: Text): PositionRowCol {
   }
 }
 
+
 export { LetterImp, LetterRowImp, PositionPixelsToRowCol, PositionRowColToPixels, TrimPositionRowCol, MoveCursorRight, MoveCursorLeft, MoveCursorDown, MoveCursorUp }
 

@@ -1,11 +1,12 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
+import scrollIntoView from 'scroll-into-view-if-needed'
 import { PositionRowColToPixels } from '../lib/editor'
-import { addSignAfterCursor as _addSignAfterCursor, Direction, moveCursor as _moveCursor, newlineAfterCursor as _newlineAfterCursor, removeAfterCursor as _removeAfterCursor, setCursorPosition as _setCursorPosition } from '../redux/editor/actions'
-import { Sign } from '../redux/editor/sign'
+import { addSignAfterCursor as _addSignAfterCursor, moveCursor as _moveCursor, newlineAfterCursor as _newlineAfterCursor, removeAfterCursor as _removeAfterCursor, setCursorPosition as _setCursorPosition } from '../redux/editor/actions'
 import { EditorState, LetterRow, LetterSize, PositionRowCol, SignToGifMap } from '../redux/editor/types'
 import { State } from '../redux/types'
 import * as styles from './editor.scss'
+import { HandleShorcuts } from './editorShorcuts'
 
 interface RowProps {
   letterRow: LetterRow
@@ -31,7 +32,7 @@ const Row: React.SFC<RowProps> = (props) => {
     height: `${letterSize.edgePx + 2 * letterSize.marginPx}px`
   })
   return (
-    <div style={getRowStyles(props.size)}>
+    <div className={styles.letterRow} style={getRowStyles(props.size)}>
       {row}
     </div>
   )
@@ -46,8 +47,7 @@ const Cursor: React.SFC<CursorProps> = (props) => {
     width: '2px',
     height: `${letterSize.edgePx + 2 * letterSize.marginPx}px`,
     backgroundColor: 'black',
-    position: 'absolute',
-    top: '0',
+    position: 'relative',
     left: '-1px'
   })
   return (<div style={getCursorStyles(props.letterSize)} />)
@@ -62,27 +62,49 @@ interface EditorProps extends EditorState {
 }
 
 class Editor extends React.Component<EditorProps, {}> {
-  readonly editorWrapperRef: React.RefObject<HTMLDivElement>
+  readonly textWrapperRef: React.RefObject<HTMLDivElement>
+  readonly cursorRef: React.RefObject<HTMLDivElement>
+  scrollToCursorAfterUpdate: boolean
+
   constructor(props: EditorProps) {
     super(props)
-    this.editorWrapperRef = React.createRef()
+    this.scrollToCursorAfterUpdate = false
+    this.textWrapperRef = React.createRef()
+    this.cursorRef = React.createRef()
+  }
+
+  componentDidUpdate() {
+    if (this.scrollToCursorAfterUpdate) {
+      const cursor = this.cursorRef.current as HTMLDivElement
+      scrollIntoView(cursor, {
+        block: 'nearest',
+        inline: 'nearest',
+        scrollMode: 'if-needed'
+      })
+      this.scrollToCursorAfterUpdate = false
+    }
   }
 
   getCursorPositionStyles = (letterSize: LetterSize, position: PositionRowCol)
     : React.CSSProperties => {
     const positionPixels = PositionRowColToPixels(letterSize, position)
+    const boxSize = 2 * letterSize.marginPx + letterSize.edgePx
     return {
       position: 'absolute',
-      top: `${positionPixels.y}px`,
-      left: `${positionPixels.x}px`
+      padding: `${boxSize}px`,
+      top: `${positionPixels.y - boxSize}px`,
+      left: `${positionPixels.x - boxSize}px`
     }
   }
 
   handleOnMouseDown = (e: React.MouseEvent) => {
     e.preventDefault()
-    const wrapper = this.editorWrapperRef.current as HTMLDivElement
+    const wrapper = this.textWrapperRef.current as HTMLDivElement
     wrapper.focus({ preventScroll: true })
     const wrapperRect = wrapper.getBoundingClientRect()
+    console.log(wrapperRect)
+    console.log(e.pageX)
+    console.log(window.pageXOffset)
     this.props.setCursorPosition(
       {
         x: e.pageX - wrapperRect.left - window.pageXOffset,
@@ -90,25 +112,8 @@ class Editor extends React.Component<EditorProps, {}> {
       })
   }
   handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'A') {
-      this.props.addSignAfterCursor(Sign[e.key])
-    } else if (e.key === 'ArrowRight') {
-      this.props.moveCursor(Direction.RIGHT)
-    } else if (e.key === 'ArrowDown') {
-      this.props.moveCursor(Direction.DOWN)
-    } else if (e.key === 'ArrowLeft') {
-      this.props.moveCursor(Direction.LEFT)
-    } else if (e.key === 'ArrowUp') {
-      this.props.moveCursor(Direction.UP)
-    } else if (e.key === 'Delete') {
-      this.props.removeAfterCursor()
-    } else if (e.key === 'Backspace') {
-      this.props.moveCursor(Direction.LEFT)
-      this.props.removeAfterCursor()
-    } else if (e.key === 'Enter') {
-      this.props.newlineAfterCursor()
-    }
-    console.log(e.key)
+    const causedAction = HandleShorcuts(e, this.props)
+    this.scrollToCursorAfterUpdate = causedAction
   }
 
   render() {
@@ -124,15 +129,17 @@ class Editor extends React.Component<EditorProps, {}> {
       this.props.letterSize, this.props.cursorPosition)
 
     return (
-      <div>
+      <div
+        className={styles.editorWrapper}
+      >
         <div
-          className={styles.editor}
-          ref={this.editorWrapperRef}
+          className={styles.textWrapper}
+          ref={this.textWrapperRef}
           onMouseDown={this.handleOnMouseDown}
           onKeyDown={this.handleKeyPress}
           tabIndex={0}
         >
-          <div style={cursorWrapperStyle}>
+          <div style={cursorWrapperStyle} ref={this.cursorRef}>
             <Cursor letterSize={this.props.letterSize} />
           </div>
           {rows}
@@ -142,6 +149,7 @@ class Editor extends React.Component<EditorProps, {}> {
   }
 }
 
+export { EditorProps }
 export default connect(
   (state: State) => ({
     ...state.editor,
