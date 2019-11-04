@@ -5,8 +5,8 @@ module.exports = {
   devtool: "inline-source-map",
   entry: {
     frontend: "./frontend/app.tsx",
-    main: "./src/giflang.ts",
-    test: "./src/tests.ts",
+    main: "./interpreter/giflang.ts",
+    test: "./interpreter/tests.ts",
   },
   mode: "development",
   module: {
