@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "lib": ["dom"],
+    "lib": ["webworker", "dom"],
     "sourceMap": true,
     "strict": true,
     "module": "commonjs",
     "target": "es6",
     "outDir": "dist",
-    "jsx": "react"
+    "jsx": "react",
+    "esModuleInterop": true,
   }
 }

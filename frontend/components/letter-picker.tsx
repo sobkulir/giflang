@@ -57,7 +57,7 @@ class LetterPicker extends React.Component<LetterPickerProps, {}> {
     const shrinkedLetterPx = this.shrinkFactor * originalLetterPx
     // Accomodate 6 images on a single row
     return {
-      width: `${5 * shrinkedLetterPx}px`
+      width: `${4 * shrinkedLetterPx}px`
     }
   }
 
@@ -72,12 +72,13 @@ class LetterPicker extends React.Component<LetterPickerProps, {}> {
         shrinkFactor={this.shrinkFactor}
       />
     ))
+    // Nested divs are used so that a scrollbar of the outer div
+    // does not use width of the inner div.
     return (
-      <div
-        className={styles.letterPicker}
-        style={this.getLetterPickerStyles()}
-      >
-        {categories}
+      <div className={styles.letterPicker}>
+        <div style={this.getLetterPickerStyles()}>
+          {categories}
+        </div>
       </div>
     )
   }

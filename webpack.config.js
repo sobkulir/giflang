@@ -2,7 +2,7 @@ const path = require("path");
 const tsNameof = require("ts-nameof");
 
 module.exports = {
-  devtool: "inline-source-map",
+  devtool: "source-map",
   entry: {
     frontend: "./frontend/app.tsx",
     main: "./interpreter/giflang.ts",

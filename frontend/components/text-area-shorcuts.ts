@@ -26,43 +26,60 @@ function HandleShorcuts(e: React.KeyboardEvent, props: TextAreaProps)
   }
 
   // Equalities
-  if (e.key === '<') {
-    props.addSignAfterCursor(Sign.LT)
-    return true
-  } else if (e.key === '>') {
-    props.addSignAfterCursor(Sign.GT)
-    return true
+  let sign: Sign | null = null
+  switch (e.key) {
+    case '<':
+      sign = Sign.LT; break
+    case '>':
+      sign = Sign.GT; break
+    // Parentheses
+    case '(':
+      sign = Sign.LPAR; break
+    case ')':
+      sign = Sign.RPAR; break
+    case '[':
+      sign = Sign.LBRA; break
+    case ']':
+      sign = Sign.RBRA; break
+    case '{':
+      sign = Sign.LCURLY; break
+    case '}':
+      sign = Sign.RCURLY; break
+    // Arithmetics
+    case '+':
+      sign = Sign.PLUS; break
+    case '-':
+      sign = Sign.MINUS; break
+    case '*':
+      sign = Sign.MUL; break
+    case '/':
+      sign = Sign.DIV; break
+    case '%':
+      sign = Sign.MOD; break
+    // Random
+    case '=':
+      sign = Sign.ASSIGN; break
+    case ';':
+      sign = Sign.SEMICOLON; break
+    case ' ':
+      sign = Sign.SPACE; break
+    case '.':
+      sign = Sign.PROP; break
+    case '"':
+      sign = Sign.QUOTE; break
+    case ',':
+      sign = Sign.COMMA; break
+    // Boolean
+    case '!':
+      sign = Sign.NOT; break
+    case '|':
+      sign = Sign.OR; break
+    case '&':
+      sign = Sign.AND; break
   }
 
-  if (e.key === '(') {
-    props.addSignAfterCursor(Sign.LPAR)
-    return true
-  } else if (e.key === ')') {
-    props.addSignAfterCursor(Sign.RPAR)
-    return true
-  }
-
-  // Arithmetics
-  if (e.key === '+') {
-    props.addSignAfterCursor(Sign.PLUS)
-    return true
-  } else if (e.key === '-') {
-    props.addSignAfterCursor(Sign.MINUS)
-    return true
-  } else if (e.key === '*') {
-    props.addSignAfterCursor(Sign.MUL)
-    return true
-  } else if (e.key === '/') {
-    props.addSignAfterCursor(Sign.DIV)
-    return true
-  } else if (e.key === '%') {
-    props.addSignAfterCursor(Sign.MOD)
-    return true
-  }
-
-  // Random
-  if (e.key === ';') {
-    props.addSignAfterCursor(Sign.SEMICOLON)
+  if (sign !== null) {
+    props.addSignAfterCursor(sign)
     return true
   }
 

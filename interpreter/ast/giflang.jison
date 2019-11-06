@@ -33,13 +33,13 @@ VALID_CHAR					([A-Z]|[0-9])
 "DIV"						{ return delimit('DIV'); }
 "MOD"						{ return delimit('MOD'); }
 
+"TRUE"						{ return delimit('TRUE'); }
+"FALSE"						{ return delimit('FALSE'); }
 "NOT"						{ return delimit('NOT'); }
 "OR"						{ return delimit('OR'); }
 "AND"						{ return delimit('AND'); }
 
 "ASSIGN"					{ return delimit('ASSIGN'); }
-"TRUE"						{ return delimit('TRUE'); }
-"FALSE"						{ return delimit('FALSE'); }
 "NONE"						{ return delimit('NONE'); }
 
 "LPAR"						{ return delimit('LPAR'); }

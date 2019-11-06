@@ -81,7 +81,10 @@ function MoveCursorUp(position: PositionRowCol, text: Text): PositionRowCol {
       col: Math.min(position.col, text[rowUp].letters.length)
     }
   } else {
-    return position
+    return {
+      row: 0,
+      col: 0
+    }
   }
 }
 
@@ -94,7 +97,11 @@ function MoveCursorDown(position: PositionRowCol, text: Text): PositionRowCol {
       col: Math.min(position.col, text[rowDown].letters.length)
     }
   } else {
-    return position
+    const lastRow = text.length - 1
+    return {
+      row: lastRow,
+      col: text[lastRow].letters.length
+    }
   }
 }
 
