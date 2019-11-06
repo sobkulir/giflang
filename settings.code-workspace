@@ -28,7 +28,7 @@
       {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
+      "name": "Launch Interpret",
       "program": "${workspaceFolder}/giflang.ts",
       "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"]
