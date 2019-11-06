@@ -1,4 +1,15 @@
+html,
 body {
-    margin: 0;
-    padding: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+:global(#root) {
+  display: flex;
+  flex: 1;
+  /* Min-width hack: https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container */
+  min-width: 0;
 }

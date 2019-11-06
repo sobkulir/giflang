@@ -1,7 +1,7 @@
 import { produce } from 'immer'
-import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRight, MoveCursorUp, PositionPixelsToRowCol, TrimPositionRowCol } from '../../lib/editor'
+import { Sign } from '../../lib/sign'
+import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRight, MoveCursorUp, PositionPixelsToRowCol, TrimPositionRowCol } from '../../lib/text-area'
 import { MyAction, State } from '../types'
-import { Sign } from './sign'
 import { PositionPixels } from './types'
 
 const setCursorPosition =
@@ -25,7 +25,8 @@ const addSignAfterCursor =
       const position = state.editor.cursorPosition
       state.editor.text[position.row].letters
         .splice(position.col, 0, new LetterImp(sign))
-      state.editor.cursorPosition = MoveCursorRight(position, state.editor.text)
+      state.editor.cursorPosition =
+        MoveCursorRight(position, state.editor.text)
     })
   })
 

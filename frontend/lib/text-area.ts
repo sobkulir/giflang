@@ -1,6 +1,6 @@
 import { immerable } from 'immer'
-import { Sign } from '../redux/editor/sign'
 import { Letter, LetterRow, LetterSize, PositionPixels, PositionRowCol, Text } from '../redux/editor/types'
+import { Sign } from './sign'
 
 function CreateId(): string {
   // Source: https://stackoverflow.com/a/8084248

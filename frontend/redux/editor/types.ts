@@ -1,8 +1,4 @@
-import { Sign } from './sign'
-
-enum EditorActionType {
-  SET_CURSOR_POSITION = 'SET_CURSOR_POSITION',
-}
+import { Sign } from '../../lib/sign'
 
 interface LetterSize {
   edgePx: number
@@ -19,8 +15,9 @@ interface LetterRow {
   letters: Letter[]
 }
 
+type AlphabetCategory = { name: string, signs: Sign[] }
+type CategorizedAlphabet = AlphabetCategory[]
 type Text = LetterRow[]
-
 type FileName = string
 type SignToGifMap = Map<Sign, FileName>
 
@@ -39,7 +36,8 @@ interface EditorState {
   cursorPosition: PositionRowCol
   letterSize: LetterSize,
   signToGifMap: SignToGifMap,
+  alphabet: CategorizedAlphabet
 }
 
-export { EditorState, Text, EditorActionType, LetterSize, SignToGifMap, PositionRowCol, PositionPixels, Letter, LetterRow }
+export { EditorState, Text, LetterSize, SignToGifMap, PositionRowCol, PositionPixels, Letter, LetterRow, CategorizedAlphabet, AlphabetCategory }
 

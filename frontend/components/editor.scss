@@ -1,19 +1,5 @@
-.editorWrapper {
-    overflow: scroll;
-    max-width: 500px;
-    max-height: 800px;
-    padding: 10px;
-    :focus {
-        outline: none;
-    }
-    
-    .textWrapper {
-        /* Position the wrapper so that children
-        can be positioned absolutely */
-        position: relative;
-        .letterRow {
-            /* Prevents images from wrapping */
-            white-space: nowrap;
-        }
-    }
+.editor {
+    display: flex;
+    flex: 1;
+    min-width: 0;
 }

@@ -1,10 +1,10 @@
 import * as React from 'react'
+import { Sign } from '../lib/sign'
 import { Direction } from '../redux/editor/actions'
-import { Sign } from '../redux/editor/sign'
-import { EditorProps } from './editor'
+import { TextAreaProps } from './text-area'
 
 // Returns true if event caused an action.
-function HandleShorcuts(e: React.KeyboardEvent, props: EditorProps)
+function HandleShorcuts(e: React.KeyboardEvent, props: TextAreaProps)
   : boolean {
   // Handle combos
 
@@ -22,6 +22,47 @@ function HandleShorcuts(e: React.KeyboardEvent, props: EditorProps)
   // Numbers
   if (/^[0-9]$/.test(e.key)) {
     props.addSignAfterCursor(Sign[`N${e.key}` as (keyof typeof Sign)])
+    return true
+  }
+
+  // Equalities
+  if (e.key === '<') {
+    props.addSignAfterCursor(Sign.LT)
+    return true
+  } else if (e.key === '>') {
+    props.addSignAfterCursor(Sign.GT)
+    return true
+  }
+
+  if (e.key === '(') {
+    props.addSignAfterCursor(Sign.LPAR)
+    return true
+  } else if (e.key === ')') {
+    props.addSignAfterCursor(Sign.RPAR)
+    return true
+  }
+
+  // Arithmetics
+  if (e.key === '+') {
+    props.addSignAfterCursor(Sign.PLUS)
+    return true
+  } else if (e.key === '-') {
+    props.addSignAfterCursor(Sign.MINUS)
+    return true
+  } else if (e.key === '*') {
+    props.addSignAfterCursor(Sign.MUL)
+    return true
+  } else if (e.key === '/') {
+    props.addSignAfterCursor(Sign.DIV)
+    return true
+  } else if (e.key === '%') {
+    props.addSignAfterCursor(Sign.MOD)
+    return true
+  }
+
+  // Random
+  if (e.key === ';') {
+    props.addSignAfterCursor(Sign.SEMICOLON)
     return true
   }
 

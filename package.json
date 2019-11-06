@@ -11,6 +11,10 @@
   "author": "Roman Sobkuliak (sobkulir)",
   "license": "ISC",
   "devDependencies": {
+    "@material-ui/core": "^4.5.2",
+    "@material-ui/icons": "^4.5.1",
+    "@material-ui/lab": "^4.0.0-alpha.30",
+    "@types/material-ui": "^0.21.7",
     "@types/react": "^16.9.11",
     "@types/react-dom": "^16.9.3",
     "@types/react-redux": "^7.1.5",

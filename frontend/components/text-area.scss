@@ -1,0 +1,23 @@
+.textArea {
+    overflow: auto;
+    background-color: lightpink;
+    padding: 10px;
+    cursor: text;
+    resize: horizontal;
+    display: flex;
+    flex: 1;
+    
+    :focus {
+        outline: none;
+    }
+
+    .textWrapper {
+        /* Position the wrapper so that children
+        can be positioned absolutely */
+        position: relative;
+        .letterRow {
+            /* Prevents images from wrapping */
+            white-space: nowrap;
+        }
+    }
+}
