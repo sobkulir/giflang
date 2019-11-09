@@ -1,4 +1,5 @@
 import * as React from 'react'
+import IOBox from './io-box'
 import * as styles from './layout.scss'
 import LetterPicker from './letter-picker'
 import Menu from './menu'
@@ -19,7 +20,7 @@ export class Layout extends React.Component<{}, {}> {
         <div className={styles.content}>
           <div className={styles.leftContent}>
             <TextArea />
-            <div>IO placeholder</div>
+            <IOBox />
           </div>
           <LetterPicker />
         </div>

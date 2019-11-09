@@ -110,11 +110,18 @@ const getInitialState = (): State => (
         // new LetterRowImp([new LetterImp(Sign.A), new LetterImp(Sign.B), new LetterImp(Sign.A), new LetterImp(Sign.A), new LetterImp(Sign.A)]),
         // new LetterRowImp([new LetterImp(Sign.A), new LetterImp(Sign.B), new LetterImp(Sign.A), new LetterImp(Sign.A), new LetterImp(Sign.A)]),
         // new LetterRowImp([new LetterImp(Sign.A), new LetterImp(Sign.B), new LetterImp(Sign.A), new LetterImp(Sign.A), new LetterImp(Sign.A)]),
-      ]
-    }
+      ],
+      execution: {
+        isExecuting: false,
+        output: ''
+      }
+    },
+
   })
 
-const rootReducer = (state: State = getInitialState(), action: MyAction) => {
+const rootReducer = (
+  state: State = getInitialState(),
+  action: MyAction<any>) => {
   // Fallback for unknown actions.
   if (!action.reducer) return state
   else return action.reducer(state)

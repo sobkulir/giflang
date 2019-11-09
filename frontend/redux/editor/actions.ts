@@ -1,4 +1,10 @@
+import * as Comlink from 'comlink'
 import { produce } from 'immer'
+import Worker from 'worker-loader!../../../interpreter/giflang.worker.ts'
+import { GiflangWorker } from '../../../interpreter/giflang.worker'
+import { PrintFunction } from '../../../interpreter/object-model/std/functions'
+import { storeInstance } from '../../app'
+import { TextToString } from '../../lib/editor'
 import { Sign } from '../../lib/sign'
 import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRight, MoveCursorUp, PositionPixelsToRowCol, TrimPositionRowCol } from '../../lib/text-area'
 import { MyAction, State } from '../types'
@@ -87,5 +93,45 @@ const newlineAfterCursor =
     })
   })
 
-export { setCursorPosition, addSignAfterCursor, moveCursor, Direction, removeAfterCursor, newlineAfterCursor }
+const appendToOutput =
+  (output: string): MyAction<string> => ({
+    type: 'Append to output',
+    payload: output,
+    reducer: produce((state: State) => {
+      state.editor.execution.output += output
+    })
+  })
+
+async function ExecuteCode(code: string) {
+  const workerCreator =
+    Comlink.wrap<
+      new (print: PrintFunction) => Promise<GiflangWorker>>(new Worker())
+  
+  const print = (str: string) => {
+    storeInstance.dispatch(appendToOutput(str))
+  }
+  const worker = await new workerCreator(Comlink.proxy(print))
+  // console.log(await x.getCounter())
+  await worker.run(code)
+}
+
+const startExecution =
+  (): MyAction<void> => ({
+    type: 'Start execution',
+    reducer: produce((state: State) => {
+      state.editor.execution.isExecuting = true
+      state.editor.execution.output = ''
+      ExecuteCode(TextToString(state.editor.text))
+    })
+  })
+
+const executionFinished =
+  (): MyAction<void> => ({
+    type: 'Execution finished',
+    reducer: produce((state: State) => {
+      state.editor.execution.isExecuting = false
+    })
+  })
+
+export { setCursorPosition, addSignAfterCursor, moveCursor, Direction, removeAfterCursor, newlineAfterCursor, appendToOutput, startExecution, executionFinished }
 

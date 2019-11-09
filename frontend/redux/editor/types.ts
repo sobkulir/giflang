@@ -31,13 +31,20 @@ interface PositionRowCol {
   col: number
 }
 
+interface ExecutionState {
+  isExecuting: boolean,
+  output: string
+}
+
 interface EditorState {
   text: Text,
   cursorPosition: PositionRowCol
   letterSize: LetterSize,
   signToGifMap: SignToGifMap,
-  alphabet: CategorizedAlphabet
+  alphabet: CategorizedAlphabet,
+  execution: ExecutionState,
 }
 
-export { EditorState, Text, LetterSize, SignToGifMap, PositionRowCol, PositionPixels, Letter, LetterRow, CategorizedAlphabet, AlphabetCategory }
+
+export { EditorState, Text, ExecutionState, LetterSize, SignToGifMap, PositionRowCol, PositionPixels, Letter, LetterRow, CategorizedAlphabet, AlphabetCategory }
 

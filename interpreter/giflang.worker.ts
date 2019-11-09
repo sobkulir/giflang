@@ -1,5 +1,6 @@
 import * as Comlink from 'comlink'
 import { Interpreter } from './interpreter'
+import { PrintFunction } from './object-model/std/functions'
 import { ParseGiflang } from './parser'
 
 export interface GiflangWorker {
@@ -8,8 +9,8 @@ export interface GiflangWorker {
 
 class Giflang implements GiflangWorker {
   readonly interpreter: Interpreter
-  constructor() {
-    this.interpreter = new Interpreter((str) => console.log(str))
+  constructor(print: PrintFunction) {
+    this.interpreter = new Interpreter(print)
   }
   run(code: string) {
     const rootNode = ParseGiflang(code)
@@ -20,5 +21,7 @@ class Giflang implements GiflangWorker {
     }
   }
 }
+
+export default {} as typeof Worker & (new () => Worker)
 
 Comlink.expose(Giflang)

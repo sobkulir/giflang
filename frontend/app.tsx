@@ -5,9 +5,10 @@ import { Layout } from './components/layout'
 import './global.scss'
 import { configureStore } from './redux/configure-store'
 
-const store = configureStore()
+export const storeInstance = configureStore()
+
 ReactDOM.render(
-    <Provider store={store}>
+    <Provider store={storeInstance}>
         <Layout />
     </Provider>,
     document.getElementById('root')

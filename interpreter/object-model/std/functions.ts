@@ -10,12 +10,14 @@ function Stringify(interpreter: CodeExecuter, args: Instance[])
   ))
 }
 
-function GiflangPrint(print: (str: string) => void): TWrappedFunction {
+type PrintFunction = (str: string) => void
+
+function GiflangPrint(print: PrintFunction): TWrappedFunction {
   return (interpreter: CodeExecuter, args: Instance[]): Instance => {
     print(Stringify(interpreter, args).join(' '))
     return NoneInstance.getInstance()
   }
 }
 
-export { GiflangPrint, Stringify }
+export { GiflangPrint, PrintFunction, Stringify }
 

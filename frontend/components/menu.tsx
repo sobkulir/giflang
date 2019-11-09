@@ -1,40 +1,39 @@
-import * as Comlink from 'comlink'
 import * as React from 'react'
 import { connect } from 'react-redux'
-import Worker from 'worker-loader!../../interpreter/giflang.worker'
-import { GiflangWorker } from '../../interpreter/giflang.worker'
-import { TextToString } from '../lib/editor'
-import { Text } from '../redux/editor/types'
+import { startExecution as _startExecution } from '../redux/editor/actions'
 import { State } from '../redux/types'
+import * as styles from './menu.scss'
 
 interface MenuProps {
-  text: Text
+  isExecuting: boolean,
+  startExecution: typeof _startExecution
 }
 
 class Menu extends React.Component<MenuProps, {}> {
-  async worker(code: string) {
-    // const x = new XWorker()
-    const cecky =
-      Comlink.wrap<new () => Promise<GiflangWorker>>(new Worker())
-    const x = await new cecky()
-    // console.log(await x.getCounter())
-    await x.run(code)
+  executeCode = (_: any) => {
+    this.props.startExecution()
   }
 
-  executeCode = (_: any) => {
-    const str = TextToString(this.props.text)
-    console.log(str)
-    this.worker(str)
-  }
   render() {
     return (
-      <button onClick={this.executeCode}>Run</button>
+      <div className={styles.menu}>
+        <button
+          disabled={this.props.isExecuting}
+          onClick={this.executeCode}
+        >
+          Run
+        </button>
+        {this.props.isExecuting ? 'zase prace?' : 'tak ja teda jdu'}
+      </div>
     )
   }
 }
 
 export default connect(
   (state: State) => ({
-    text: state.editor.text,
-  }))(Menu)
+    isExecuting: state.editor.execution.isExecuting,
+  }),
+  {
+    startExecution: _startExecution
+  })(Menu)
 
