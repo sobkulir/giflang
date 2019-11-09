@@ -1,0 +1,24 @@
+.layoutWrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.header {
+    display: flex;
+    min-height: 0;
+}
+
+.content {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.leftContent {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
