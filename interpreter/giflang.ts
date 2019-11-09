@@ -5,14 +5,14 @@ const interpreter = new Interpreter((str) => console.log(str))
 const root = ParseGiflang(`
 FUNCTION; F; LPAR; P; RPAR;
 LCURLY;  
-  IF; LPAR; P; EQ; 0; RPAR; 
+  IF; LPAR; P; EQ; D0; RPAR; 
   LCURLY;
-    RETURN; 0; DIV; 0; SEMICOLON;
+    RETURN; D1; SEMICOLON;
   RCURLY;
-  F; LPAR; P; MINUS; 1; RPAR; SEMICOLON;
+  F; LPAR; P; MINUS; D1; RPAR; SEMICOLON;
 RCURLY;
 
-F; LPAR; 3; RPAR; SEMICOLON;
+F; LPAR; D3; RPAR; SEMICOLON;
 `,
 )
 try {

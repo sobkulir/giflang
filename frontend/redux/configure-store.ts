@@ -26,7 +26,7 @@ const getInitialState = (): State => (
       { name: 'Classes and functions', signs: [Sign.CLASS, Sign.PROP, Sign.FUNCTION, Sign.RETURN] }
       ],
       text: [
-        new LetterRowImp([new LetterImp(Sign.X), new LetterImp(Sign.ASSIGN), new LetterImp(Sign.N8), new LetterImp(Sign.SEMICOLON)]),
+        new LetterRowImp([new LetterImp(Sign.X), new LetterImp(Sign.ASSIGN), new LetterImp(Sign.D8), new LetterImp(Sign.SEMICOLON)]),
         // new LetterRowImp([new LetterImp(Sign.A), new LetterImp(Sign.B), new LetterImp(Sign.A), new LetterImp(Sign.A), new LetterImp(Sign.A)]),
         // new LetterRowImp([new LetterImp(Sign.A), new LetterImp(Sign.B), new LetterImp(Sign.A), new LetterImp(Sign.A), new LetterImp(Sign.A)]),
         // new LetterRowImp([new LetterImp(Sign.A), new LetterImp(Sign.B), new LetterImp(Sign.A), new LetterImp(Sign.A), new LetterImp(Sign.A)]),
@@ -117,11 +117,7 @@ const getInitialState = (): State => (
 const rootReducer = (state: State = getInitialState(), action: MyAction) => {
   // Fallback for unknown actions.
   if (!action.reducer) return state
-  const newState = action.reducer(state)
-  console.log(state)
-  console.log(newState)
-  console.log(state.editor.text === newState.editor.text)
-  return newState
+  else return action.reducer(state)
 }
 
 

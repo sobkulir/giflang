@@ -319,8 +319,8 @@ class NoneClass extends Class {
     super(MetaClass.get(), nameof(NoneClass), ObjectClass.get())
     this.addNativeMethods(
       [
-        [MagicMethod.__str__, BoolClass.__str__],
-        [MagicMethod.__bool__, BoolClass.__bool__],
+        [MagicMethod.__str__, NoneClass.__str__],
+        [MagicMethod.__bool__, NoneClass.__bool__],
       ],
       WrappedFunctionClass.get()
     )

@@ -72,10 +72,10 @@ VALID_CHAR					([A-Z]|[0-9])
 "COMMA"						{ return delimit('COMMA'); }
 "QUOTE"						{ this.begin('string_literal'); return delimit('QUOTE'); }
 <string_literal>"QUOTE"     { this.popState(); return delimit('QUOTE'); }
+<INITIAL,string_literal>D[0-9]
+	{ yytext = yytext.substr(1); return delimit('DIGIT'); }
 <INITIAL,string_literal>[A-Za-z_]
 	{ return delimit('LETTER'); }
-<INITIAL,string_literal>[0-9]
-	{ return delimit('DIGIT'); }
 
 <delimit>{DELIMITER}		this.popState();
 

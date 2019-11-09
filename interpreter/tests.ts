@@ -126,28 +126,28 @@ const parser =
               name: 'Single definition w/o arguments',
               source: `
 FUNCTION; F; LPAR; RPAR; LCURLY;
-  RETURN; 3; SEMICOLON;
+  RETURN; D3; SEMICOLON;
 RCURLY;`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Nested functions',
               source: `
-FUNCTION; F;1; LPAR; RPAR; LCURLY;
-  FUNCTION; F;2; LPAR; RPAR; LCURLY; RCURLY;
+FUNCTION; F;D1; LPAR; RPAR; LCURLY;
+  FUNCTION; F;D2; LPAR; RPAR; LCURLY; RCURLY;
 RCURLY;`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Name starting with a number',
               source: `
-FUNCTION; 1;N; LPAR; RPAR; LCURLY; RCURLY;`,
+FUNCTION; D1;N; LPAR; RPAR; LCURLY; RCURLY;`,
               expected: ExpectedResult.FAIL_PARSE,
             },
             {
               name: 'Multiple parameters',
               source: `
-FUNCTION; F; LPAR; P;1; COMMA; P;2; RPAR; LCURLY; RCURLY;`,
+FUNCTION; F; LPAR; P;D1; COMMA; P;D2; RPAR; LCURLY; RCURLY;`,
               expected: ExpectedResult.PASS_PARSE,
             },
           ]
@@ -182,43 +182,43 @@ F; LPAR; A; SEMICOLON;`,
             {
               name: 'With multiple arguments',
               source: `
-F; LPAR; A;1; COMMA; A;2; RPAR; SEMICOLON;`,
+F; LPAR; A;D1; COMMA; A;D2; RPAR; SEMICOLON;`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Invalid name of a function',
               source: `
-1;A; LPAR; RPAR; SEMICOLON;`,
+D1;A; LPAR; RPAR; SEMICOLON;`,
               expected: ExpectedResult.FAIL_PARSE,
             },
             {
               name: 'Nested function call',
               source: `
-F;1; LPAR; F;2; LPAR; RPAR; RPAR; SEMICOLON;`,
+F;D1; LPAR; F;D2; LPAR; RPAR; RPAR; SEMICOLON;`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Assignment to function call should fail',
               source: `
-F;U;N;C; LPAR; A;R;G; RPAR; ASSIGN; 5; SEMICOLON;`,
+F;U;N;C; LPAR; A;R;G; RPAR; ASSIGN; D5; SEMICOLON;`,
               expected: ExpectedResult.FAIL_PARSE,
             },
             {
               name: 'Assignment to accesed function call should fail',
               source: `
-A;R;R; LBRA; 0; RBRA; LPAR; A;R;G; RPAR; ASSIGN; 5; SEMICOLON;`,
+A;R;R; LBRA; D0; RBRA; LPAR; A;R;G; RPAR; ASSIGN; D5; SEMICOLON;`,
               expected: ExpectedResult.FAIL_PARSE,
             },
             {
               name: 'Assignment to a member of a returned array value',
               source: `
-F;U;N;C; LPAR; A;R;G; RPAR; LBRA; 0; RBRA; ASSIGN; 5; SEMICOLON;`,
+F;U;N;C; LPAR; A;R;G; RPAR; LBRA; D0; RBRA; ASSIGN; D5; SEMICOLON;`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Assignment to a member of a returned object value',
               source: `
-F;U;N;C; LPAR; A;R;G; RPAR; PROP; P;R;O;P; ASSIGN; 5; SEMICOLON;`,
+F;U;N;C; LPAR; A;R;G; RPAR; PROP; P;R;O;P; ASSIGN; D5; SEMICOLON;`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
@@ -237,13 +237,13 @@ J; ASSIGN; FUNCTION; LPAR; RPAR; LCURLY; RCURLY; SEMICOLON;`,
         {
           name: 'Array literal',
           source: `
-LBRA; 1;2; COMMA; 4;2; RBRA; SEMICOLON;`,
+LBRA; D1;D2; COMMA; D4;D2; RBRA; SEMICOLON;`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
           name: 'Multidimensonal array literal with values',
           source: `
-            LBRA; LBRA; 1; RBRA; COMMA; 3; RBRA; SEMICOLON;`,
+            LBRA; LBRA; D1; RBRA; COMMA; D3; RBRA; SEMICOLON;`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
@@ -261,13 +261,13 @@ LBRA; 1;2; COMMA; 4;2; RBRA; SEMICOLON;`,
         {
           name: 'Assignment to an element.',
           source: `
-LBRA; 1;2; COMMA; 4;2; RBRA; LBRA; 0; RBRA; ASSIGN; 1; SEMICOLON;`,
+LBRA; D1;D2; COMMA; D4;D2; RBRA; LBRA; D0; RBRA; ASSIGN; D1; SEMICOLON;`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
           name: 'Assignment',
           source: `
-LBRA; 1;2; COMMA; 4;2; RBRA; LBRA; 0; RBRA; ASSIGN; 1; SEMICOLON;`,
+LBRA; D1;D2; COMMA; D4;D2; RBRA; LBRA; D0; RBRA; ASSIGN; D1; SEMICOLON;`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
@@ -279,7 +279,7 @@ LBRA; RBRA; LPAR; RPAR; SEMICOLON;`,
         {
           name: 'Assignment to calling an array literal shoudl fail',
           source: `
-LBRA; RBRA; LPAR; RPAR; ASSIGN; 3; SEMICOLON;`,
+LBRA; RBRA; LPAR; RPAR; ASSIGN; DD3; SEMICOLON;`,
           expected: ExpectedResult.FAIL_PARSE
         },
       ]
@@ -290,7 +290,7 @@ LBRA; RBRA; LPAR; RPAR; ASSIGN; 3; SEMICOLON;`,
         {
           name: 'Multiassignment',
           source: `
-A; ASSIGN; B; ASSIGN; 0; SEMICOLON;`,
+A; ASSIGN; B; ASSIGN; D0; SEMICOLON;`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
@@ -313,7 +313,7 @@ QUOTE; SPACE; QUOTE; SEMICOLON;`,
         {
           name: 'Spaces outside of string literal are ignored',
           source: `
-SPACE; SPACE; A; SPACE; ASSIGN; SPACE; 1; SPACE; SEMICOLON; SPACE;`,
+SPACE; SPACE; A; SPACE; ASSIGN; SPACE; D1; SPACE; SEMICOLON; SPACE;`,
           expected: ExpectedResult.PASS_PARSE
         }
       ]
@@ -332,20 +332,20 @@ const runtime = {
           source: `
 FUNCTION; F;I;B; LPAR; P; RPAR;
 LCURLY;  
-  IF; LPAR; P; EQ; 0; RPAR; 
+  IF; LPAR; P; EQ; D0; RPAR; 
   LCURLY;
-    RETURN; 0; SEMICOLON;
+    RETURN; D0; SEMICOLON;
   RCURLY;
-  IF; LPAR; P; EQ; 1; RPAR;
-    RETURN; 1; SEMICOLON;
+  IF; LPAR; P; EQ; D1; RPAR;
+    RETURN; D1; SEMICOLON;
   
   RETURN;
-    F;I;B; LPAR; P; MINUS; 1; RPAR;
+    F;I;B; LPAR; P; MINUS; D1; RPAR;
     PLUS;
-    F;I;B; LPAR; P; MINUS; 2; RPAR; SEMICOLON;
+    F;I;B; LPAR; P; MINUS; D2; RPAR; SEMICOLON;
 RCURLY;
 
-P;R;I;N;T; LPAR; F;I;B; LPAR; 1;0; RPAR; RPAR; SEMICOLON;
+P;R;I;N;T; LPAR; F;I;B; LPAR; D1;D0; RPAR; RPAR; SEMICOLON;
 `,
           output: '55',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -357,7 +357,7 @@ FUNCTION; F; LPAR; RPAR;
 LCURLY;  
   RETURN; 
     LBRA;
-      LBRA; QUOTE; A; QUOTE; COMMA; 3; RBRA; COMMA;
+      LBRA; QUOTE; A; QUOTE; COMMA; D3; RBRA; COMMA;
       LBRA; TRUE; COMMA; FALSE; RBRA;
     RBRA; SEMICOLON;
 RCURLY;
@@ -372,10 +372,10 @@ P;R;I;N;T; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
           source: `
 FUNCTION; F; LPAR; RPAR;
 LCURLY;
-  X; ASSIGN; 0; SEMICOLON;
+  X; ASSIGN; D0; SEMICOLON;
   FUNCTION; G; LPAR; RPAR;
   LCURLY;
-    X; ASSIGN; X; PLUS; 1; SEMICOLON;
+    X; ASSIGN; X; PLUS; D1; SEMICOLON;
   RCURLY;
   G; LPAR; RPAR; SEMICOLON;
   G; LPAR; RPAR; SEMICOLON;
@@ -394,9 +394,9 @@ FUNCTION; F; LPAR; RPAR;
 LCURLY;
   FUNCTION; G; LPAR; RPAR;
   LCURLY;
-    X; ASSIGN; X; PLUS; 1; SEMICOLON;
+    X; ASSIGN; X; PLUS; D1; SEMICOLON;
   RCURLY;
-  X; ASSIGN; 0; SEMICOLON;
+  X; ASSIGN; D0; SEMICOLON;
   G; LPAR; RPAR; SEMICOLON;
   G; LPAR; RPAR; SEMICOLON;
   P;R;I;N;T; LPAR; X; RPAR; SEMICOLON;
@@ -413,7 +413,7 @@ F; LPAR; RPAR; SEMICOLON;
 FUNCTION; F; LPAR; RPAR;
 LCURLY;
   BREAK; SEMICOLON;
-  P;R;I;N;T; LPAR; 1; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 RCURLY;
 
 F; LPAR; RPAR; SEMICOLON;
@@ -427,7 +427,7 @@ F; LPAR; RPAR; SEMICOLON;
 FUNCTION; F; LPAR; RPAR;
 LCURLY;
   CONTINUE; SEMICOLON;
-  P;R;I;N;T; LPAR; 1; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 RCURLY;
 
 F; LPAR; RPAR; SEMICOLON;
@@ -440,12 +440,12 @@ F; LPAR; RPAR; SEMICOLON;
           source: `
 FUNCTION; F; LPAR; G; RPAR;
 LCURLY;
-  RETURN; G; LPAR; G; LPAR; 0; RPAR; RPAR; SEMICOLON;
+  RETURN; G; LPAR; G; LPAR; D0; RPAR; RPAR; SEMICOLON;
 RCURLY;
 
 FUNCTION; I;N;C; LPAR; X; RPAR;
 LCURLY;
-  RETURN; X; PLUS; 1; SEMICOLON;
+  RETURN; X; PLUS; D1; SEMICOLON;
 RCURLY;
 
 P;R;I;N;T; LPAR; F; LPAR; I;N;C; RPAR; RPAR; SEMICOLON;
@@ -458,10 +458,10 @@ P;R;I;N;T; LPAR; F; LPAR; I;N;C; RPAR; RPAR; SEMICOLON;
           source: `
 FUNCTION; F; LPAR; RPAR;
 LCURLY;
-  I; ASSIGN; 0; SEMICOLON;
+  I; ASSIGN; D0; SEMICOLON;
   FUNCTION; C;O;U;N;T; LPAR; RPAR;
   LCURLY;
-    I; ASSIGN; I; PLUS; 1; SEMICOLON;
+    I; ASSIGN; I; PLUS; D1; SEMICOLON;
     P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
   RCURLY;
   RETURN; C;O;U;N;T; SEMICOLON;
@@ -482,8 +482,8 @@ LCURLY;
   P;R;I;N;T; LPAR; X; RPAR; SEMICOLON;
 RCURLY;
 
-F; PROP; _;_;c;a;l;l;_;_; LPAR; 1; RPAR; SEMICOLON;
-F; PROP; _;_;c;a;l;l;_;_; PROP; _;_;c;a;l;l;_;_; LPAR; 1; RPAR; SEMICOLON;
+F; PROP; _;_;c;a;l;l;_;_; LPAR; D1; RPAR; SEMICOLON;
+F; PROP; _;_;c;a;l;l;_;_; PROP; _;_;c;a;l;l;_;_; LPAR; D1; RPAR; SEMICOLON;
 `,
           output: '1\n1',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -497,7 +497,7 @@ F; PROP; _;_;c;a;l;l;_;_; PROP; _;_;c;a;l;l;_;_; LPAR; 1; RPAR; SEMICOLON;
           name: 'Positive if',
           source: `
 IF; LPAR; TRUE; RPAR;
-  P;R;I;N;T; LPAR; 1; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 `,
           output: '1',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -506,7 +506,7 @@ IF; LPAR; TRUE; RPAR;
           name: 'Negative if',
           source: `
 IF; LPAR; FALSE; RPAR;
-  P;R;I;N;T; LPAR; 1; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 `,
           output: '',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -515,7 +515,7 @@ IF; LPAR; FALSE; RPAR;
           name: 'Omitting brackets should fail',
           source: `
 IF; TRUE;
-  P;R;I;N;T; LPAR; 1; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 `,
           expected: ExpectedResult.FAIL_PARSE
         },
@@ -523,9 +523,9 @@ IF; TRUE;
           name: 'Positive if else',
           source: `
 IF; LPAR; TRUE; RPAR;
-  P;R;I;N;T; LPAR; 1; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 ELSE;
-  P;R;I;N;T; LPAR; 0; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
 `,
           output: '1',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -534,9 +534,9 @@ ELSE;
           name: 'Negative if else',
           source: `
 IF; LPAR; FALSE; RPAR;
-  P;R;I;N;T; LPAR; 1; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 ELSE;
-  P;R;I;N;T; LPAR; 0; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
 `,
           output: '0',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -544,29 +544,29 @@ ELSE;
         {
           name: 'Else if',
           source: `
-X; ASSIGN; 0; SEMICOLON;
-IF; LPAR; X; EQ; 0; RPAR;
-  P;R;I;N;T; LPAR; 0; RPAR; SEMICOLON;
-ELSE; IF; LPAR; X; EQ; 1; RPAR;
-  P;R;I;N;T; LPAR; 1; RPAR; SEMICOLON;
+X; ASSIGN; D0; SEMICOLON;
+IF; LPAR; X; EQ; D0; RPAR;
+  P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
+ELSE; IF; LPAR; X; EQ; D1; RPAR;
+  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 ELSE;
-  P;R;I;N;T; LPAR; 2; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D2; RPAR; SEMICOLON;
 
-X; ASSIGN; 1; SEMICOLON;
-IF; LPAR; X; EQ; 0; RPAR;
-  P;R;I;N;T; LPAR; 0; RPAR; SEMICOLON;
-ELSE; IF; LPAR; X; EQ; 1; RPAR;
-  P;R;I;N;T; LPAR; 1; RPAR; SEMICOLON;
+X; ASSIGN; D1; SEMICOLON;
+IF; LPAR; X; EQ; D0; RPAR;
+  P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
+ELSE; IF; LPAR; X; EQ; D1; RPAR;
+  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 ELSE;
-  P;R;I;N;T; LPAR; 2; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D2; RPAR; SEMICOLON;
 
-X; ASSIGN; 2; SEMICOLON;
-IF; LPAR; X; EQ; 0; RPAR;
-  P;R;I;N;T; LPAR; 0; RPAR; SEMICOLON;
-ELSE; IF; LPAR; X; EQ; 1; RPAR;
-  P;R;I;N;T; LPAR; 1; RPAR; SEMICOLON;
+X; ASSIGN; D2; SEMICOLON;
+IF; LPAR; X; EQ; D0; RPAR;
+  P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
+ELSE; IF; LPAR; X; EQ; D1; RPAR;
+  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 ELSE;
-  P;R;I;N;T; LPAR; 2; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D2; RPAR; SEMICOLON;
 `,
           output: '0\n1\n2',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -579,11 +579,11 @@ ELSE;
         {
           name: 'Does iterate',
           source: `
-I; ASSIGN; 0; SEMICOLON;
-WHILE; LPAR; I; LT; 2; RPAR;
+I; ASSIGN; D0; SEMICOLON;
+WHILE; LPAR; I; LT; D2; RPAR;
 LCURLY;
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
-  I; ASSIGN; I; PLUS; 1; SEMICOLON;
+  I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
           output: '0\n1',
@@ -592,10 +592,10 @@ RCURLY;
         {
           name: '"Continue" jumps to the next cycle',
           source: `
-I; ASSIGN; 0; SEMICOLON;
-WHILE; LPAR; I; LT; 2; RPAR;
+I; ASSIGN; D0; SEMICOLON;
+WHILE; LPAR; I; LT; D2; RPAR;
 LCURLY;
-  I; ASSIGN; I; PLUS; 1; SEMICOLON;
+  I; ASSIGN; I; PLUS; D1; SEMICOLON;
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
   CONTINUE; SEMICOLON;
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
@@ -607,13 +607,13 @@ RCURLY;
         {
           name: '"Break" jumps out of the loop',
           source: `
-I; ASSIGN; 0; SEMICOLON;
-WHILE; LPAR; I; LT; 3; RPAR;
+I; ASSIGN; D0; SEMICOLON;
+WHILE; LPAR; I; LT; D3; RPAR;
 LCURLY;
-  IF; LPAR; I; EQ; 2; RPAR;
+  IF; LPAR; I; EQ; D2; RPAR;
     BREAK; SEMICOLON;
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
-  I; ASSIGN; I; PLUS; 1; SEMICOLON;
+  I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
           output: '0\n1',
@@ -626,7 +626,7 @@ FUNCTION; F; LPAR; RPAR;
 LCURLY;
   WHILE; LPAR; TRUE; RPAR;
   LCURLY;
-    RETURN; 1; SEMICOLON;
+    RETURN; D1; SEMICOLON;
   RCURLY;
 RCURLY;
 
@@ -638,19 +638,19 @@ P;R;I;N;T; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
         {
           name: '"Continue" affect enclosing while.',
           source: `
-I; ASSIGN; 0; SEMICOLON;
-WHILE; LPAR; I; LT; 2; RPAR;
+I; ASSIGN; D0; SEMICOLON;
+WHILE; LPAR; I; LT; D2; RPAR;
 LCURLY;
-  J; ASSIGN; 3; SEMICOLON;
-  WHILE; LPAR; J; LT; 5; RPAR;
+  J; ASSIGN; D3; SEMICOLON;
+  WHILE; LPAR; J; LT; D5; RPAR;
   LCURLY;
-    J; ASSIGN; J; PLUS; 1; SEMICOLON;
+    J; ASSIGN; J; PLUS; D1; SEMICOLON;
     CONTINUE; SEMICOLON;
     P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
   RCURLY;
 
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
-  I; ASSIGN; I; PLUS; 1; SEMICOLON;
+  I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
           output: '0\n1',
@@ -659,8 +659,8 @@ RCURLY;
         {
           name: '"Break" affect enclosing while.',
           source: `
-I; ASSIGN; 0; SEMICOLON;
-WHILE; LPAR; I; LT; 2; RPAR;
+I; ASSIGN; D0; SEMICOLON;
+WHILE; LPAR; I; LT; D2; RPAR;
 LCURLY;
   WHILE; LPAR; TRUE; RPAR;
   LCURLY;
@@ -668,7 +668,7 @@ LCURLY;
   RCURLY;
 
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
-  I; ASSIGN; I; PLUS; 1; SEMICOLON;
+  I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
           output: '0\n1',
@@ -683,7 +683,7 @@ LCURLY;
   LCURLY;
     WHILE; LPAR; TRUE; RPAR;
     LCURLY;
-      RETURN; 1; SEMICOLON;
+      RETURN; D1; SEMICOLON;
     RCURLY;
   RCURLY;
 RCURLY;
@@ -701,10 +701,10 @@ P;R;I;N;T; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
         {
           name: 'for(;;) works',
           source: `
-X; ASSIGN; 0; SEMICOLON;
+X; ASSIGN; D0; SEMICOLON;
 FOR; LPAR; SEMICOLON; SEMICOLON; RPAR;
 LCURLY;
-  X; ASSIGN; 1; SEMICOLON;
+  X; ASSIGN; D1; SEMICOLON;
   BREAK; SEMICOLON;
 RCURLY;
 P;R;I;N;T; LPAR; X; RPAR; SEMICOLON;
@@ -716,9 +716,9 @@ P;R;I;N;T; LPAR; X; RPAR; SEMICOLON;
           name: 'for(i = 0; i < 2; ++i) works',
           source: `
 FOR; LPAR;
-  I; ASSIGN; 0; SEMICOLON;
-  I; LT; 2; SEMICOLON;
-  I; ASSIGN; I; PLUS; 1; RPAR;
+  I; ASSIGN; D0; SEMICOLON;
+  I; LT; D2; SEMICOLON;
+  I; ASSIGN; I; PLUS; D1; RPAR;
 LCURLY;
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
 RCURLY;
@@ -730,9 +730,9 @@ RCURLY;
           name: 'for(i = 0, j = 4; i != j; ++i, --j) works',
           source: `
 FOR; LPAR;
-  I; ASSIGN; 0; COMMA; J; ASSIGN; 4; SEMICOLON;
+  I; ASSIGN; D0; COMMA; J; ASSIGN; D4; SEMICOLON;
   I; NE; J; SEMICOLON;
-  I; ASSIGN; I; PLUS; 1; COMMA; J; ASSIGN; J; MINUS; 1; RPAR;
+  I; ASSIGN; I; PLUS; D1; COMMA; J; ASSIGN; J; MINUS; D1; RPAR;
 LCURLY;
   P;R;I;N;T; LPAR; I; COMMA; J; RPAR; SEMICOLON;
 RCURLY;
@@ -748,7 +748,7 @@ FOR; LPAR;
   SEMICOLON; RPAR;
 LCURLY;
   BREAK; SEMICOLON;
-  P;R;I;N;T; LPAR; 1; RPAR; SEMICOLON;
+  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 RCURLY;
 `,
           output: '',
@@ -758,9 +758,9 @@ RCURLY;
           name: '"Continue" jumps to the next cycle',
           source: `
 FOR; LPAR;
-  I; ASSIGN; 0; SEMICOLON;
-  I; LT; 2; SEMICOLON;
-  I; ASSIGN; I; PLUS; 1; RPAR;
+  I; ASSIGN; D0; SEMICOLON;
+  I; LT; D2; SEMICOLON;
+  I; ASSIGN; I; PLUS; D1; RPAR;
 LCURLY;
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
   CONTINUE; SEMICOLON;
@@ -774,12 +774,12 @@ RCURLY;
           name: 'Controlling variable can be changed inside',
           source: `
 FOR; LPAR;
-  I; ASSIGN; 0; SEMICOLON;
-  I; LT; 4; SEMICOLON;
-  I; ASSIGN; I; PLUS; 1; RPAR;
+  I; ASSIGN; D0; SEMICOLON;
+  I; LT; D4; SEMICOLON;
+  I; ASSIGN; I; PLUS; D1; RPAR;
 LCURLY;
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
-  I; ASSIGN; I; PLUS; 1; SEMICOLON;
+  I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
           output: '0\n2',
@@ -788,11 +788,11 @@ RCURLY;
         {
           name: 'For cycle reuses environment variable',
           source: `
-I; ASSIGN; 0; SEMICOLON;
+I; ASSIGN; D0; SEMICOLON;
 FOR; LPAR;
-  I; ASSIGN; 0; SEMICOLON;
-  I; LT; 2; SEMICOLON;
-  I; ASSIGN; I; PLUS; 1; RPAR;
+  I; ASSIGN; D0; SEMICOLON;
+  I; LT; D2; SEMICOLON;
+  I; ASSIGN; I; PLUS; D1; RPAR;
 LCURLY;
 RCURLY;
 P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
@@ -810,13 +810,13 @@ P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
           source: `
 CLASS; C;
 LCURLY;
-  FUNCTION; _;_;i;n;i;t;_;_; LPAR; s;e;l;f; COMMA; x; RPAR;
+  FUNCTION; _;_;I;N;I;T;_;_; LPAR; s;e;l;f; COMMA; x; RPAR;
   LCURLY;
     s;e;l;f; PROP; x; ASSIGN; x; SEMICOLON;
   RCURLY;
 RCURLY;
 
-a; ASSIGN; C; LPAR; 1; RPAR; SEMICOLON;
+a; ASSIGN; C; LPAR; D1; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 `,
           output: '1',
@@ -829,12 +829,12 @@ CLASS; C;
 LCURLY;
   FUNCTION; m; LPAR; s;e;l;f; COMMA; x; RPAR;
   LCURLY;
-    s;e;l;f; PROP; x; ASSIGN; 1; SEMICOLON;
+    s;e;l;f; PROP; x; ASSIGN; D1; SEMICOLON;
   RCURLY;
 RCURLY;
 
 a; ASSIGN; C; LPAR; RPAR; SEMICOLON;
-a; PROP; m; LPAR; 1; RPAR; SEMICOLON;
+a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 `,
           output: '1',
@@ -854,7 +854,7 @@ RCURLY;
 
 a; ASSIGN; C; LPAR; RPAR; SEMICOLON;
 a; PROP; m; ASSIGN; m; SEMICOLON;
-a; PROP; m; LPAR; 1; RPAR; SEMICOLON;
+a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 `,
           output: '1',
@@ -865,7 +865,7 @@ P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
           source: `
 CLASS; C;
 LCURLY;
-  FUNCTION; _;_;i;n;i;t;_;_; LPAR; s;e;l;f; COMMA; x; RPAR;
+  FUNCTION; _;_;I;N;I;T;_;_; LPAR; s;e;l;f; COMMA; x; RPAR;
   LCURLY;
     s;e;l;f; PROP; x; ASSIGN; x; SEMICOLON;
   RCURLY;
@@ -894,9 +894,9 @@ LCURLY;
 RCURLY;
 
 a; ASSIGN; C; LPAR; RPAR; SEMICOLON;
-a; LPAR; 1; RPAR; SEMICOLON;
+a; LPAR; D1; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
-a; PROP; _;_;c;a;l;l;_;_; LPAR; 2; RPAR; SEMICOLON;
+a; PROP; _;_;c;a;l;l;_;_; LPAR; D2; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 `,
           output: '1\n2',
@@ -918,7 +918,7 @@ LCURLY;
 RCURLY;
 
 a; ASSIGN; D; LPAR; RPAR; SEMICOLON;
-a; PROP; m; LPAR; 1; RPAR; SEMICOLON;
+a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 `,
           output: '1',
@@ -945,7 +945,7 @@ LCURLY;
 RCURLY;
 
 a; ASSIGN; D; LPAR; RPAR; SEMICOLON;
-a; PROP; m; LPAR; 1; RPAR; SEMICOLON;
+a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; y; RPAR; SEMICOLON;
 `,
@@ -960,7 +960,7 @@ P;R;I;N;T; LPAR; a; PROP; y; RPAR; SEMICOLON;
         {
           name: 'Variable shadowing',
           source: `
-A; ASSIGN; 0; SEMICOLON;
+A; ASSIGN; D0; SEMICOLON;
 LCURLY;
   FUNCTION; F; LPAR; RPAR;
   LCURLY;
@@ -968,7 +968,7 @@ LCURLY;
   RCURLY;
 
   F; LPAR; RPAR; SEMICOLON;
-  A; ASSIGN; 1; SEMICOLON;
+  A; ASSIGN; D1; SEMICOLON;
   F; LPAR; RPAR; SEMICOLON;
 RCURLY;          
 `,
@@ -988,5 +988,5 @@ console.log(`
 //   /* Classes */
 //   `CLASS; C; LCURLY;
 //     FUNCTION; M;E;T;H;O;D; LPAR; RPAR; LCURLY; RCURLY;
-// RCURLY;`,m85; SEMICOLON;`,
+// RCURLY;`,m8D5; SEMICOLON;`,
 // ])

@@ -21,7 +21,7 @@ enum MagicMethod {
   __setitem__ = '__setitem__',
 
   __call__ = '__call__',
-  __init__ = '__init__',
+  __init__ = '__INIT__',
 }
 export { MagicMethod }
 

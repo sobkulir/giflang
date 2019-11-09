@@ -14,14 +14,14 @@ function HandleShorcuts(e: React.KeyboardEvent, props: TextAreaProps)
   }
 
   // Letters
-  if (/^[A-Za-z]$/.test(e.key)) {
+  if (/^[A-Za-z_]$/.test(e.key)) {
     props.addSignAfterCursor(Sign[e.key as (keyof typeof Sign)])
     return true
   }
 
   // Numbers
   if (/^[0-9]$/.test(e.key)) {
-    props.addSignAfterCursor(Sign[`N${e.key}` as (keyof typeof Sign)])
+    props.addSignAfterCursor(Sign[`D${e.key}` as (keyof typeof Sign)])
     return true
   }
 
