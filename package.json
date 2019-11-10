@@ -21,6 +21,7 @@
     "@types/ts-nameof": "^3.2.0",
     "comlink": "^4.1.0",
     "css-loader": "^3.2.0",
+    "firebase": "^7.3.0",
     "immer": "^5.0.0",
     "jison-gho-loader": "^1.0.1",
     "node-sass": "^4.13.0",
