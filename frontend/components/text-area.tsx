@@ -113,8 +113,8 @@ class TextArea extends React.Component<TextAreaProps, {}> {
     const wrapperRect = textWrapper.getBoundingClientRect()
     this.props.setCursorPosition(
       {
-        x: e.pageX - wrapperRect.left - window.pageXOffset,
-        y: e.pageY - wrapperRect.top - window.pageYOffset
+        x: Math.max(0, e.pageX - wrapperRect.left - window.pageXOffset),
+        y: Math.max(0, e.pageY - wrapperRect.top - window.pageYOffset)
       })
   }
 
