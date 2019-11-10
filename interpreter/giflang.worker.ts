@@ -18,11 +18,14 @@ class Giflang implements GiflangWorker {
     this.interpreter = new Interpreter(callbacks.onPrint)
   }
   run(code: string) {
-    const rootNode = ParseGiflang(code)
     try {
+      const rootNode = ParseGiflang(code)
       this.interpreter.visitProgramStmt(rootNode)
-    } finally {
       this.callbacks.onFinish()
+    } catch (e) {
+      console.log(e)
+      this.callbacks.onFinish('Error')
+    } finally {
       console.log(this.interpreter.callStack)
     }
   }

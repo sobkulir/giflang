@@ -109,12 +109,12 @@ const executionFinished =
     })
   })
   
-  const callbacks: GiflangWorkerCallbacks = {
-    onPrint: 
-      (str: string) => { storeInstance.dispatch(appendToOutput(str))},
-    onFinish:
-      (_err: string | undefined) =>
-       { storeInstance.dispatch(executionFinished())},
+const callbacks: GiflangWorkerCallbacks = {
+  onPrint:
+    (str: string) => { storeInstance.dispatch(appendToOutput(str))},
+  onFinish:
+    (_err: string | undefined) =>
+      { storeInstance.dispatch(executionFinished())},
   }
   
 async function ExecuteCode(code: string) {
@@ -137,8 +137,6 @@ const startExecution =
       ExecuteCode(TextToString(state.editor.text))
     })
   })
-
-
 
 export { setCursorPosition, addSignAfterCursor, moveCursor, Direction, removeAfterCursor, newlineAfterCursor, appendToOutput, startExecution, executionFinished }
 
