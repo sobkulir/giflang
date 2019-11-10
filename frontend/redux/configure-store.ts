@@ -1,6 +1,7 @@
 import { createStore } from 'redux'
 import { Sign } from '../lib/sign'
 import { LetterImp, LetterRowImp } from '../lib/text-area'
+import { RunState } from './editor/types'
 import { MyAction, State } from './types'
 
 const getInitialState = (): State => (
@@ -114,8 +115,9 @@ const getInitialState = (): State => (
         // new LetterRowImp([new LetterImp(Sign.A), new LetterImp(Sign.B), new LetterImp(Sign.A), new LetterImp(Sign.A), new LetterImp(Sign.A)]),
       ],
       execution: {
-        isExecuting: false,
-        output: ''
+        state: RunState.NOT_RUNNING,
+        output: '',
+        worker: null
       }
     },
 

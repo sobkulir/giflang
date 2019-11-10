@@ -78,7 +78,7 @@ class NumberClass extends Class {
           if (y === 0) throw Error('TODO: Division by zero')
           else return x / y
         })],
-        [MagicMethod.__div__, NumberClass.binaryOpNumber((x, y) => {
+        [MagicMethod.__mod__, NumberClass.binaryOpNumber((x, y) => {
           if (y === 0) throw Error('TODO: Modulo by zero')
           else return x % y
         })],

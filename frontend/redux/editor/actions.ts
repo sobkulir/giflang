@@ -7,7 +7,7 @@ import { TextToString } from '../../lib/editor'
 import { Sign } from '../../lib/sign'
 import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRight, MoveCursorUp, PositionPixelsToRowCol, TrimPositionRowCol } from '../../lib/text-area'
 import { MyAction, State } from '../types'
-import { PositionPixels } from './types'
+import { PositionPixels, RunState } from './types'
 
 const setCursorPosition =
   (positionPixels: PositionPixels): MyAction<PositionPixels> => ({
@@ -101,11 +101,16 @@ const appendToOutput =
     })
   })
 
-const executionFinished =
+const finishExecution =
   (): MyAction<void> => ({
     type: 'Execution finished',
     reducer: produce((state: State) => {
-      state.editor.execution.isExecuting = false
+      state.editor.execution.state = RunState.NOT_RUNNING
+      const worker = state.editor.execution.worker
+      if (worker !== null) {
+        worker.terminate()
+      }
+      state.editor.execution.worker = null
     })
   })
   
@@ -114,29 +119,39 @@ const callbacks: GiflangWorkerCallbacks = {
     (str: string) => { storeInstance.dispatch(appendToOutput(str))},
   onFinish:
     (_err: string | undefined) =>
-      { storeInstance.dispatch(executionFinished())},
+      { storeInstance.dispatch(finishExecution())},
   }
-  
-async function ExecuteCode(code: string) {
-  const workerCreator =
+
+const executionStarted =
+  (worker: Worker): MyAction<Worker> => ({
+    type: 'Execution started',
+    reducer: produce((state: State) => {
+      state.editor.execution.state = RunState.RUNNING
+      state.editor.execution.worker = worker
+    })
+  })
+
+async function StartExecution(code: string) {
+  const vanillaWorker = new Worker()
+  const workerProxy =
     Comlink.wrap<
       new (callbacks: GiflangWorkerCallbacks) => Promise<GiflangWorker>
-    >(new Worker())
+    >(vanillaWorker)
 
-  const worker = await new workerCreator(Comlink.proxy(callbacks))
-  // console.log(await x.getCounter())
-  await worker.run(code)
+  const worker = await new workerProxy(Comlink.proxy(callbacks))
+  storeInstance.dispatch(executionStarted(vanillaWorker))
+  worker.run(code)
 }
 
 const startExecution =
   (): MyAction<void> => ({
     type: 'Start execution',
     reducer: produce((state: State) => {
-      state.editor.execution.isExecuting = true
+      state.editor.execution.state = RunState.STARTING
       state.editor.execution.output = ''
-      ExecuteCode(TextToString(state.editor.text))
+      StartExecution(TextToString(state.editor.text))
     })
   })
 
-export { setCursorPosition, addSignAfterCursor, moveCursor, Direction, removeAfterCursor, newlineAfterCursor, appendToOutput, startExecution, executionFinished }
+export { setCursorPosition, addSignAfterCursor, moveCursor, Direction, removeAfterCursor, newlineAfterCursor, appendToOutput, startExecution, finishExecution }
 

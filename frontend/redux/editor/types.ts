@@ -31,9 +31,14 @@ interface PositionRowCol {
   col: number
 }
 
+enum RunState {
+  STARTING, RUNNING, NOT_RUNNING
+}
+
 interface ExecutionState {
-  isExecuting: boolean,
+  state: RunState
   output: string
+  worker: Worker | null
 }
 
 interface EditorState {
@@ -46,5 +51,5 @@ interface EditorState {
 }
 
 
-export { EditorState, Text, ExecutionState, LetterSize, SignToGifMap, PositionRowCol, PositionPixels, Letter, LetterRow, CategorizedAlphabet, AlphabetCategory }
+export { EditorState, RunState, Text, ExecutionState, LetterSize, SignToGifMap, PositionRowCol, PositionPixels, Letter, LetterRow, CategorizedAlphabet, AlphabetCategory }
 
