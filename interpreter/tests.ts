@@ -76,7 +76,7 @@ function testSingle(test: Test): { didPass: boolean, desc: string } {
   if (didPass !== null) return { didPass, desc }
 
   // MATCH_OUTPUT
-  const actualOutput = outputs.join('\n')
+  const actualOutput = outputs.join('')
   if (!test.output || test.output === actualOutput) {
     didPass = true
   } else {
@@ -347,7 +347,7 @@ RCURLY;
 
 P;R;I;N;T; LPAR; F;I;B; LPAR; D1;D0; RPAR; RPAR; SEMICOLON;
 `,
-          output: '55',
+          output: '55\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -364,7 +364,7 @@ RCURLY;
 
 P;R;I;N;T; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
 `,
-          output: '[[A, 3], [True, False]]',
+          output: '[[A, 3], [True, False]]\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -384,7 +384,7 @@ RCURLY;
 
 F; LPAR; RPAR; SEMICOLON;
 `,
-          output: '2',
+          output: '2\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -404,7 +404,7 @@ RCURLY;
 
 F; LPAR; RPAR; SEMICOLON;
 `,
-          output: '2',
+          output: '2\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -450,7 +450,7 @@ RCURLY;
 
 P;R;I;N;T; LPAR; F; LPAR; I;N;C; RPAR; RPAR; SEMICOLON;
 `,
-          output: '2',
+          output: '2\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -471,7 +471,7 @@ C; ASSIGN; F; LPAR; RPAR; SEMICOLON;
 C; LPAR; RPAR; SEMICOLON;
 C; LPAR; RPAR; SEMICOLON;
 `,
-          output: '1\n2',
+          output: '1\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -485,7 +485,7 @@ RCURLY;
 F; PROP; _;_;c;a;l;l;_;_; LPAR; D1; RPAR; SEMICOLON;
 F; PROP; _;_;c;a;l;l;_;_; PROP; _;_;c;a;l;l;_;_; LPAR; D1; RPAR; SEMICOLON;
 `,
-          output: '1\n1',
+          output: '1\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         }
       ]
@@ -499,7 +499,7 @@ F; PROP; _;_;c;a;l;l;_;_; PROP; _;_;c;a;l;l;_;_; LPAR; D1; RPAR; SEMICOLON;
 IF; LPAR; TRUE; RPAR;
   P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
 `,
-          output: '1',
+          output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -527,7 +527,7 @@ IF; LPAR; TRUE; RPAR;
 ELSE;
   P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
 `,
-          output: '1',
+          output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -538,7 +538,7 @@ IF; LPAR; FALSE; RPAR;
 ELSE;
   P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
 `,
-          output: '0',
+          output: '0\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -568,7 +568,7 @@ ELSE; IF; LPAR; X; EQ; D1; RPAR;
 ELSE;
   P;R;I;N;T; LPAR; D2; RPAR; SEMICOLON;
 `,
-          output: '0\n1\n2',
+          output: '0\n1\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
       ]
@@ -586,7 +586,7 @@ LCURLY;
   I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
-          output: '0\n1',
+          output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -601,7 +601,7 @@ LCURLY;
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
 RCURLY;
 `,
-          output: '1\n2',
+          output: '1\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -616,7 +616,7 @@ LCURLY;
   I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
-          output: '0\n1',
+          output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -632,7 +632,7 @@ RCURLY;
 
 P;R;I;N;T; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
 `,
-          output: '1',
+          output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -653,7 +653,7 @@ LCURLY;
   I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
-          output: '0\n1',
+          output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -671,7 +671,7 @@ LCURLY;
   I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
-          output: '0\n1',
+          output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -690,7 +690,7 @@ RCURLY;
 
 P;R;I;N;T; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
 `,
-          output: '1',
+          output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
       ]
@@ -709,7 +709,7 @@ LCURLY;
 RCURLY;
 P;R;I;N;T; LPAR; X; RPAR; SEMICOLON;
 `,
-          output: '1',
+          output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -723,7 +723,7 @@ LCURLY;
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
 RCURLY;
 `,
-          output: '0\n1',
+          output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -737,7 +737,7 @@ LCURLY;
   P;R;I;N;T; LPAR; I; COMMA; J; RPAR; SEMICOLON;
 RCURLY;
 `,
-          output: '0 4\n1 3',
+          output: '0 4\n1 3\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -767,7 +767,7 @@ LCURLY;
   P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
 RCURLY;
 `,
-          output: '0\n1',
+          output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -782,7 +782,7 @@ LCURLY;
   I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
-          output: '0\n2',
+          output: '0\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -797,7 +797,7 @@ LCURLY;
 RCURLY;
 P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
 `,
-          output: '2',
+          output: '2\n',
           expected: ExpectedResult.MATCH_OUTPUT
         }
       ]
@@ -819,7 +819,7 @@ RCURLY;
 a; ASSIGN; C; LPAR; D1; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 `,
-          output: '1',
+          output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -837,7 +837,7 @@ a; ASSIGN; C; LPAR; RPAR; SEMICOLON;
 a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 `,
-          output: '1',
+          output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -857,7 +857,7 @@ a; PROP; m; ASSIGN; m; SEMICOLON;
 a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 `,
-          output: '1',
+          output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -879,7 +879,7 @@ RCURLY;
 a; ASSIGN; C; LPAR; QUOTE; f;o;o; QUOTE; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; RPAR; SEMICOLON;
 `,
-          output: 'foo',
+          output: 'foo\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -899,7 +899,7 @@ P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 a; PROP; _;_;c;a;l;l;_;_; LPAR; D2; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 `,
-          output: '1\n2',
+          output: '1\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -921,7 +921,7 @@ a; ASSIGN; D; LPAR; RPAR; SEMICOLON;
 a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 `,
-          output: '1',
+          output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -949,7 +949,7 @@ a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
 P;R;I;N;T; LPAR; a; PROP; y; RPAR; SEMICOLON;
 `,
-          output: '1\n1',
+          output: '1\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         }
       ]
@@ -972,7 +972,7 @@ LCURLY;
   F; LPAR; RPAR; SEMICOLON;
 RCURLY;          
 `,
-          output: '0\n1',
+          output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         }
       ]

@@ -14,7 +14,7 @@ type PrintFunction = (str: string) => void
 
 function GiflangPrint(print: PrintFunction): TWrappedFunction {
   return (interpreter: CodeExecuter, args: Instance[]): Instance => {
-    print(Stringify(interpreter, args).join(' '))
+    print(Stringify(interpreter, args).join(' ') + '\n')
     return NoneInstance.getInstance()
   }
 }

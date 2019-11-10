@@ -23,7 +23,6 @@ class Menu extends React.Component<MenuProps, {}> {
         >
           Run
         </button>
-        {this.props.isExecuting ? 'zase prace?' : 'tak ja teda jdu'}
       </div>
     )
   }

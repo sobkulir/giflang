@@ -7,16 +7,22 @@ export interface GiflangWorker {
   run(code: string): void
 }
 
+export interface GiflangWorkerCallbacks {
+  onPrint: PrintFunction,
+  onFinish: (error?: string) => void
+}
+
 class Giflang implements GiflangWorker {
   readonly interpreter: Interpreter
-  constructor(print: PrintFunction) {
-    this.interpreter = new Interpreter(print)
+  constructor(readonly callbacks: GiflangWorkerCallbacks) {
+    this.interpreter = new Interpreter(callbacks.onPrint)
   }
   run(code: string) {
     const rootNode = ParseGiflang(code)
     try {
       this.interpreter.visitProgramStmt(rootNode)
     } finally {
+      this.callbacks.onFinish()
       console.log(this.interpreter.callStack)
     }
   }

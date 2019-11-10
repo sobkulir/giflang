@@ -10,7 +10,7 @@ import { BoolInstance, Instance, NoneInstance, StringInstance, UserFunctionInsta
 import { MagicMethod } from './object-model/magic-method'
 import { ArrayClass } from './object-model/std/array-class'
 import { ArrayInstance } from './object-model/std/array-instance'
-import { GiflangPrint } from './object-model/std/functions'
+import { GiflangPrint, PrintFunction } from './object-model/std/functions'
 import { NumberClass } from './object-model/std/number-class'
 import { NumberInstance } from './object-model/std/number-instance'
 
@@ -26,7 +26,7 @@ class Interpreter
   public locator: JisonLocator =
     { first_column: 0, first_line: 0, last_column: 0, last_line: 0 }
 
-  constructor(print: (str: string) => void) {
+  constructor(print: PrintFunction) {
     this.globals = new Environment(null)
     this.environment = this.globals
     this.globals.getRef('PRINT').set(
@@ -94,7 +94,7 @@ class Interpreter
     switch (expr.operator) {
       case Operator.PLUS:
         return r.callMagicMethod(MagicMethod.__pos__, [], this)
-      case Operator.LE:
+      case Operator.MINUS:
         return r.callMagicMethod(MagicMethod.__neg__, [], this)
       default:
         throw new Error('TODO: Internal.')

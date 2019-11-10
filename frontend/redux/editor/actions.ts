@@ -1,8 +1,7 @@
 import * as Comlink from 'comlink'
 import { produce } from 'immer'
 import Worker from 'worker-loader!../../../interpreter/giflang.worker.ts'
-import { GiflangWorker } from '../../../interpreter/giflang.worker'
-import { PrintFunction } from '../../../interpreter/object-model/std/functions'
+import { GiflangWorker, GiflangWorkerCallbacks } from '../../../interpreter/giflang.worker'
 import { storeInstance } from '../../app'
 import { TextToString } from '../../lib/editor'
 import { Sign } from '../../lib/sign'
@@ -102,15 +101,29 @@ const appendToOutput =
     })
   })
 
+const executionFinished =
+  (): MyAction<void> => ({
+    type: 'Execution finished',
+    reducer: produce((state: State) => {
+      state.editor.execution.isExecuting = false
+    })
+  })
+  
+  const callbacks: GiflangWorkerCallbacks = {
+    onPrint: 
+      (str: string) => { storeInstance.dispatch(appendToOutput(str))},
+    onFinish:
+      (_err: string | undefined) =>
+       { storeInstance.dispatch(executionFinished())},
+  }
+  
 async function ExecuteCode(code: string) {
   const workerCreator =
     Comlink.wrap<
-      new (print: PrintFunction) => Promise<GiflangWorker>>(new Worker())
-  
-  const print = (str: string) => {
-    storeInstance.dispatch(appendToOutput(str))
-  }
-  const worker = await new workerCreator(Comlink.proxy(print))
+      new (callbacks: GiflangWorkerCallbacks) => Promise<GiflangWorker>
+    >(new Worker())
+
+  const worker = await new workerCreator(Comlink.proxy(callbacks))
   // console.log(await x.getCounter())
   await worker.run(code)
 }
@@ -125,13 +138,7 @@ const startExecution =
     })
   })
 
-const executionFinished =
-  (): MyAction<void> => ({
-    type: 'Execution finished',
-    reducer: produce((state: State) => {
-      state.editor.execution.isExecuting = false
-    })
-  })
+
 
 export { setCursorPosition, addSignAfterCursor, moveCursor, Direction, removeAfterCursor, newlineAfterCursor, appendToOutput, startExecution, executionFinished }
 

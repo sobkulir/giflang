@@ -62,6 +62,8 @@ function HandleShorcuts(e: React.KeyboardEvent, props: TextAreaProps)
     case ';':
       sign = Sign.SEMICOLON; break
     case ' ':
+      // Prevents scrolling to the bottom.
+      e.preventDefault()
       sign = Sign.SPACE; break
     case '.':
       sign = Sign.PROP; break
