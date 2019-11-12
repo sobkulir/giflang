@@ -8,5 +8,6 @@
     "outDir": "dist",
     "jsx": "react",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
   }
 }

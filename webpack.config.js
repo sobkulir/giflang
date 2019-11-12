@@ -58,6 +58,10 @@ module.exports = {
   devServer: {
     contentBase: path.join(__dirname, 'frontend/public'),
     compress: true,
-    port: 9000
+    port: 9000,
+    hot: true,
+    historyApiFallback: {
+      index: 'index.html'
+    },
   }
 };

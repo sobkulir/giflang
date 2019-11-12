@@ -1,14 +1,16 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
-import { finishExecution as _finishExecution, startExecution as _startExecution } from '../redux/editor/actions'
+import { finishExecution, startExecution } from '../redux/editor/actions'
 import { RunState } from '../redux/editor/types'
+import { saveCode } from '../redux/storage/actions'
 import { State } from '../redux/types'
 import * as styles from './menu.scss'
 
 interface MenuProps {
   state: RunState,
-  startExecution: typeof _startExecution,
-  finishExecution: typeof _finishExecution
+  startExecution: typeof startExecution,
+  finishExecution: typeof finishExecution
+  saveCode: typeof saveCode
 }
 
 class Menu extends React.Component<MenuProps, {}> {
@@ -17,6 +19,9 @@ class Menu extends React.Component<MenuProps, {}> {
   }
   stopExecution = (_: any) => {
     this.props.finishExecution()
+  }
+  saveCode = (_: any) => {
+    this.props.saveCode()
   }
 
   render() {
@@ -34,6 +39,11 @@ class Menu extends React.Component<MenuProps, {}> {
         >
           Stop
         </button>
+        <button
+          onClick={this.saveCode}
+        >
+          Save
+        </button>
       </div>
     )
   }
@@ -44,7 +54,8 @@ export default connect(
     state: state.editor.execution.state,
   }),
   {
-    startExecution: _startExecution,
-    finishExecution: _finishExecution,
+    startExecution,
+    finishExecution,
+    saveCode
   })(Menu)
 

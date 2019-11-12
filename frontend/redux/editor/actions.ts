@@ -3,7 +3,7 @@ import { produce } from 'immer'
 import Worker from 'worker-loader!../../../interpreter/giflang.worker.ts'
 import { GiflangWorker, GiflangWorkerCallbacks } from '../../../interpreter/giflang.worker'
 import { storeInstance } from '../../app'
-import { TextToString } from '../../lib/editor'
+import { CodeToString } from '../../lib/editor'
 import { Sign } from '../../lib/sign'
 import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRight, MoveCursorUp, PositionPixelsToRowCol, TrimPositionRowCol } from '../../lib/text-area'
 import { MyAction, State } from '../types'
@@ -149,7 +149,7 @@ const startExecution =
     reducer: produce((state: State) => {
       state.editor.execution.state = RunState.STARTING
       state.editor.execution.output = ''
-      StartExecution(TextToString(state.editor.text))
+      StartExecution(CodeToString(state.editor.text))
     })
   })
 
