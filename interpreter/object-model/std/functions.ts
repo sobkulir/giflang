@@ -2,19 +2,22 @@ import { CodeExecuter } from '../../code-executer'
 import { Instance, NoneInstance, StringInstance, TWrappedFunction } from '../instance'
 import { MagicMethod } from '../magic-method'
 
-function Stringify(interpreter: CodeExecuter, args: Instance[])
-  : string[] {
-  return args.map((arg) => (arg.callMagicMethod(
-    MagicMethod.__str__, [], interpreter).castOrThrow(StringInstance)
-    .value
-  ))
+async function Stringify(interpreter: CodeExecuter, args: Instance[])
+  : Promise<string[]> {
+  return Promise.all(
+    args.map(async (arg) => ((await arg.callMagicMethod(
+      MagicMethod.__str__, [], interpreter)).castOrThrow(StringInstance)
+      .value
+    )))
 }
 
 type PrintFunction = (str: string) => void
 
-function GiflangPrint(print: PrintFunction): TWrappedFunction {
-  return (interpreter: CodeExecuter, args: Instance[]): Instance => {
-    print(Stringify(interpreter, args).join(' ') + '\n')
+function GiflangPrint(print: PrintFunction)
+  : TWrappedFunction {
+  return async (interpreter: CodeExecuter, args: Instance[])
+    : Promise<Instance> => {
+    print((await Stringify(interpreter, args)).join(' ') + '\n')
     return NoneInstance.getInstance()
   }
 }

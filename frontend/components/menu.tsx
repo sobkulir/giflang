@@ -7,7 +7,8 @@ import { State } from '../redux/types'
 import * as styles from './menu.scss'
 
 interface MenuProps {
-  state: RunState,
+  runState: RunState,
+  goToNextStep: () => void,
   startExecution: typeof startExecution,
   finishExecution: typeof finishExecution
   saveCode: typeof saveCode
@@ -23,18 +24,21 @@ class Menu extends React.Component<MenuProps, {}> {
   saveCode = (_: any) => {
     this.props.saveCode()
   }
+  nextStep = (_: any) => {
+    this.props.goToNextStep()
+  }
 
   render() {
     return (
       <div className={styles.menu}>
         <button
-          disabled={this.props.state === RunState.RUNNING}
+          disabled={this.props.runState === RunState.RUNNING}
           onClick={this.executeCode}
         >
           Run
         </button>
         <button
-          disabled={this.props.state !== RunState.RUNNING}
+          disabled={this.props.runState !== RunState.RUNNING}
           onClick={this.stopExecution}
         >
           Stop
@@ -44,6 +48,11 @@ class Menu extends React.Component<MenuProps, {}> {
         >
           Save
         </button>
+        <button
+          onClick={this.nextStep}
+        >
+          Next
+        </button>
       </div>
     )
   }
@@ -51,7 +60,8 @@ class Menu extends React.Component<MenuProps, {}> {
 
 export default connect(
   (state: State) => ({
-    state: state.editor.execution.state,
+    runState: state.editor.execution.state,
+    goToNextStep: state.editor.execution.goToNextStep
   }),
   {
     startExecution,

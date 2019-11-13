@@ -12,7 +12,6 @@ const saveCode =
       firebase.firestore().collection('programs').add({
         code: CodeToString(state.editor.text)
       })
-      window.history.replaceState('test', 'Jano', 'hashik')
     })
   })
 

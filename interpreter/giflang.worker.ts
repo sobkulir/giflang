@@ -3,24 +3,28 @@ import { Interpreter } from './interpreter'
 import { PrintFunction } from './object-model/std/functions'
 import { ParseGiflang } from './parser'
 
+export type NextStepFunction = () => Promise<void>
+
 export interface GiflangWorker {
   run(code: string): void
 }
 
 export interface GiflangWorkerCallbacks {
   onPrint: PrintFunction,
-  onFinish: (error?: string) => void
+  onFinish: (error?: string) => void,
+  onNextStep: NextStepFunction
 }
 
 class Giflang implements GiflangWorker {
   readonly interpreter: Interpreter
   constructor(readonly callbacks: GiflangWorkerCallbacks) {
     this.interpreter = new Interpreter(callbacks.onPrint)
+    this.interpreter.nextStep = callbacks.onNextStep
   }
-  run(code: string) {
+  async run(code: string) {
     try {
       const rootNode = ParseGiflang(code)
-      this.interpreter.visitProgramStmt(rootNode)
+      await this.interpreter.visitProgramStmt(rootNode)
       this.callbacks.onFinish()
     } catch (e) {
       console.log(e)

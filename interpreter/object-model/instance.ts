@@ -6,7 +6,7 @@ import { MagicMethod } from './magic-method'
 
 interface ValueRef {
   set(value: Instance): void
-  get(): Instance
+  get(): Promise<Instance>
 }
 
 class Instance {
@@ -55,7 +55,7 @@ class Instance {
   getRef(name: string): ValueRef {
     return {
       set: (value: Instance) => this.set(name, value),
-      get: () => this.getOrThrow(name),
+      get: () => Promise.resolve(this.getOrThrow(name)),
     }
   }
 
@@ -72,7 +72,7 @@ class Instance {
     functionName: MagicMethod,
     args: Instance[],
     interpreter: CodeExecuter
-  ): Instance {
+  ): Promise<Instance> {
     const method = this.getClass().getInBases(functionName)
 
     if (method) {
@@ -119,7 +119,7 @@ class NoneInstance extends ObjectInstance {
 }
 
 abstract class FunctionInstance extends ObjectInstance {
-  abstract call(interpreter: CodeExecuter, args: Instance[]): Instance
+  abstract call(interpreter: CodeExecuter, args: Instance[]): Promise<Instance>
 
   // Returns true if method has "this" bound.
   abstract isBound(): boolean
@@ -133,7 +133,7 @@ abstract class FunctionInstance extends ObjectInstance {
     return new WrappedFunctionInstance(
       WrappedFunctionClass.get(),
       (interpreter: CodeExecuter,
-        args: Instance[]): Instance => {
+        args: Instance[]): Promise<Instance> => {
         const boundArgs = args.slice()
         boundArgs.unshift(argToBind)
         return this.call(interpreter, boundArgs)
@@ -154,7 +154,7 @@ class UserFunctionInstance extends FunctionInstance {
     super(klass)
   }
 
-  call(interpreter: CodeExecuter, args: Instance[]): Instance {
+  async call(interpreter: CodeExecuter, args: Instance[]): Promise<Instance> {
     const environment = new Environment(this.closure)
     const params = this.functionDef.parameters
     CheckArityEq(args, params.length)
@@ -163,7 +163,7 @@ class UserFunctionInstance extends FunctionInstance {
       environment.shallowSet(params[i], args[i])
     }
 
-    const completion = interpreter.executeInEnvironment(
+    const completion = await interpreter.executeInEnvironment(
       this.functionDef.body.stmts,
       environment
     )
@@ -187,7 +187,7 @@ class UserFunctionInstance extends FunctionInstance {
 type TWrappedFunction = (
   interpreter: CodeExecuter,
   args: Instance[],
-) => Instance
+) => Promise<Instance>
 
 class WrappedFunctionInstance extends FunctionInstance {
   constructor(
@@ -198,7 +198,7 @@ class WrappedFunctionInstance extends FunctionInstance {
     super(klass)
   }
 
-  call(interpreter: CodeExecuter, args: Instance[]): Instance {
+  call(interpreter: CodeExecuter, args: Instance[]): Promise<Instance> {
     return this.wrappedFunction(interpreter, args)
   }
 

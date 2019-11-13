@@ -4,9 +4,10 @@ import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, Do
 import { Operator } from './ast/operator'
 import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, FunctionDeclStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
 import { CodeExecuter } from './code-executer'
-import { Environment, ValueRef } from './environment'
+import { Environment } from './environment'
+import { NextStepFunction } from './giflang.worker'
 import { Class, ObjectClass, StringClass, UserClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
-import { BoolInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, WrappedFunctionInstance } from './object-model/instance'
+import { BoolInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, ValueRef, WrappedFunctionInstance } from './object-model/instance'
 import { MagicMethod } from './object-model/magic-method'
 import { ArrayClass } from './object-model/std/array-class'
 import { ArrayInstance } from './object-model/std/array-instance'
@@ -16,15 +17,16 @@ import { NumberInstance } from './object-model/std/number-instance'
 
 class Interpreter
   implements
-  VisitorRefExpr<ValueRef>,
-  VisitorValueExpr<Instance>,
-  VisitorStmt<Completion>,
+  VisitorRefExpr<Promise<ValueRef>>,
+  VisitorValueExpr<Promise<Instance>>,
+  VisitorStmt<Promise<Completion>>,
   CodeExecuter {
   private readonly globals: Environment
   private environment: Environment
   public callStack: string[] = []
   public locator: JisonLocator =
     { first_column: 0, first_line: 0, last_column: 0, last_line: 0 }
+  public nextStep: NextStepFunction = async () => { return }
 
   constructor(print: PrintFunction) {
     this.globals = new Environment(null)
@@ -36,61 +38,66 @@ class Interpreter
     this.globals.getRef('FALSE').set(BoolInstance.getFalse())
   }
 
-  private evaluateRef(expr: RefExpr): ValueRef {
+  private evaluateRef(expr: RefExpr): Promise<ValueRef> {
     this.locator = expr.locator
     return expr.accept(this)
   }
 
-  private evaluate(expr: Expr): Instance {
+  private async evaluate(expr: Expr): Promise<Instance> {
     this.locator = expr.locator
     if (expr instanceof ValueExpr) {
       return expr.accept(this)
     } else {
-      return this.evaluateRef(expr).get()
+      return this.evaluateRef(expr).then((value) => value.get())
     }
   }
 
-  execute(stmt: Stmt): Completion {
+  execute(stmt: Stmt): Promise<Completion> {
     this.locator = stmt.locator
     return stmt.accept(this)
   }
 
-  executeInEnvironment(stmts: Stmt[], excEnv: Environment): Completion {
+  async executeInEnvironment(stmts: Stmt[], excEnv: Environment)
+    : Promise<Completion> {
     const prevEnv = this.environment
     this.environment = excEnv
     let lastCompletion: Completion = new NormalCompletion()
     for (const curStmt of stmts) {
-      lastCompletion = this.execute(curStmt)
+      lastCompletion = await this.execute(curStmt)
       if (!lastCompletion.isNormal()) break
     }
     this.environment = prevEnv
     return lastCompletion
   }
 
-  visitNumberValueExpr(expr: NumberValueExpr): Instance {
+  async visitNumberValueExpr(expr: NumberValueExpr): Promise<Instance> {
     return new NumberInstance(NumberClass.get(), expr.value)
   }
-  visitStringValueExpr(expr: StringValueExpr): Instance {
+  async visitStringValueExpr(expr: StringValueExpr): Promise<Instance> {
     return new StringInstance(StringClass.get(), expr.value)
   }
-  visitNoneValueExpr(_expr: NoneValueExpr): Instance {
+  async visitNoneValueExpr(_expr: NoneValueExpr): Promise<Instance> {
     return NoneInstance.getInstance()
   }
-  visitAssignmentValueExpr(expr: AssignmentValueExpr): Instance {
-    const l = this.evaluateRef(expr.lhs)
-    const r = this.evaluate(expr.rhs)
+  async visitAssignmentValueExpr(expr: AssignmentValueExpr): Promise<Instance> {
+    console.log('paused')
+    await this.nextStep()
+    console.log('resumed')
+    const l = await this.evaluateRef(expr.lhs)
+    const r = await this.evaluate(expr.rhs)
     l.set(r)
     return r
   }
-  visitArrayValueExpr(expr: ArrayValueExpr): Instance {
+  async visitArrayValueExpr(expr: ArrayValueExpr): Promise<Instance> {
     const arr: Instance[] = []
     for (const e of expr.elements) {
-      arr.push(this.evaluate(e))
+      arr.push(await this.evaluate(e))
     }
     return new ArrayInstance(ArrayClass.get(), arr)
   }
-  visitUnaryPlusMinusValueExpr(expr: UnaryPlusMinusValueExpr): Instance {
-    const r = this.evaluate(expr.right)
+  async visitUnaryPlusMinusValueExpr(expr: UnaryPlusMinusValueExpr)
+    : Promise<Instance> {
+    const r = await this.evaluate(expr.right)
     switch (expr.operator) {
       case Operator.PLUS:
         return r.callMagicMethod(MagicMethod.__pos__, [], this)
@@ -100,16 +107,16 @@ class Interpreter
         throw new Error('TODO: Internal.')
     }
   }
-  visitUnaryNotValueExpr(expr: UnaryNotValueExpr): Instance {
-    const r = this.evaluate(expr.right)
+  async visitUnaryNotValueExpr(expr: UnaryNotValueExpr): Promise<Instance> {
+    const r = await this.evaluate(expr.right)
     // Converts value to bool and then negates it.
-    const boolRes = r.callMagicMethod(
-      MagicMethod.__bool__, [], this).castOrThrow(BoolInstance)
+    const boolRes = (await r.callMagicMethod(
+      MagicMethod.__bool__, [], this)).castOrThrow(BoolInstance)
     return (boolRes.value) ? BoolInstance.getFalse() : BoolInstance.getTrue()
   }
-  visitBinaryValueExpr(expr: BinaryValueExpr): Instance {
-    const l = this.evaluate(expr.left)
-    const r = this.evaluate(expr.right)
+  async visitBinaryValueExpr(expr: BinaryValueExpr): Promise<Instance> {
+    const l = await this.evaluate(expr.left)
+    const r = await this.evaluate(expr.right)
 
     switch (expr.operator) {
       case Operator.LT:
@@ -136,15 +143,15 @@ class Interpreter
         return l.callMagicMethod(MagicMethod.__div__, [r], this)
       case Operator.AND:
         {
-          const lRes = l.callMagicMethod(
-            MagicMethod.__bool__, [], this).castOrThrow(BoolInstance)
+          const lRes = (await l.callMagicMethod(
+            MagicMethod.__bool__, [], this)).castOrThrow(BoolInstance)
           if (!lRes.value) return lRes
           else return r.callMagicMethod(MagicMethod.__bool__, [], this)
         }
       case Operator.OR:
         {
-          const lRes = l.callMagicMethod(
-            MagicMethod.__bool__, [], this).castOrThrow(BoolInstance)
+          const lRes = (await l.callMagicMethod(
+            MagicMethod.__bool__, [], this)).castOrThrow(BoolInstance)
           if (lRes.value) return lRes
           else return r.callMagicMethod(MagicMethod.__bool__, [], this)
         }
@@ -153,40 +160,42 @@ class Interpreter
     }
   }
 
-  visitExprStmt(stmt: ExprStmt): Completion {
-    this.evaluate(stmt.expr)
+  async visitExprStmt(stmt: ExprStmt): Promise<Completion> {
+    await this.evaluate(stmt.expr)
     return new NormalCompletion()
   }
 
-  visitCallValueExpr(expr: CallValueExpr): Instance {
+  async visitCallValueExpr(expr: CallValueExpr): Promise<Instance> {
     const args = []
     for (const arg of expr.args) {
-      args.push(this.evaluate(arg))
+      args.push(await this.evaluate(arg))
     }
-    return this.evaluate(expr.callee)
+    return (await this.evaluate(expr.callee))
       .callMagicMethod(MagicMethod.__call__, args, this)
   }
 
-  visitVariableRefExpr(expr: VariableRefExpr): ValueRef {
-    return this.environment.getRef(expr.name)
+  visitVariableRefExpr(expr: VariableRefExpr): Promise<ValueRef> {
+    return Promise.resolve(this.environment.getRef(expr.name))
   }
-  visitSquareAccessorRefExpr(expr: SquareAccessorRefExpr): ValueRef {
-    const arr = this.evaluate(expr.object)
-    const key = this.evaluate(expr.property)
+  async visitSquareAccessorRefExpr(expr: SquareAccessorRefExpr)
+    : Promise<ValueRef> {
+    const arr = await this.evaluate(expr.object)
+    const key = await this.evaluate(expr.property)
     return {
       set: (value: Instance) =>
         arr.callMagicMethod(MagicMethod.__setitem__, [key, value], this),
       get: () => arr.callMagicMethod(MagicMethod.__getitem__, [key], this),
     }
   }
-  visitDotAccessorRefExpr(expr: DotAccessorRefExpr): ValueRef {
-    return this.evaluate(expr.object).getRef(expr.property)
+  async visitDotAccessorRefExpr(expr: DotAccessorRefExpr): Promise<ValueRef> {
+    return (await this.evaluate(expr.object)).getRef(expr.property)
   }
-  visitEmptyStmt(stmt: EmptyStmt): Completion {
+  async visitEmptyStmt(_: EmptyStmt): Promise<Completion> {
     return new NormalCompletion()
   }
-  visitIfStmt(stmt: IfStmt): Completion {
-    if (this.isTruthy(this.evaluate(stmt.condition))) {
+
+  async visitIfStmt(stmt: IfStmt): Promise<Completion> {
+    if (this.isTruthy(await this.evaluate(stmt.condition))) {
       return this.execute(stmt.consequent)
     } else if (stmt.alternate != null) {
       return this.execute(stmt.alternate)
@@ -194,16 +203,16 @@ class Interpreter
       return new NormalCompletion()
     }
   }
-  visitBlockStmt(stmt: BlockStmt): Completion {
+  async visitBlockStmt(stmt: BlockStmt): Promise<Completion> {
     return this.executeInEnvironment(
       stmt.stmts,
       new Environment(this.environment)
     )
   }
-  visitWhileStmt(stmt: WhileStmt): Completion {
+  async visitWhileStmt(stmt: WhileStmt): Promise<Completion> {
     let lastCompletion: Completion = new NormalCompletion()
-    while (this.isTruthy(this.evaluate(stmt.condition))) {
-      lastCompletion = this.execute(stmt.body)
+    while (this.isTruthy(await this.evaluate(stmt.condition))) {
+      lastCompletion = await this.execute(stmt.body)
       if (lastCompletion.isBreak() || lastCompletion.isReturn()) {
         break
       }
@@ -221,15 +230,15 @@ class Interpreter
   //     increments
   //   '}'
   // }
-  visitForStmt(stmt: ForStmt): Completion {
+  async visitForStmt(stmt: ForStmt): Promise<Completion> {
     const prevEnv = this.environment
     this.environment = new Environment(prevEnv)
 
     for (const expr of stmt.preamble) this.evaluate(expr)
     let lastCompletion: Completion = new NormalCompletion()
     while (stmt.condition === null
-      || this.isTruthy(this.evaluate(stmt.condition))) {
-      lastCompletion = this.execute(stmt.body)
+      || this.isTruthy(await this.evaluate(stmt.condition))) {
+      lastCompletion = await this.execute(stmt.body)
       if (lastCompletion.isBreak() || lastCompletion.isReturn()) {
         break
       }
@@ -241,7 +250,7 @@ class Interpreter
     else return new NormalCompletion()
   }
 
-  visitFunctionDeclStmt(stmt: FunctionDeclStmt): Completion {
+  async visitFunctionDeclStmt(stmt: FunctionDeclStmt): Promise<Completion> {
     const func = new UserFunctionInstance(
       UserFunctionClass.get(),
       stmt,
@@ -251,7 +260,7 @@ class Interpreter
     this.environment.getRef(stmt.name).set(func)
     return new NormalCompletion()
   }
-  visitClassDefStmt(stmt: ClassDefStmt): Completion {
+  async visitClassDefStmt(stmt: ClassDefStmt): Promise<Completion> {
     let base: Class = ObjectClass.get()
     if (stmt.baseName) {
       const baseInstance = this.environment.get(stmt.baseName)
@@ -266,11 +275,11 @@ class Interpreter
       .set(new UserClass(stmt.name, base, stmt.methods, this.environment))
     return new NormalCompletion()
   }
-  visitCompletionStmt(stmt: CompletionStmt): Completion {
+  async visitCompletionStmt(stmt: CompletionStmt): Promise<Completion> {
     if (stmt.completionType === CompletionType.RETURN) {
       const value =
         stmt.right !== null
-          ? this.evaluate(stmt.right)
+          ? await this.evaluate(stmt.right)
           : NoneInstance.getInstance()
       return new ReturnCompletion(value)
     } else if (stmt.completionType === CompletionType.BREAK) {
@@ -281,16 +290,16 @@ class Interpreter
       return new NormalCompletion()
     }
   }
-  visitProgramStmt(stmt: ProgramStmt): Completion {
+  async visitProgramStmt(stmt: ProgramStmt): Promise<Completion> {
     /* TODO: Hoisting? i.e. separate fncs, classes, stmts. */
     for (const s of stmt.body) {
-      this.execute(s)
+      await this.execute(s)
     }
     return new NormalCompletion()
   }
 
-  isTruthy(r: Instance): boolean {
-    const boolRes = r.callMagicMethod(MagicMethod.__bool__, [], this)
+  async isTruthy(r: Instance): Promise<boolean> {
+    const boolRes = await r.callMagicMethod(MagicMethod.__bool__, [], this)
     // TODO: Enforce boolRes type
     return (boolRes as BoolInstance).value
   }

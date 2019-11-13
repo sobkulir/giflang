@@ -27,6 +27,7 @@
     "jison-gho-loader": "^1.0.1",
     "node-sass": "^4.13.0",
     "react-router-dom": "^5.1.2",
+    "redux-thunk": "^2.3.0",
     "sass-loader": "^8.0.0",
     "scroll-into-view-if-needed": "^2.2.20",
     "style-loader": "^1.0.0",

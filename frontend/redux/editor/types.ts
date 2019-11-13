@@ -39,6 +39,7 @@ interface ExecutionState {
   state: RunState
   output: string
   worker: Worker | null
+  goToNextStep: () => void
 }
 
 interface EditorState {

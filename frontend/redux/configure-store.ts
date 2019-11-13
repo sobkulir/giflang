@@ -117,7 +117,8 @@ const getInitialState = (): State => (
       execution: {
         state: RunState.NOT_RUNNING,
         output: '',
-        worker: null
+        worker: null,
+        goToNextStep: () => { return }
       }
     },
 

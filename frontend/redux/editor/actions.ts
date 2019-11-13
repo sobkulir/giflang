@@ -113,13 +113,31 @@ const finishExecution =
       state.editor.execution.worker = null
     })
   })
-  
+
+const newNextStep =
+(goToNextStep: () => void): MyAction<() => void> => ({
+  type: 'New next step',
+  payload: goToNextStep,
+  reducer: produce((state: State) => {
+    state.editor.execution.goToNextStep = goToNextStep
+  })
+})
+
+
 const callbacks: GiflangWorkerCallbacks = {
   onPrint:
     (str: string) => { storeInstance.dispatch(appendToOutput(str))},
   onFinish:
     (_err: string | undefined) =>
       { storeInstance.dispatch(finishExecution())},
+  onNextStep:
+    () => {
+      let outResolve: any
+      console.log('ta good')
+      const ret = new Promise<void>((resolve, _) => outResolve = resolve)
+      storeInstance.dispatch(newNextStep(outResolve))
+      return ret
+    }
   }
 
 const executionStarted =

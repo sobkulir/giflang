@@ -49,10 +49,10 @@ class Environment {
   getRef(name: string): ValueRef {
     return {
       set: (value: Instance) => this.set(name, value),
-      get: () => this.get(name),
+      get: () => Promise.resolve(this.get(name)),
     }
   }
 }
 
-export { ValueRef, Environment }
+export { Environment }
 
