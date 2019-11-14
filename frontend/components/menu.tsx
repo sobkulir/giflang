@@ -8,15 +8,18 @@ import * as styles from './menu.scss'
 
 interface MenuProps {
   runState: RunState,
-  goToNextStep: () => void,
+  resolveNextStep: () => void,
   startExecution: typeof startExecution,
   finishExecution: typeof finishExecution
-  saveCode: typeof saveCode
+  saveCode: typeof saveCode,
 }
 
 class Menu extends React.Component<MenuProps, {}> {
-  executeCode = (_: any) => {
-    this.props.startExecution()
+  startExecutionNormal = (_: any) => {
+    this.props.startExecution(/*debugMode=*/false)
+  }
+  startExecutionDebug = (_: any) => {
+    this.props.startExecution(/*debugMode=*/true)
   }
   stopExecution = (_: any) => {
     this.props.finishExecution()
@@ -24,21 +27,26 @@ class Menu extends React.Component<MenuProps, {}> {
   saveCode = (_: any) => {
     this.props.saveCode()
   }
-  nextStep = (_: any) => {
-    this.props.goToNextStep()
+  resolveNextStep = (_: any) => {
+    this.props.resolveNextStep()
+  }
+  isWorkerRunning() {
+    return this.props.runState in [
+      RunState.DEBUG_RUNNING, RunState.DEBUG_WAITING, RunState.RUNNING
+    ]
   }
 
   render() {
     return (
       <div className={styles.menu}>
         <button
-          disabled={this.props.runState === RunState.RUNNING}
-          onClick={this.executeCode}
+          disabled={this.props.runState !== RunState.NOT_RUNNING}
+          onClick={this.startExecutionNormal}
         >
           Run
         </button>
         <button
-          disabled={this.props.runState !== RunState.RUNNING}
+          disabled={!this.isWorkerRunning()}
           onClick={this.stopExecution}
         >
           Stop
@@ -49,7 +57,14 @@ class Menu extends React.Component<MenuProps, {}> {
           Save
         </button>
         <button
-          onClick={this.nextStep}
+          onClick={this.startExecutionDebug}
+          disabled={this.props.runState !== RunState.NOT_RUNNING}
+        >
+          Debug
+        </button>
+        <button
+          onClick={this.resolveNextStep}
+          disabled={this.props.runState !== RunState.DEBUG_WAITING}
         >
           Next
         </button>
@@ -61,11 +76,11 @@ class Menu extends React.Component<MenuProps, {}> {
 export default connect(
   (state: State) => ({
     runState: state.editor.execution.state,
-    goToNextStep: state.editor.execution.goToNextStep
+    resolveNextStep: state.editor.execution.resolveNextStep
   }),
   {
     startExecution,
     finishExecution,
-    saveCode
+    saveCode,
   })(Menu)
 

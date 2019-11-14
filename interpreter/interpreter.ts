@@ -5,7 +5,6 @@ import { Operator } from './ast/operator'
 import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, FunctionDeclStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
 import { CodeExecuter } from './code-executer'
 import { Environment } from './environment'
-import { NextStepFunction } from './giflang.worker'
 import { Class, ObjectClass, StringClass, UserClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
 import { BoolInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, ValueRef, WrappedFunctionInstance } from './object-model/instance'
 import { MagicMethod } from './object-model/magic-method'
@@ -14,6 +13,13 @@ import { ArrayInstance } from './object-model/std/array-instance'
 import { GiflangPrint, PrintFunction } from './object-model/std/functions'
 import { NumberClass } from './object-model/std/number-class'
 import { NumberInstance } from './object-model/std/number-instance'
+
+export type NextStepFunction = (lineno: number) => Promise<void>
+
+export interface InterpreterSetup {
+  onNextStep: NextStepFunction,
+  onPrint: PrintFunction
+}
 
 class Interpreter
   implements
@@ -28,14 +34,21 @@ class Interpreter
     { first_column: 0, first_line: 0, last_column: 0, last_line: 0 }
   public nextStep: NextStepFunction = async () => { return }
 
-  constructor(print: PrintFunction) {
+  constructor(readonly setup: InterpreterSetup, isDebugMode: boolean = false) {
     this.globals = new Environment(null)
     this.environment = this.globals
     this.globals.getRef('PRINT').set(
       new WrappedFunctionInstance(
-        WrappedFunctionClass.get(), GiflangPrint(print), 'PRINT'))
+        WrappedFunctionClass.get(),
+        GiflangPrint(setup.onPrint), 'PRINT'))
     this.globals.getRef('TRUE').set(BoolInstance.getTrue())
     this.globals.getRef('FALSE').set(BoolInstance.getFalse())
+
+    if (isDebugMode) {
+      this.nextStep = async (lineno: number) => {
+        await setup.onNextStep(lineno)
+      }
+    }
   }
 
   private evaluateRef(expr: RefExpr): Promise<ValueRef> {
@@ -80,9 +93,7 @@ class Interpreter
     return NoneInstance.getInstance()
   }
   async visitAssignmentValueExpr(expr: AssignmentValueExpr): Promise<Instance> {
-    console.log('paused')
-    await this.nextStep()
-    console.log('resumed')
+    await this.nextStep(expr.locator.first_line)
     const l = await this.evaluateRef(expr.lhs)
     const r = await this.evaluate(expr.rhs)
     l.set(r)
@@ -115,6 +126,7 @@ class Interpreter
     return (boolRes.value) ? BoolInstance.getFalse() : BoolInstance.getTrue()
   }
   async visitBinaryValueExpr(expr: BinaryValueExpr): Promise<Instance> {
+    await this.nextStep(expr.locator.first_line)
     const l = await this.evaluate(expr.left)
     const r = await this.evaluate(expr.right)
 
@@ -166,6 +178,7 @@ class Interpreter
   }
 
   async visitCallValueExpr(expr: CallValueExpr): Promise<Instance> {
+    await this.nextStep(expr.locator.first_line)
     const args = []
     for (const arg of expr.args) {
       args.push(await this.evaluate(arg))
@@ -195,7 +208,7 @@ class Interpreter
   }
 
   async visitIfStmt(stmt: IfStmt): Promise<Completion> {
-    if (this.isTruthy(await this.evaluate(stmt.condition))) {
+    if (await this.isTruthy(await this.evaluate(stmt.condition))) {
       return this.execute(stmt.consequent)
     } else if (stmt.alternate != null) {
       return this.execute(stmt.alternate)
@@ -211,7 +224,7 @@ class Interpreter
   }
   async visitWhileStmt(stmt: WhileStmt): Promise<Completion> {
     let lastCompletion: Completion = new NormalCompletion()
-    while (this.isTruthy(await this.evaluate(stmt.condition))) {
+    while (await this.isTruthy(await this.evaluate(stmt.condition))) {
       lastCompletion = await this.execute(stmt.body)
       if (lastCompletion.isBreak() || lastCompletion.isReturn()) {
         break
@@ -237,12 +250,12 @@ class Interpreter
     for (const expr of stmt.preamble) this.evaluate(expr)
     let lastCompletion: Completion = new NormalCompletion()
     while (stmt.condition === null
-      || this.isTruthy(await this.evaluate(stmt.condition))) {
+      || await this.isTruthy(await this.evaluate(stmt.condition))) {
       lastCompletion = await this.execute(stmt.body)
       if (lastCompletion.isBreak() || lastCompletion.isReturn()) {
         break
       }
-      for (const expr of stmt.increments) this.evaluate(expr)
+      for (const expr of stmt.increments) await this.evaluate(expr)
     }
 
     this.environment = prevEnv

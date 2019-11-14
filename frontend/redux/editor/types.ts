@@ -32,14 +32,15 @@ interface PositionRowCol {
 }
 
 enum RunState {
-  STARTING, RUNNING, NOT_RUNNING
+  STARTING, RUNNING, DEBUG_WAITING, DEBUG_RUNNING, NOT_RUNNING
 }
 
 interface ExecutionState {
   state: RunState
   output: string
   worker: Worker | null
-  goToNextStep: () => void
+  resolveNextStep: () => void
+  lineno: number
 }
 
 interface EditorState {

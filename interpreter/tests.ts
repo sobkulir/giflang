@@ -61,7 +61,11 @@ function testSingle(test: Test): { didPass: boolean, desc: string } {
 
   // FAIL_RUNTIME
   const outputs: string[] = []
-  const interpreter = new Interpreter((str) => outputs.push(str))
+  const interpreter = new Interpreter(
+    {
+      onPrint: (str) => outputs.push(str),
+      onNextStep: async () => { return },
+    })
   try {
     interpreter.visitProgramStmt(program)
   } catch (e) {

@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { PositionRowColToPixels } from '../lib/text-area'
 import { addSignAfterCursor as _addSignAfterCursor, moveCursor as _moveCursor, newlineAfterCursor as _newlineAfterCursor, removeAfterCursor as _removeAfterCursor, setCursorPosition as _setCursorPosition } from '../redux/editor/actions'
-import { EditorState, LetterRow, LetterSize, PositionRowCol, SignToGifMap } from '../redux/editor/types'
+import { EditorState, LetterRow, LetterSize, PositionRowCol, RunState, SignToGifMap } from '../redux/editor/types'
 import { State } from '../redux/types'
 import { HandleShorcuts } from './text-area-shorcuts'
 import * as styles from './text-area.scss'
@@ -107,6 +107,19 @@ class TextArea extends React.Component<TextAreaProps, {}> {
     }
   }
 
+  getLineHighlighterStyles = (): React.CSSProperties => {
+    const boxSize =
+      2 * this.props.letterSize.marginPx + this.props.letterSize.edgePx
+    const isVisible = this.props.execution.state === RunState.DEBUG_RUNNING
+      || this.props.execution.state === RunState.DEBUG_WAITING
+    return {
+      display: `${(isVisible) ? 'block' : 'none'}`,
+      position: 'absolute',
+      left: '-10px',
+      top: `${this.props.execution.lineno * boxSize - boxSize / 2}`
+    }
+  }
+
   moveCursor = (e: React.MouseEvent) => {
     e.preventDefault()
     const textWrapper = this.textWrapperRef.current as HTMLDivElement
@@ -148,6 +161,9 @@ class TextArea extends React.Component<TextAreaProps, {}> {
         >
           <div style={cursorWrapperStyle} ref={this.cursorRef}>
             <Cursor letterSize={this.props.letterSize} />
+          </div>
+          <div style={this.getLineHighlighterStyles()}>
+            >
           </div>
           {rows}
         </div>

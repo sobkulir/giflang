@@ -1,7 +1,7 @@
 import * as Comlink from 'comlink'
 import { produce } from 'immer'
 import Worker from 'worker-loader!../../../interpreter/giflang.worker.ts'
-import { GiflangWorker, GiflangWorkerCallbacks } from '../../../interpreter/giflang.worker'
+import { GiflangSetup, GiflangWorker } from '../../../interpreter/giflang.worker'
 import { storeInstance } from '../../app'
 import { CodeToString } from '../../lib/editor'
 import { Sign } from '../../lib/sign'
@@ -114,62 +114,69 @@ const finishExecution =
     })
   })
 
+type NextStepArgs = {
+  resolveNextStep: () => void,
+  lineno: number
+}
 const newNextStep =
-(goToNextStep: () => void): MyAction<() => void> => ({
+(args: NextStepArgs): MyAction<NextStepArgs> => ({
   type: 'New next step',
-  payload: goToNextStep,
+  payload: args,
   reducer: produce((state: State) => {
-    state.editor.execution.goToNextStep = goToNextStep
+    state.editor.execution.state = RunState.DEBUG_WAITING
+    state.editor.execution.resolveNextStep = args.resolveNextStep
+    state.editor.execution.lineno = args.lineno
   })
 })
 
 
-const callbacks: GiflangWorkerCallbacks = {
+const giflangSetup: GiflangSetup = {
   onPrint:
     (str: string) => { storeInstance.dispatch(appendToOutput(str))},
   onFinish:
     (_err: string | undefined) =>
       { storeInstance.dispatch(finishExecution())},
   onNextStep:
-    () => {
-      let outResolve: any
-      console.log('ta good')
-      const ret = new Promise<void>((resolve, _) => outResolve = resolve)
-      storeInstance.dispatch(newNextStep(outResolve))
+    (lineno: number) => {
+      let resolveNextStep: any
+      const ret = new Promise<void>((resolve, _) => resolveNextStep = resolve)
+      storeInstance.dispatch(newNextStep({resolveNextStep, lineno}))
       return ret
     }
   }
 
 const executionStarted =
-  (worker: Worker): MyAction<Worker> => ({
+  (worker: Worker, isDebugMode: boolean): MyAction<Worker> => ({
     type: 'Execution started',
     reducer: produce((state: State) => {
-      state.editor.execution.state = RunState.RUNNING
+      state.editor.execution.state = 
+        (isDebugMode) ? RunState.DEBUG_RUNNING : RunState.RUNNING
       state.editor.execution.worker = worker
     })
   })
 
-async function StartExecution(code: string) {
+async function StartExecution(code: string, isDebugMode: boolean) {
   const vanillaWorker = new Worker()
   const workerProxy =
     Comlink.wrap<
-      new (callbacks: GiflangWorkerCallbacks) => Promise<GiflangWorker>
+      new (giflangSetup: GiflangSetup,
+        isDebugMode: boolean) => Promise<GiflangWorker>
     >(vanillaWorker)
 
-  const worker = await new workerProxy(Comlink.proxy(callbacks))
-  storeInstance.dispatch(executionStarted(vanillaWorker))
+  const worker = await new workerProxy(
+    Comlink.proxy(giflangSetup), isDebugMode)
+  storeInstance.dispatch(executionStarted(vanillaWorker, isDebugMode))
   worker.run(code)
 }
 
 const startExecution =
-  (): MyAction<void> => ({
+  (isDebugMode: boolean): MyAction<boolean> => ({
     type: 'Start execution',
     reducer: produce((state: State) => {
       state.editor.execution.state = RunState.STARTING
       state.editor.execution.output = ''
-      StartExecution(CodeToString(state.editor.text))
+      StartExecution(CodeToString(state.editor.text), isDebugMode)
     })
   })
-
 export { setCursorPosition, addSignAfterCursor, moveCursor, Direction, removeAfterCursor, newlineAfterCursor, appendToOutput, startExecution, finishExecution }
 

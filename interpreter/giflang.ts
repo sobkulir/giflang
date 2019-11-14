@@ -1,7 +1,11 @@
 import { Interpreter } from './interpreter'
 import { ParseGiflang } from './parser'
 
-const interpreter = new Interpreter((str) => console.log(str))
+const interpreter = new Interpreter(
+  {
+    onPrint: (str) => console.log(str),
+    onNextStep: async () => { return },
+  })
 const root = ParseGiflang(`
 FUNCTION; F; LPAR; P; RPAR;
 LCURLY;  
