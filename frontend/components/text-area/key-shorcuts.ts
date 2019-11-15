@@ -1,7 +1,9 @@
 import * as React from 'react'
-import { Sign } from '../lib/sign'
-import { Direction } from '../redux/editor/actions'
+import { Sign } from '../../lib/sign'
+import { Direction } from '../../redux/editor/actions'
 import { TextAreaProps } from './text-area'
+
+// TODO: Define actions interface to not depend on TextAreaProps
 
 // Returns true if event caused an action.
 function HandleShorcuts(e: React.KeyboardEvent, props: TextAreaProps)

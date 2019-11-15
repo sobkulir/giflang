@@ -4,7 +4,7 @@ import IOBox from './io-box'
 import * as styles from './layout.scss'
 import LetterPicker from './letter-picker'
 import Menu from './menu'
-import TextArea from './text-area'
+import TextArea from './text-area/text-area'
 
 export default () => {
   const match = useParams<{ codeId: string }>()

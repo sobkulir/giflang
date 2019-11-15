@@ -1,18 +1,31 @@
 .textArea {
     overflow: auto;
     background-color: lightgray;
-    padding: 20px;
-    cursor: text;
+    padding: 20px 0;
     flex: 1;
+    display: flex;
     
     :focus {
         outline: none;
     }
 
-    .textWrapper {
+    .lineNumbersWrapper {
+        position: sticky;
+        /* Safari */
+        position: -webkit-sticky;
+        left: 0;
+        /* Bring line numbers in front of the text. */
+        z-index: 1;
+        background: lightgreen;
+    }
+
+    .contentWrapper {
         /* Position the wrapper so that children
         can be positioned absolutely */
         position: relative;
+        margin-left: 20px;
+        cursor: text;
+
         .letterRow {
             /* Prevents images from wrapping */
             white-space: nowrap;
