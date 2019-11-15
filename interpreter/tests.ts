@@ -17,7 +17,8 @@ type TestSuite = {
   ,
 }
 
-function testSingle(test: Test): { didPass: boolean, desc: string } {
+async function testSingle(test: Test)
+  : Promise<{ didPass: boolean, desc: string }> {
   let didPass: boolean | null = null
   let desc: string = ''
 
@@ -67,7 +68,7 @@ function testSingle(test: Test): { didPass: boolean, desc: string } {
       onNextStep: async () => { return },
     })
   try {
-    interpreter.visitProgramStmt(program)
+    await interpreter.visitProgramStmt(program)
   } catch (e) {
     if (test.expected === ExpectedResult.FAIL_RUNTIME) {
       didPass = true
@@ -91,20 +92,20 @@ function testSingle(test: Test): { didPass: boolean, desc: string } {
   return { didPass, desc }
 }
 
-function testSuites(suites: TestSuite[], level: number = 0)
-  : { passCount: number, failCount: number } {
+async function testSuites(suites: TestSuite[], level: number = 0)
+  : Promise<{ passCount: number, failCount: number }> {
   let passCount = 0
   let failCount = 0
   for (const suite of suites) {
     console.log(`${' '.repeat(2 * level)} > ${suite.name}`)
     if (suite.suites) {
-      const curResults = testSuites(suite.suites, level + 1)
+      const curResults = await testSuites(suite.suites, level + 1)
       passCount += curResults.passCount
       failCount += curResults.failCount
     }
     if (suite.tests) {
       for (const test of suite.tests) {
-        const { didPass, desc } = testSingle(test)
+        const { didPass, desc } = await testSingle(test)
         console.log(
           `${' '.repeat(2 * (level + 1))} ${didPass ? 'o' : 'x'} ${test.name}`)
         if (!didPass) console.log(desc)
@@ -984,10 +985,11 @@ RCURLY;
   ]
 }
 
-const results = testSuites([parser, runtime])
-console.log(`
+testSuites([parser, runtime]).then((results) =>
+  console.log(`
 >>> Total passed: ${results.passCount}
 >>> Total failed: ${results.failCount}`)
+)
 
 //   /* Classes */
 //   `CLASS; C; LCURLY;
