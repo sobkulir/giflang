@@ -1,41 +1,41 @@
 import { Sign } from '../../lib/sign'
 
-interface LetterSize {
+export interface LetterSize {
   edgePx: number
   marginPx: number
 }
 
-interface Letter {
+export interface Letter {
   id: string
   sign: Sign
 }
 
-interface LetterRow {
+export interface LetterRow {
   id: string
   letters: Letter[]
 }
 
-type AlphabetCategory = { name: string, signs: Sign[] }
-type CategorizedAlphabet = AlphabetCategory[]
-type Text = LetterRow[]
-type FileName = string
-type SignToGifMap = Map<Sign, FileName>
+export type AlphabetCategory = { name: string, signs: Sign[] }
+export type CategorizedAlphabet = AlphabetCategory[]
+export type Text = LetterRow[]
+export type FileName = string
+export type SignToGifMap = Map<Sign, FileName>
 
-interface PositionPixels {
+export interface PositionPixels {
   x: number
   y: number
 }
 
-interface PositionRowCol {
+export interface PositionRowCol {
   row: number
   col: number
 }
 
-enum RunState {
+export enum RunState {
   STARTING, RUNNING, DEBUG_WAITING, DEBUG_RUNNING, NOT_RUNNING
 }
 
-interface ExecutionState {
+export interface ExecutionState {
   state: RunState
   output: string
   worker: Worker | null
@@ -43,7 +43,7 @@ interface ExecutionState {
   lineno: number
 }
 
-interface EditorState {
+export interface EditorState {
   text: Text,
   cursorPosition: PositionRowCol
   letterSize: LetterSize,
@@ -51,7 +51,3 @@ interface EditorState {
   alphabet: CategorizedAlphabet,
   execution: ExecutionState,
 }
-
-
-export { EditorState, RunState, Text, ExecutionState, LetterSize, SignToGifMap, PositionRowCol, PositionPixels, Letter, LetterRow, CategorizedAlphabet, AlphabetCategory }
-

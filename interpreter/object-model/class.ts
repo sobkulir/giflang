@@ -5,7 +5,7 @@ import { BoolInstance, Instance, ObjectInstance, StringInstance, TWrappedFunctio
 import { MagicMethod } from './magic-method'
 import { NumberInstance } from './std/number-instance'
 
-function CheckArityEq(args: Instance[], n: number) {
+export function CheckArityEq(args: Instance[], n: number) {
   // TODO: Add fcn name.
   if (args.length !== n) {
     throw Error(
@@ -13,7 +13,7 @@ function CheckArityEq(args: Instance[], n: number) {
   }
 }
 
-function CheckArityGe(args: Instance[], n: number) {
+export function CheckArityGe(args: Instance[], n: number) {
   // TODO: Add fcn name.
   if (args.length < n) {
     throw Error(
@@ -22,7 +22,7 @@ function CheckArityGe(args: Instance[], n: number) {
   }
 }
 
-abstract class Class extends Instance {
+export abstract class Class extends Instance {
   // Nulls for initial bootstrapping.
   constructor(
     klass: MetaClass | null,
@@ -77,7 +77,7 @@ abstract class Class extends Instance {
   }
 }
 
-class MetaClass extends Class {
+export class MetaClass extends Class {
   // MetaClass's __call__ is responsible for creation of new objects.
   static async __call__(
     interpreter: CodeExecuter,
@@ -122,7 +122,7 @@ class MetaClass extends Class {
   }
 }
 
-class ObjectClass extends Class {
+export class ObjectClass extends Class {
   static async __init__(
     _interpreter: CodeExecuter,
     args: Instance[]
@@ -198,7 +198,7 @@ class ObjectClass extends Class {
   }
 }
 
-class WrappedFunctionClass extends Class {
+export class WrappedFunctionClass extends Class {
   static async __str__(
     _interpreter: CodeExecuter,
     args: Instance[],
@@ -248,7 +248,7 @@ class WrappedFunctionClass extends Class {
   }
 }
 
-class UserFunctionClass extends Class {
+export class UserFunctionClass extends Class {
   static async __str__(
     _interpreter: CodeExecuter,
     args: Instance[],
@@ -295,7 +295,7 @@ class UserFunctionClass extends Class {
   }
 }
 
-class NoneClass extends Class {
+export class NoneClass extends Class {
   static async __str__(
     _interpreter: CodeExecuter,
     args: Instance[],
@@ -338,7 +338,7 @@ class NoneClass extends Class {
   }
 }
 
-class BoolClass extends Class {
+export class BoolClass extends Class {
   static async __str__(
     _interpreter: CodeExecuter,
     args: Instance[]
@@ -389,7 +389,7 @@ class BoolClass extends Class {
   }
 }
 
-class StringClass extends Class {
+export class StringClass extends Class {
   static async __init__(
     _interpreter: CodeExecuter,
     args: Instance[]
@@ -506,7 +506,7 @@ class StringClass extends Class {
   }
 }
 
-class UserClass extends Class {
+export class UserClass extends Class {
   constructor(
     name: string,
     base: Class, methods: FunctionDeclStmt[], env: Environment) {
@@ -535,6 +535,3 @@ class UserClass extends Class {
     return this.base.createBlankUserInstance(klass)
   }
 }
-
-export { Class, MetaClass, CheckArityEq, UserClass, WrappedFunctionClass, UserFunctionClass, NoneClass, ObjectClass, StringClass, BoolClass }
-

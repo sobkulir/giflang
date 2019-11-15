@@ -3,11 +3,8 @@ import { Completion } from './ast/completion'
 import { Stmt } from './ast/stmt'
 import { Environment } from './environment'
 
-interface CodeExecuter {
+export interface CodeExecuter {
   executeInEnvironment(stmts: Stmt[], excEnv: Environment): Promise<Completion>
   callStack: string[]
   locator: JisonLocator
 }
-
-export { CodeExecuter }
-

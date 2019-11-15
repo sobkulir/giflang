@@ -1,6 +1,6 @@
 import { Instance, ValueRef } from './object-model/instance'
 
-class Environment {
+export class Environment {
   private readonly values: Map<string, Instance>
 
   constructor(private readonly enclosing: Environment | null) {
@@ -53,6 +53,3 @@ class Environment {
     }
   }
 }
-
-export { Environment }
-

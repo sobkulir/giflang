@@ -53,7 +53,7 @@ const Cursor: React.SFC<CursorProps> = (props) => {
   return (<div style={getCursorStyles(props.letterSize)} />)
 }
 
-interface TextAreaProps extends EditorState {
+export interface TextAreaProps extends EditorState {
   setCursorPosition: typeof _setCursorPosition,
   addSignAfterCursor: typeof _addSignAfterCursor,
   moveCursor: typeof _moveCursor,
@@ -172,7 +172,6 @@ class TextArea extends React.Component<TextAreaProps, {}> {
   }
 }
 
-export { TextAreaProps }
 export default connect(
   (state: State) => ({
     ...state.editor,

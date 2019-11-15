@@ -1,13 +1,13 @@
 import { Instance } from '../object-model/instance'
 
-enum CompletionType {
+export enum CompletionType {
   NORMAL,
   RETURN,
   BREAK,
   CONTINUE,
 }
 
-abstract class Completion {
+export abstract class Completion {
   isNormal(): this is NormalCompletion {
     return this instanceof NormalCompletion
   }
@@ -30,34 +30,31 @@ abstract class Completion {
 // typeguards from Copmletion would not work as intended.
 // Issue: https://github.com/microsoft/TypeScript/issues/33475
 
-class NormalCompletion extends Completion {
+export class NormalCompletion extends Completion {
   private normalBrand: any
   constructor() {
     super()
     this.normalBrand = ''
   }
 }
-class BreakCompletion extends Completion {
+export class BreakCompletion extends Completion {
   private breakBrand: any
   constructor() {
     super()
     this.breakBrand = ''
   }
 }
-class ContinueCompletion extends Completion {
+export class ContinueCompletion extends Completion {
   private continueBrand: any
   constructor() {
     super()
     this.continueBrand = ''
   }
 }
-class ReturnCompletion extends Completion {
+export class ReturnCompletion extends Completion {
   private returnBrand: any
   constructor(readonly value: Instance) {
     super()
     this.returnBrand = ''
   }
 }
-
-export { Completion, NormalCompletion, BreakCompletion, ContinueCompletion, ReturnCompletion, CompletionType }
-

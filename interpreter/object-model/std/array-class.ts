@@ -7,7 +7,7 @@ import { Stringify } from './functions'
 import { NumberClass } from './number-class'
 import { NumberInstance } from './number-instance'
 
-class ArrayClass extends Class {
+export class ArrayClass extends Class {
   static async __init__(
     _interpreter: CodeExecuter,
     args: Instance[],
@@ -147,6 +147,3 @@ class ArrayClass extends Class {
     return new ArrayInstance(klass, /* value = */[])
   }
 }
-
-export { ArrayClass }
-

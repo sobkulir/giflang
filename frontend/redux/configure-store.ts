@@ -133,8 +133,4 @@ const rootReducer = (
   else return action.reducer(state)
 }
 
-
-const configureStore = () => createStore(rootReducer, getInitialState())
-
-export { configureStore }
-
+export const configureStore = () => createStore(rootReducer, getInitialState())

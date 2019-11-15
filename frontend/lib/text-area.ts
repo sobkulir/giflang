@@ -7,7 +7,7 @@ function CreateId(): string {
   return Math.random().toString(36).substr(2, 5)
 }
 
-class LetterImp implements Letter {
+export class LetterImp implements Letter {
   [immerable] = true
   readonly id: string
   constructor(readonly sign: Sign) {
@@ -15,7 +15,7 @@ class LetterImp implements Letter {
   }
 }
 
-class LetterRowImp implements LetterRow {
+export class LetterRowImp implements LetterRow {
   [immerable] = true
   readonly id: string
   constructor(readonly letters: Letter[]) {
@@ -23,7 +23,7 @@ class LetterRowImp implements LetterRow {
   }
 }
 
-function TrimPositionRowCol(position: PositionRowCol, text: Text):
+export function TrimPositionRowCol(position: PositionRowCol, text: Text):
   PositionRowCol {
   const rowLength = (text.length > 0) ? text.length - 1 : 0
   const row = Math.min(rowLength, position.row)
@@ -32,7 +32,7 @@ function TrimPositionRowCol(position: PositionRowCol, text: Text):
   return { row, col }
 }
 
-function PositionPixelsToRowCol(
+export function PositionPixelsToRowCol(
   letterSize: LetterSize, position: PositionPixels): PositionRowCol {
   const boxSize = letterSize.edgePx + 2 * letterSize.marginPx
   const row = Math.floor(position.y / boxSize)
@@ -41,7 +41,7 @@ function PositionPixelsToRowCol(
   return { row, col }
 }
 
-function PositionRowColToPixels(
+export function PositionRowColToPixels(
   letterSize: LetterSize, position: PositionRowCol): PositionPixels {
   const boxSize = letterSize.edgePx + 2 * letterSize.marginPx
   const x = position.col * boxSize
@@ -50,7 +50,8 @@ function PositionRowColToPixels(
 }
 
 // Expects cursor to be in a valid state.
-function MoveCursorRight(position: PositionRowCol, text: Text): PositionRowCol {
+export function MoveCursorRight(
+  position: PositionRowCol, text: Text): PositionRowCol {
   const rowWidth = text[position.row].letters.length
   if (position.col + 1 <= rowWidth) {
     return { row: position.row, col: position.col + 1 }
@@ -62,7 +63,8 @@ function MoveCursorRight(position: PositionRowCol, text: Text): PositionRowCol {
 }
 
 // Expects cursor to be in a valid state.
-function MoveCursorLeft(position: PositionRowCol, text: Text): PositionRowCol {
+export function MoveCursorLeft(
+  position: PositionRowCol, text: Text): PositionRowCol {
   if (position.col - 1 >= 0) {
     return { row: position.row, col: position.col - 1 }
   } else if (position.row - 1 >= 0) {
@@ -73,7 +75,8 @@ function MoveCursorLeft(position: PositionRowCol, text: Text): PositionRowCol {
 }
 
 // Expects cursor to be in a valid state.
-function MoveCursorUp(position: PositionRowCol, text: Text): PositionRowCol {
+export function MoveCursorUp(
+  position: PositionRowCol, text: Text): PositionRowCol {
   const rowUp = position.row - 1
   if (rowUp >= 0) {
     return {
@@ -89,7 +92,8 @@ function MoveCursorUp(position: PositionRowCol, text: Text): PositionRowCol {
 }
 
 // Expects cursor to be in a valid state.
-function MoveCursorDown(position: PositionRowCol, text: Text): PositionRowCol {
+export function MoveCursorDown(
+  position: PositionRowCol, text: Text): PositionRowCol {
   const rowDown = position.row + 1
   if (rowDown < text.length) {
     return {
@@ -104,7 +108,3 @@ function MoveCursorDown(position: PositionRowCol, text: Text): PositionRowCol {
     }
   }
 }
-
-
-export { LetterImp, LetterRowImp, PositionPixelsToRowCol, PositionRowColToPixels, TrimPositionRowCol, MoveCursorRight, MoveCursorLeft, MoveCursorDown, MoveCursorUp }
-

@@ -1,10 +1,10 @@
-import { parser } from './ast/giflang.jison'
-import * as Expr from './ast/expr'
-import * as Stmt from './ast/stmt'
-import { Operator } from './ast/operator'
 import { CompletionType } from './ast/completion'
+import * as Expr from './ast/expr'
+import { parser } from './ast/giflang.jison'
+import { Operator } from './ast/operator'
+import * as Stmt from './ast/stmt'
 
-function ParseGiflang(input: string): Stmt.ProgramStmt {
+export function ParseGiflang(input: string): Stmt.ProgramStmt {
   parser.yy = {
     Expr,
     Stmt,
@@ -13,5 +13,3 @@ function ParseGiflang(input: string): Stmt.ProgramStmt {
   }
   return parser.parse(input)
 }
-
-export { ParseGiflang }

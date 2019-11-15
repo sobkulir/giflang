@@ -4,7 +4,7 @@ import { BoolInstance, Instance, StringInstance } from '../instance'
 import { MagicMethod } from '../magic-method'
 import { NumberInstance } from './number-instance'
 
-class NumberClass extends Class {
+export class NumberClass extends Class {
   static async __str__(
     _interpreter: CodeExecuter,
     args: Instance[],
@@ -107,6 +107,3 @@ class NumberClass extends Class {
     return new NumberInstance(klass, /* value = */ 0)
   }
 }
-
-export { NumberClass }
-

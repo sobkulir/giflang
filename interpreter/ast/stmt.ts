@@ -2,7 +2,7 @@ import { AstNode, JisonLocator } from './ast-node'
 import { CompletionType } from './completion'
 import { Expr } from './expr'
 
-interface VisitorStmt<T> {
+export interface VisitorStmt<T> {
   visitIfStmt(stmt: IfStmt): T
   visitBlockStmt(stmt: BlockStmt): T
   visitWhileStmt(stmt: WhileStmt): T
@@ -15,11 +15,11 @@ interface VisitorStmt<T> {
   visitExprStmt(stmt: ExprStmt): T
 }
 
-abstract class Stmt extends AstNode {
+export abstract class Stmt extends AstNode {
   abstract accept<T>(visitor: VisitorStmt<T>): T
 }
 
-class IfStmt extends Stmt {
+export class IfStmt extends Stmt {
   readonly consequent: BlockStmt
   readonly alternate: BlockStmt | null
 
@@ -39,7 +39,7 @@ class IfStmt extends Stmt {
   }
 }
 
-class BlockStmt extends Stmt {
+export class BlockStmt extends Stmt {
   constructor(readonly stmts: Stmt[], loc: JisonLocator) {
     super(loc)
   }
@@ -49,7 +49,7 @@ class BlockStmt extends Stmt {
   }
 }
 
-class WhileStmt extends Stmt {
+export class WhileStmt extends Stmt {
   readonly body: BlockStmt
 
   constructor(
@@ -64,7 +64,7 @@ class WhileStmt extends Stmt {
   }
 }
 
-class ForStmt extends Stmt {
+export class ForStmt extends Stmt {
   readonly body: BlockStmt
 
   constructor(
@@ -83,7 +83,7 @@ class ForStmt extends Stmt {
   }
 }
 
-class FunctionDeclStmt extends Stmt {
+export class FunctionDeclStmt extends Stmt {
   constructor(
     readonly name: string,
     readonly parameters: string[],
@@ -98,7 +98,7 @@ class FunctionDeclStmt extends Stmt {
   }
 }
 
-class ClassDefStmt extends Stmt {
+export class ClassDefStmt extends Stmt {
   constructor(
     readonly name: string,
     readonly baseName: string | null,
@@ -113,7 +113,7 @@ class ClassDefStmt extends Stmt {
   }
 }
 
-class CompletionStmt extends Stmt {
+export class CompletionStmt extends Stmt {
   constructor(
     readonly completionType: CompletionType,
     readonly right: Expr | null = null,
@@ -127,7 +127,7 @@ class CompletionStmt extends Stmt {
   }
 }
 
-class ProgramStmt extends Stmt {
+export class ProgramStmt extends Stmt {
   constructor(readonly body: Stmt[], loc: JisonLocator) {
     super(loc)
   }
@@ -137,13 +137,13 @@ class ProgramStmt extends Stmt {
   }
 }
 
-class EmptyStmt extends Stmt {
+export class EmptyStmt extends Stmt {
   accept<T>(visitor: VisitorStmt<T>): T {
     return visitor.visitEmptyStmt(this)
   }
 }
 
-class ExprStmt extends Stmt {
+export class ExprStmt extends Stmt {
   constructor(readonly expr: Expr, loc: JisonLocator) {
     super(loc)
   }
@@ -159,6 +159,3 @@ function ensureIsBlockStmt(stmt: Stmt): BlockStmt {
   if (stmt instanceof BlockStmt) return stmt
   else return new BlockStmt([stmt], stmt.locator)
 }
-
-export { VisitorStmt, Stmt, IfStmt, BlockStmt, WhileStmt, ForStmt, FunctionDeclStmt, ClassDefStmt, CompletionStmt, ProgramStmt, EmptyStmt, ExprStmt }
-

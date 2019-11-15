@@ -4,12 +4,17 @@ import { Environment } from '../environment'
 import { BoolClass, CheckArityEq, Class, NoneClass, WrappedFunctionClass } from './class'
 import { MagicMethod } from './magic-method'
 
-interface ValueRef {
+export interface ValueRef {
   set(value: Instance): void
   get(): Promise<Instance>
 }
 
-class Instance {
+export type TWrappedFunction = (
+  interpreter: CodeExecuter,
+  args: Instance[],
+) => Promise<Instance>
+
+export class Instance {
   public fields: Map<string, Instance> = new Map()
   private static nextId: number = 0
   public id: number
@@ -99,13 +104,13 @@ class Instance {
   }
 }
 
-class ObjectInstance extends Instance {
+export class ObjectInstance extends Instance {
   constructor(klass: Class) {
     super(klass)
   }
 }
 
-class NoneInstance extends ObjectInstance {
+export class NoneInstance extends ObjectInstance {
   private constructor(noneClass: NoneClass) {
     super(noneClass)
   }
@@ -144,7 +149,7 @@ abstract class FunctionInstance extends ObjectInstance {
   }
 }
 
-class UserFunctionInstance extends FunctionInstance {
+export class UserFunctionInstance extends FunctionInstance {
   constructor(
     klass: Class,
     private readonly functionDef: FunctionDeclStmt,
@@ -184,12 +189,7 @@ class UserFunctionInstance extends FunctionInstance {
   }
 }
 
-type TWrappedFunction = (
-  interpreter: CodeExecuter,
-  args: Instance[],
-) => Promise<Instance>
-
-class WrappedFunctionInstance extends FunctionInstance {
+export class WrappedFunctionInstance extends FunctionInstance {
   constructor(
     klass: Class,
     public wrappedFunction: TWrappedFunction,
@@ -211,7 +211,7 @@ class WrappedFunctionInstance extends FunctionInstance {
   }
 }
 
-class BoolInstance extends ObjectInstance {
+export class BoolInstance extends ObjectInstance {
   constructor(boolClass: BoolClass, readonly value: boolean) {
     super(boolClass)
   }
@@ -231,11 +231,8 @@ class BoolInstance extends ObjectInstance {
   }
 }
 
-class StringInstance extends ObjectInstance {
+export class StringInstance extends ObjectInstance {
   constructor(klass: Class, public value: string) {
     super(klass)
   }
 }
-
-export { Instance, ValueRef, BoolInstance, WrappedFunctionInstance, FunctionInstance, NoneInstance, UserFunctionInstance, ObjectInstance, TWrappedFunction, StringInstance }
-

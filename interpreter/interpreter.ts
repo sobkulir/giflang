@@ -21,7 +21,7 @@ export interface InterpreterSetup {
   onPrint: PrintFunction
 }
 
-class Interpreter
+export class Interpreter
   implements
   VisitorRefExpr<Promise<ValueRef>>,
   VisitorValueExpr<Promise<Instance>>,
@@ -317,6 +317,3 @@ class Interpreter
     return (boolRes as BoolInstance).value
   }
 }
-
-export { Interpreter }
-

@@ -1,4 +1,4 @@
-enum Operator {
+export enum Operator {
   PLUS = '+',
   MINUS = '-',
   MUL = '*',
@@ -14,5 +14,3 @@ enum Operator {
   GE = '>=',
   GT = '>',
 }
-
-export { Operator }

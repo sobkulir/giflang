@@ -4,7 +4,7 @@ import { produce } from 'immer'
 import { CodeToString } from '../../lib/editor'
 import { MyAction, State } from '../types'
 
-const saveCode =
+export const saveCode =
   (): MyAction<void> => ({
     type: 'Save code',
     reducer: produce((state: State) => {
@@ -14,6 +14,3 @@ const saveCode =
       })
     })
   })
-
-export { saveCode }
-

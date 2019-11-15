@@ -9,7 +9,7 @@ import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRigh
 import { MyAction, State } from '../types'
 import { PositionPixels, RunState } from './types'
 
-const setCursorPosition =
+export const setCursorPosition =
   (positionPixels: PositionPixels): MyAction<PositionPixels> => ({
     type: 'Set cursor position',
     payload: positionPixels,
@@ -22,7 +22,7 @@ const setCursorPosition =
     })
   })
 
-const addSignAfterCursor =
+export const addSignAfterCursor =
   (sign: Sign): MyAction<Sign> => ({
     type: 'Add sign after cursor',
     payload: sign,
@@ -35,9 +35,9 @@ const addSignAfterCursor =
     })
   })
 
-enum Direction { UP, RIGHT, DOWN, LEFT }
+export enum Direction { UP, RIGHT, DOWN, LEFT }
 
-const moveCursor =
+export const moveCursor =
   (direction: Direction): MyAction<Direction> => ({
     type: 'Move cursor',
     payload: direction,
@@ -61,7 +61,7 @@ const moveCursor =
     })
   })
 
-const removeAfterCursor =
+export const removeAfterCursor =
   (): MyAction<void> => ({
     type: 'Remove after cursor',
     reducer: produce((state: State) => {
@@ -78,7 +78,7 @@ const removeAfterCursor =
     })
   })
 
-const newlineAfterCursor =
+export const newlineAfterCursor =
   (): MyAction<void> => ({
     type: 'Newline after cursor',
     reducer: produce((state: State) => {
@@ -92,7 +92,7 @@ const newlineAfterCursor =
     })
   })
 
-const appendToOutput =
+export const appendToOutput =
   (output: string): MyAction<string> => ({
     type: 'Append to output',
     payload: output,
@@ -101,7 +101,7 @@ const appendToOutput =
     })
   })
 
-const finishExecution =
+export const finishExecution =
   (): MyAction<void> => ({
     type: 'Execution finished',
     reducer: produce((state: State) => {
@@ -114,11 +114,12 @@ const finishExecution =
     })
   })
 
-type NextStepArgs = {
+export type NextStepArgs = {
   resolveNextStep: () => void,
   lineno: number
 }
-const newNextStep =
+
+export const newNextStep =
 (args: NextStepArgs): MyAction<NextStepArgs> => ({
   type: 'New next step',
   payload: args,
@@ -130,7 +131,7 @@ const newNextStep =
 })
 
 
-const giflangSetup: GiflangSetup = {
+export const giflangSetup: GiflangSetup = {
   onPrint:
     (str: string) => { storeInstance.dispatch(appendToOutput(str))},
   onFinish:
@@ -145,7 +146,7 @@ const giflangSetup: GiflangSetup = {
     }
   }
 
-const executionStarted =
+export const executionStarted =
   (worker: Worker, isDebugMode: boolean): MyAction<Worker> => ({
     type: 'Execution started',
     reducer: produce((state: State) => {
@@ -155,7 +156,7 @@ const executionStarted =
     })
   })
 
-async function StartExecution(code: string, isDebugMode: boolean) {
+export async function StartExecution(code: string, isDebugMode: boolean) {
   const vanillaWorker = new Worker()
   const workerProxy =
     Comlink.wrap<
@@ -169,7 +170,7 @@ async function StartExecution(code: string, isDebugMode: boolean) {
   worker.run(code)
 }
 
-const startExecution =
+export const startExecution =
   (isDebugMode: boolean): MyAction<boolean> => ({
     type: 'Start execution',
     reducer: produce((state: State) => {
@@ -178,5 +179,3 @@ const startExecution =
       StartExecution(CodeToString(state.editor.text), isDebugMode)
     })
   })
-export { setCursorPosition, addSignAfterCursor, moveCursor, Direction, removeAfterCursor, newlineAfterCursor, appendToOutput, startExecution, finishExecution }
-

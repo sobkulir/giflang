@@ -1,18 +1,18 @@
 import { AstNode, JisonLocator } from './ast-node'
 import { Operator } from './operator'
 
-type Expr = RefExpr | ValueExpr
+export type Expr = RefExpr | ValueExpr
 
-abstract class ValueExpr extends AstNode {
+export abstract class ValueExpr extends AstNode {
   abstract accept<T>(visitor: VisitorValueExpr<T>): T
 }
 
 /* Expressions that can appear on the left hand side of an assignment. */
-abstract class RefExpr extends AstNode {
+export abstract class RefExpr extends AstNode {
   abstract accept<T>(visitor: VisitorRefExpr<T>): T
 }
 
-interface VisitorValueExpr<T> {
+export interface VisitorValueExpr<T> {
   visitAssignmentValueExpr(expr: AssignmentValueExpr): T
   visitNumberValueExpr(expr: NumberValueExpr): T
   visitStringValueExpr(expr: StringValueExpr): T
@@ -24,7 +24,7 @@ interface VisitorValueExpr<T> {
   visitCallValueExpr(expr: CallValueExpr): T
 }
 
-class AssignmentValueExpr extends ValueExpr {
+export class AssignmentValueExpr extends ValueExpr {
   constructor(
     readonly lhs: RefExpr,
     readonly rhs: Expr, loc: JisonLocator) {
@@ -36,7 +36,7 @@ class AssignmentValueExpr extends ValueExpr {
   }
 }
 
-class NumberValueExpr extends ValueExpr {
+export class NumberValueExpr extends ValueExpr {
   readonly value: number
   constructor(
     readonly rawValue: string, loc: JisonLocator) {
@@ -49,12 +49,11 @@ class NumberValueExpr extends ValueExpr {
   }
 }
 
-class StringValueExpr extends ValueExpr {
+export class StringValueExpr extends ValueExpr {
   readonly value: string
   constructor(
     readonly rawValue: string, loc: JisonLocator) {
     super(loc)
-    // TODO: Account for escaping.
     this.value = rawValue
   }
 
@@ -63,7 +62,7 @@ class StringValueExpr extends ValueExpr {
   }
 }
 
-class ArrayValueExpr extends ValueExpr {
+export class ArrayValueExpr extends ValueExpr {
   constructor(
     readonly elements: Expr[], loc: JisonLocator) {
     super(loc)
@@ -74,7 +73,7 @@ class ArrayValueExpr extends ValueExpr {
   }
 }
 
-class NoneValueExpr extends ValueExpr {
+export class NoneValueExpr extends ValueExpr {
   constructor(loc: JisonLocator) {
     super(loc)
   }
@@ -84,7 +83,7 @@ class NoneValueExpr extends ValueExpr {
   }
 }
 
-class UnaryPlusMinusValueExpr extends ValueExpr {
+export class UnaryPlusMinusValueExpr extends ValueExpr {
   constructor(
     readonly operator: Operator,
     readonly right: Expr, loc: JisonLocator) {
@@ -96,7 +95,7 @@ class UnaryPlusMinusValueExpr extends ValueExpr {
   }
 }
 
-class UnaryNotValueExpr extends ValueExpr {
+export class UnaryNotValueExpr extends ValueExpr {
   constructor(readonly right: Expr, loc: JisonLocator) {
     super(loc)
   }
@@ -106,7 +105,7 @@ class UnaryNotValueExpr extends ValueExpr {
   }
 }
 
-class BinaryValueExpr extends ValueExpr {
+export class BinaryValueExpr extends ValueExpr {
   constructor(
     readonly operator: Operator,
     readonly left: Expr,
@@ -121,7 +120,7 @@ class BinaryValueExpr extends ValueExpr {
   }
 }
 
-class CallValueExpr extends ValueExpr {
+export class CallValueExpr extends ValueExpr {
   constructor(
     readonly callee: Expr,
     readonly args: Expr[], loc: JisonLocator) {
@@ -133,13 +132,13 @@ class CallValueExpr extends ValueExpr {
   }
 }
 
-interface VisitorRefExpr<T> {
+export interface VisitorRefExpr<T> {
   visitVariableRefExpr(expr: VariableRefExpr): T
   visitSquareAccessorRefExpr(expr: SquareAccessorRefExpr): T
   visitDotAccessorRefExpr(expr: DotAccessorRefExpr): T
 }
 
-class VariableRefExpr extends RefExpr {
+export class VariableRefExpr extends RefExpr {
   constructor(readonly name: string, loc: JisonLocator) {
     super(loc)
   }
@@ -149,7 +148,7 @@ class VariableRefExpr extends RefExpr {
   }
 }
 
-class SquareAccessorRefExpr extends RefExpr {
+export class SquareAccessorRefExpr extends RefExpr {
   constructor(
     readonly object: Expr,
     readonly property: Expr, loc: JisonLocator) {
@@ -161,7 +160,7 @@ class SquareAccessorRefExpr extends RefExpr {
   }
 }
 
-class DotAccessorRefExpr extends RefExpr {
+export class DotAccessorRefExpr extends RefExpr {
   constructor(
     readonly object: Expr,
     readonly property: string, loc: JisonLocator) {
@@ -172,6 +171,3 @@ class DotAccessorRefExpr extends RefExpr {
     return visitor.visitDotAccessorRefExpr(this)
   }
 }
-
-export { VisitorValueExpr, VisitorRefExpr, Expr, ValueExpr, RefExpr, AssignmentValueExpr, NumberValueExpr, StringValueExpr, ArrayValueExpr, NoneValueExpr, VariableRefExpr, UnaryPlusMinusValueExpr, UnaryNotValueExpr, BinaryValueExpr, CallValueExpr, SquareAccessorRefExpr, DotAccessorRefExpr }
-

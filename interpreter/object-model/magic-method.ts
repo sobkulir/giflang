@@ -1,4 +1,4 @@
-enum MagicMethod {
+export enum MagicMethod {
   __str__ = '__str__',
 
   __add__ = '__add__',
@@ -23,5 +23,3 @@ enum MagicMethod {
   __call__ = '__call__',
   __init__ = '__INIT__',
 }
-export { MagicMethod }
-
