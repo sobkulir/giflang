@@ -165,7 +165,7 @@ ElementList
 MemberExpr
     : MemberExpr PROP Identifier    { $$ = new yy.Expr.DotAccessorRefExpr($1, $3, @$) }
     | MemberExpr LBRA Expr RBRA     { $$ = new yy.Expr.SquareAccessorRefExpr($1, $3, @$) }
-    | PrimaryComnon	                { $$ = $1 }
+    | PrimaryComnon                 { $$ = $1 }
     ;
 
 CallExpr
@@ -176,8 +176,8 @@ CallExpr
     ;
 
 Arguments
-    : LPAR RPAR	                { $$ = [] }
-    | LPAR ElementList RPAR	    { $$ = $2 }
+    : LPAR RPAR                 { $$ = [] }
+    | LPAR ElementList RPAR     { $$ = $2 }
     ;
 
 PrimaryExpr
