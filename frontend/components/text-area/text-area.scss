@@ -17,14 +17,16 @@
         /* Bring line numbers in front of the text. */
         z-index: 1;
         background: lightgreen;
+        height: max-content;
     }
 
     .contentWrapper {
         /* Position the wrapper so that children
         can be positioned absolutely */
         position: relative;
-        margin-left: 20px;
+        margin-left: 10px;
         cursor: text;
+        flex: 1;
 
         .letterRow {
             /* Prevents images from wrapping */

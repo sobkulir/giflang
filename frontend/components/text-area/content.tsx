@@ -8,13 +8,13 @@ interface RowProps {
   signToGifMap: SignToGifMap
 }
 
-interface TextProps {
+interface ContentProps {
   text: Text
   letterSize: LetterSize
   signToGifMap: SignToGifMap
 }
 
-const Row: React.SFC<RowProps> = (props) => {
+const Row: React.SFC<RowProps> = React.memo((props) => {
   const getLetterStyles = () => ({
     width: `${props.letterSize.edgePx}px`,
     height: `${props.letterSize.edgePx}px`,
@@ -37,22 +37,19 @@ const Row: React.SFC<RowProps> = (props) => {
       {row}
     </div>
   )
-}
+})
 
-export class Content extends React.Component<TextProps, {}> {
-  render() {
-    const rows = this.props.text.map((letterRow) =>
-      <Row
-        key={letterRow.id}
-        letterSize={this.props.letterSize}
-        letterRow={letterRow}
-        signToGifMap={this.props.signToGifMap}
-      />)
-
-    return (
-      <div>
-        {rows}
-      </div>
-    )
-  }
-}
+export const Content: React.SFC<ContentProps> = React.memo((props) => {
+  const rows = props.text.map((letterRow) =>
+    <Row
+      key={letterRow.id}
+      letterSize={props.letterSize}
+      letterRow={letterRow}
+      signToGifMap={props.signToGifMap}
+    />)
+  return (
+    <div>
+      {rows}
+    </div>
+  )
+})

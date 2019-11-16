@@ -72,7 +72,10 @@ class TextArea extends React.Component<TextAreaProps, {}> {
         onMouseDown={this.moveCursor}
       >
         <div className={styles.lineNumbersWrapper}>
-          <LineNumbers textRowCount={this.props.text.length} />
+          <LineNumbers
+            textRowCount={this.props.text.length}
+            letterSize={this.props.letterSize}
+          />
         </div>
         <div
           className={styles.contentWrapper}
