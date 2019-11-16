@@ -2,7 +2,7 @@ import Box from '@material-ui/core/Box'
 import Typography from '@material-ui/core/Typography'
 import * as React from 'react'
 import { connect } from 'react-redux'
-import { State } from '../redux/types'
+import { State } from '../types/redux'
 import * as styles from './io-box.scss'
 
 
@@ -25,5 +25,5 @@ class IOBox extends React.Component<IOBoxProps, {}> {
 
 export default connect(
   (state: State) => ({
-    output: state.editor.execution.output,
+    output: state.execution.output,
   }))(IOBox)

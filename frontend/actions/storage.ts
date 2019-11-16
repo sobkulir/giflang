@@ -1,8 +1,8 @@
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import 'firebase/firestore'
-import { produce } from 'immer'
-import { CodeToString } from '../../lib/editor'
-import { MyAction, State } from '../types'
+import produce from 'immer'
+import { CodeToString } from '../lib/editor'
+import { MyAction, State } from '../types/redux'
 
 export const saveCode =
   (): MyAction<void> => ({

@@ -1,21 +1,21 @@
+
 import Typography from '@material-ui/core/Typography'
-import * as React from 'react'
+import React from 'react'
 import { connect } from 'react-redux'
-import { Sign } from '../lib/sign'
-import { addSignAfterCursor as _addSignAfterCursor } from '../redux/editor/actions'
-import { AlphabetCategory, CategorizedAlphabet, LetterSize, SignToGifMap } from '../redux/editor/types'
-import { State } from '../redux/types'
+import { addSignAfterCursor } from '../actions/editor'
+import { AlphabetCategory, CategorizedAlphabet, LetterSize, Sign, SignToGifMap } from '../types/editor'
+import { State } from '../types/redux'
 import * as styles from './letter-picker.scss'
 
 interface LetterPickerProps {
-  addSignAfterCursor: typeof _addSignAfterCursor
+  addSignAfterCursor: typeof addSignAfterCursor
   alphabet: CategorizedAlphabet,
   letterSize: LetterSize,
   signToGifMap: SignToGifMap,
 }
 
 interface CategoryProps {
-  addSignAfterCursor: typeof _addSignAfterCursor
+  addSignAfterCursor: typeof addSignAfterCursor
   category: AlphabetCategory,
   signToGifMap: SignToGifMap,
   letterSize: LetterSize,
@@ -91,7 +91,7 @@ export default connect(
     letterSize: state.editor.letterSize,
   }),
   {
-    addSignAfterCursor: _addSignAfterCursor,
+    addSignAfterCursor,
   }
 )(LetterPicker)
 

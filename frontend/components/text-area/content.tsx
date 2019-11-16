@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { LetterRow, LetterSize, SignToGifMap, Text } from '../../redux/editor/types'
+import { LetterRow, LetterSize, SignToGifMap, Text } from '~/frontend/types/editor'
 import * as styles from './text-area.scss'
 
 interface RowProps {

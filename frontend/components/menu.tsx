@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
-import { finishExecution, startExecution } from '../redux/editor/actions'
-import { RunState } from '../redux/editor/types'
-import { saveCode } from '../redux/storage/actions'
-import { State } from '../redux/types'
+import { finishExecution, startExecution } from '../actions/execution'
+import { saveCode } from '../actions/storage'
+import { RunState } from '../types/execution'
+import { State } from '../types/redux'
 import * as styles from './menu.scss'
 
 interface MenuProps {
@@ -75,8 +75,8 @@ class Menu extends React.Component<MenuProps, {}> {
 
 export default connect(
   (state: State) => ({
-    runState: state.editor.execution.state,
-    resolveNextStep: state.editor.execution.resolveNextStep
+    runState: state.execution.runState,
+    resolveNextStep: state.execution.resolveNextStep
   }),
   {
     startExecution,

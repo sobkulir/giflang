@@ -1,5 +1,4 @@
-import { Text } from '../redux/editor/types'
-import { Sign } from './sign'
+import { Sign, Text } from '../types/editor'
 
 export function CodeToString(text: Text): string {
   return text.map(

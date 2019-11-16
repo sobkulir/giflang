@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Sign } from '../../lib/sign'
-import { addSignAfterCursor, Direction, moveCursor, newlineAfterCursor, removeAfterCursor } from '../../redux/editor/actions'
+import { addSignAfterCursor, Direction, moveCursor, newlineAfterCursor, removeAfterCursor } from '~/frontend/actions/editor'
+import { Sign } from '~/frontend/types/editor'
 
 interface HandleShorcutsCallbacks {
   addSignAfterCursor: typeof addSignAfterCursor

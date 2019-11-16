@@ -4,10 +4,10 @@ import * as ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { Route, Router } from 'react-router'
 import Layout from './components/layout'
-import FirebaseConfig from './firebase/config'
+import { configureStore } from './config/configure-store'
+import FirebaseConfig from './config/firebase'
 import './global.scss'
 import History from './history'
-import { configureStore } from './redux/configure-store'
 
 // Initialize Firebase
 firebase.initializeApp(FirebaseConfig)

@@ -1,8 +1,9 @@
 import { createStore } from 'redux'
-import { Sign } from '../lib/sign'
 import { LetterImp, LetterRowImp } from '../lib/text-area'
-import { RunState } from './editor/types'
-import { MyAction, State } from './types'
+import { Sign } from '../types/editor'
+import { RunState } from '../types/execution'
+import { MyAction, State } from '../types/redux'
+
 
 const getInitialState = (): State => (
   {
@@ -30,15 +31,14 @@ const getInitialState = (): State => (
         new LetterRowImp([new LetterImp(Sign.X), new LetterImp(Sign.ASSIGN), new LetterImp(Sign.D8), new LetterImp(Sign.SEMICOLON)]),
         new LetterRowImp([new LetterImp(Sign.P), new LetterImp(Sign.R), new LetterImp(Sign.I), new LetterImp(Sign.N), new LetterImp(Sign.T), new LetterImp(Sign.LPAR), new LetterImp(Sign.D8), new LetterImp(Sign.RPAR), new LetterImp(Sign.SEMICOLON)]),
       ],
-      execution: {
-        state: RunState.NOT_RUNNING,
-        output: '',
-        worker: null,
-        resolveNextStep: () => { return },
-        lineno: 0,
-      }
     },
-
+    execution: {
+      runState: RunState.NOT_RUNNING,
+      output: '',
+      worker: null,
+      resolveNextStep: () => { return },
+      lineno: 0,
+    }
   })
 
 const rootReducer = (

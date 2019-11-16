@@ -1,8 +1,9 @@
-import * as React from 'react'
+import React from 'react'
 import { connect } from 'react-redux'
-import { addSignAfterCursor, moveCursor, newlineAfterCursor, removeAfterCursor, setCursorPosition } from '../../redux/editor/actions'
-import { EditorState } from '../../redux/editor/types'
-import { State } from '../../redux/types'
+import { addSignAfterCursor, moveCursor, newlineAfterCursor, removeAfterCursor, setCursorPosition } from '~/frontend/actions/editor'
+import { EditorState } from '~/frontend/types/editor'
+import { RunState } from '~/frontend/types/execution'
+import { State } from '~/frontend/types/redux'
 import { Content } from './content'
 import { Cursor } from './cursor'
 import { HandleShorcuts } from './handle-shorcuts'
@@ -11,6 +12,8 @@ import { LineNumbers } from './line-numbers'
 import * as styles from './text-area.scss'
 
 export interface TextAreaProps extends EditorState {
+  lineno: number,
+  runState: RunState,
   setCursorPosition: typeof setCursorPosition,
   addSignAfterCursor: typeof addSignAfterCursor,
   moveCursor: typeof moveCursor,
@@ -90,8 +93,8 @@ class TextArea extends React.Component<TextAreaProps, {}> {
           />
           <Highlighter
             letterSize={this.props.letterSize}
-            lineno={this.props.execution.lineno}
-            runState={this.props.execution.state}
+            lineno={this.props.lineno}
+            runState={this.props.runState}
           />
           <Content
             letterSize={this.props.letterSize}
@@ -107,6 +110,8 @@ class TextArea extends React.Component<TextAreaProps, {}> {
 export default connect(
   (state: State) => ({
     ...state.editor,
+    lineno: state.execution.lineno,
+    runState: state.execution.runState
   }),
   {
     setCursorPosition,
