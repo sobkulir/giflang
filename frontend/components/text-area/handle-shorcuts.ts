@@ -1,12 +1,16 @@
 import * as React from 'react'
 import { Sign } from '../../lib/sign'
-import { Direction } from '../../redux/editor/actions'
-import { TextAreaProps } from './text-area'
+import { addSignAfterCursor, Direction, moveCursor, newlineAfterCursor, removeAfterCursor } from '../../redux/editor/actions'
 
-// TODO: Define actions interface to not depend on TextAreaProps
+interface HandleShorcutsCallbacks {
+  addSignAfterCursor: typeof addSignAfterCursor
+  moveCursor: typeof moveCursor
+  removeAfterCursor: typeof removeAfterCursor
+  newlineAfterCursor: typeof newlineAfterCursor
+}
 
-// Returns true if event caused an action.
-function HandleShorcuts(e: React.KeyboardEvent, props: TextAreaProps)
+// Returns true if an event caused an action.
+function HandleShorcuts(e: React.KeyboardEvent, clbks: HandleShorcutsCallbacks)
   : boolean {
   // Handle combos
 
@@ -15,21 +19,23 @@ function HandleShorcuts(e: React.KeyboardEvent, props: TextAreaProps)
     return false
   }
 
-  // Letters
-  if (/^[A-Za-z_]$/.test(e.key)) {
-    props.addSignAfterCursor(Sign[e.key as (keyof typeof Sign)])
+  // Letters (convert all to uppercase)
+  if (/^[A-Za-z]$/.test(e.key)) {
+    clbks.addSignAfterCursor(Sign[e.key.toUpperCase() as (keyof typeof Sign)])
     return true
   }
 
   // Numbers
   if (/^[0-9]$/.test(e.key)) {
-    props.addSignAfterCursor(Sign[`D${e.key}` as (keyof typeof Sign)])
+    clbks.addSignAfterCursor(Sign[`D${e.key}` as (keyof typeof Sign)])
     return true
   }
 
   // Equalities
   let sign: Sign | null = null
   switch (e.key) {
+    case '_':
+      sign = Sign._; break
     case '<':
       sign = Sign.LT; break
     case '>':
@@ -83,7 +89,7 @@ function HandleShorcuts(e: React.KeyboardEvent, props: TextAreaProps)
   }
 
   if (sign !== null) {
-    props.addSignAfterCursor(sign)
+    clbks.addSignAfterCursor(sign)
     return true
   }
 
@@ -101,23 +107,23 @@ function HandleShorcuts(e: React.KeyboardEvent, props: TextAreaProps)
   if (direction !== null) {
     // Prevents native scrolling 
     e.preventDefault()
-    props.moveCursor(direction)
+    clbks.moveCursor(direction)
     return true
   }
 
   // Deletions
   if (e.key === 'Delete') {
-    props.removeAfterCursor()
+    clbks.removeAfterCursor()
     return true
   } else if (e.key === 'Backspace') {
-    props.moveCursor(Direction.LEFT)
-    props.removeAfterCursor()
+    clbks.moveCursor(Direction.LEFT)
+    clbks.removeAfterCursor()
     return true
   }
 
   // Newline
   if (e.key === 'Enter') {
-    props.newlineAfterCursor()
+    clbks.newlineAfterCursor()
     return true
   }
   console.log(e.key)
