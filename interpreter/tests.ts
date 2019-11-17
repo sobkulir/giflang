@@ -64,6 +64,7 @@ async function testSingle(test: Test)
   const outputs: string[] = []
   const interpreter = new Interpreter(
     {
+      onInput: () => Promise.resolve(''),
       onPrint: (str) => outputs.push(str),
       onNextStep: async () => { return },
     })

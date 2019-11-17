@@ -21,8 +21,10 @@ const Row: React.SFC<RowProps> = React.memo((props) => {
     padding: `${props.letterSize.marginPx}px`,
   })
 
-  const getRowStyles = () => ({
-    height: `${props.letterSize.edgePx + 2 * props.letterSize.marginPx}px`
+  const getRowStyles = (): React.CSSProperties => ({
+    height: `${props.letterSize.edgePx + 2 * props.letterSize.marginPx}px`,
+    /* Prevents images from wrapping */
+    whiteSpace: 'nowrap'
   })
 
   const row = props.letterRow.letters.map((letter) =>

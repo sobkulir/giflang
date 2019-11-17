@@ -10,7 +10,7 @@ import { BoolInstance, Instance, NoneInstance, StringInstance, UserFunctionInsta
 import { MagicMethod } from './object-model/magic-method'
 import { ArrayClass } from './object-model/std/array-class'
 import { ArrayInstance } from './object-model/std/array-instance'
-import { GiflangPrint, PrintFunction } from './object-model/std/functions'
+import { GiflangInput, GiflangPrint, InputFunction, PrintFunction } from './object-model/std/functions'
 import { NumberClass } from './object-model/std/number-class'
 import { NumberInstance } from './object-model/std/number-instance'
 
@@ -18,7 +18,8 @@ export type NextStepFunction = (lineno: number) => Promise<void>
 
 export interface InterpreterSetup {
   onNextStep: NextStepFunction,
-  onPrint: PrintFunction
+  onPrint: PrintFunction,
+  onInput: InputFunction
 }
 
 export class Interpreter
@@ -41,6 +42,10 @@ export class Interpreter
       new WrappedFunctionInstance(
         WrappedFunctionClass.get(),
         GiflangPrint(setup.onPrint), 'PRINT'))
+    this.globals.getRef('INPUT').set(
+      new WrappedFunctionInstance(
+        WrappedFunctionClass.get(),
+        GiflangInput(setup.onInput), 'INPUT'))
     this.globals.getRef('TRUE').set(BoolInstance.getTrue())
     this.globals.getRef('FALSE').set(BoolInstance.getFalse())
 
@@ -247,7 +252,7 @@ export class Interpreter
     const prevEnv = this.environment
     this.environment = new Environment(prevEnv)
 
-    for (const expr of stmt.preamble) this.evaluate(expr)
+    for (const expr of stmt.preamble) await this.evaluate(expr)
     let lastCompletion: Completion = new NormalCompletion()
     while (stmt.condition === null
       || await this.isTruthy(await this.evaluate(stmt.condition))) {

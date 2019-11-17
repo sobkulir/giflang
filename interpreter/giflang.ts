@@ -5,6 +5,7 @@ const interpreter = new Interpreter(
   {
     onPrint: (str) => console.log(str),
     onNextStep: async () => { return },
+    onInput: () => Promise.resolve('')
   })
 const root = ParseGiflang(`
 FUNCTION; F; LPAR; P; RPAR;

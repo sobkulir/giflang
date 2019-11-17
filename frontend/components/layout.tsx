@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useParams } from 'react-router'
-import IOBox from './io-box'
+import IOBox from './io-box/io-box'
 import * as styles from './layout.scss'
 import LetterPicker from './letter-picker'
 import Menu from './menu'

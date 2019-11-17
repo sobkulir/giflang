@@ -1,16 +1,13 @@
 import * as Comlink from 'comlink'
-import { Interpreter, NextStepFunction } from './interpreter'
-import { PrintFunction } from './object-model/std/functions'
+import { Interpreter, InterpreterSetup } from './interpreter'
 import { ParseGiflang } from './parser'
 
 export interface GiflangWorker {
-  run(code: string): void
+  run(code: string): Promise<void>
 }
 
-export interface GiflangSetup {
-  onPrint: PrintFunction,
+export interface GiflangSetup extends InterpreterSetup {
   onFinish: (error?: string) => void,
-  onNextStep: NextStepFunction,
 }
 
 class Giflang implements GiflangWorker {

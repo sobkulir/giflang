@@ -3,7 +3,7 @@ import produce from 'immer'
 import Worker from 'worker-loader!~/interpreter/giflang.worker'
 import { GiflangSetup, GiflangWorker } from '~/interpreter/giflang.worker'
 import { storeInstance } from '../app'
-import { CodeToString } from '../lib/editor'
+import { CharsToSigns, SignsToTokens } from '../lib/editor'
 import { RunState } from '../types/execution'
 import { MyAction, State } from '../types/redux'
 
@@ -12,7 +12,18 @@ export const appendToOutput =
     type: 'Append to output',
     payload: output,
     reducer: produce((state: State) => {
-      state.execution.output += output
+      if (output === '') return
+      const newSigns = CharsToSigns(output)
+      if (state.execution.output.length === 0) {
+        state.execution.output = newSigns
+      } else {
+        const firstLine = newSigns.slice(0, 1)[0]
+        const rest = newSigns.slice(1)
+        state.execution.output[state.execution.output.length - 1]
+          .letters.push(...firstLine.letters)
+        state.execution.output.push(...rest)
+      }
+
     })
   })
 
@@ -21,10 +32,7 @@ export const finishExecution =
     type: 'Execution finished',
     reducer: produce((state: State) => {
       state.execution.runState = RunState.NOT_RUNNING
-      const worker = state.execution.worker
-      if (worker !== null) {
-        worker.terminate()
-      }
+      state.execution.worker!.terminate()
       state.execution.worker = null
     })
   })
@@ -45,10 +53,11 @@ export const newNextStep =
   })
 })
 
-
 export const giflangSetup: GiflangSetup = {
   onPrint:
     (str: string) => { storeInstance.dispatch(appendToOutput(str))},
+  onInput:
+    () => Promise.resolve('JANO'),
   onFinish:
     (_err: string | undefined) =>
       { storeInstance.dispatch(finishExecution())},
@@ -90,7 +99,7 @@ export const startExecution =
     type: 'Start execution',
     reducer: produce((state: State) => {
       state.execution.runState = RunState.STARTING
-      state.execution.output = ''
-      StartExecution(CodeToString(state.editor.text), isDebugMode)
+      state.execution.output = []
+      StartExecution(SignsToTokens(state.editor.text), isDebugMode)
     })
   })

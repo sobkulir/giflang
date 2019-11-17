@@ -34,7 +34,7 @@ const getInitialState = (): State => (
     },
     execution: {
       runState: RunState.NOT_RUNNING,
-      output: '',
+      output: [],
       worker: null,
       resolveNextStep: () => { return },
       lineno: 0,
