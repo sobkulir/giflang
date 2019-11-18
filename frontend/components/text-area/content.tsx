@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { LetterRow, LetterSize, SignToGifMap, Text } from '~/frontend/types/editor'
-import * as styles from './text-area.scss'
+import { LetterSize, SignToGifMap } from '~/frontend/types/ide'
+import { LetterRow, Text } from '~/frontend/types/text-area'
 
 interface RowProps {
   letterRow: LetterRow
@@ -35,7 +35,7 @@ const Row: React.SFC<RowProps> = React.memo((props) => {
     />)
 
   return (
-    <div className={styles.letterRow} style={getRowStyles()}>
+    <div style={getRowStyles()}>
       {row}
     </div>
   )

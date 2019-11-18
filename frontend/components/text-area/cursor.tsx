@@ -1,7 +1,8 @@
 import React from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { PositionRowColToPixels } from '~/frontend/lib/text-area'
-import { LetterSize, PositionRowCol } from '~/frontend/types/editor'
+import { LetterSize } from '~/frontend/types/ide'
+import { PositionRowCol } from '~/frontend/types/text-area'
 
 export interface CursorProps {
   letterSize: LetterSize

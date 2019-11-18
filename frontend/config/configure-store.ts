@@ -1,15 +1,36 @@
 import { createStore } from 'redux'
+import { InputBuffer } from '../lib/input-buffer'
 import { LetterImp, LetterRowImp } from '../lib/text-area'
-import { Sign } from '../types/editor'
 import { RunState } from '../types/execution'
 import { MyAction, State } from '../types/redux'
+import { createEmptyText, Sign } from '../types/text-area'
 
 
 const getInitialState = (): State => (
   {
-    editor: {
-      cursorPosition: { row: 0, col: 0 },
-      letterSize: { edgePx: 80, marginPx: 6 },
+    textAreaMap: {
+      mainEditor: {
+        cursorPosition: { row: 0, col: 0 },
+        text: [
+          new LetterRowImp([new LetterImp(Sign.X), new LetterImp(Sign.ASSIGN), new LetterImp(Sign.D8), new LetterImp(Sign.SEMICOLON)]),
+          new LetterRowImp([new LetterImp(Sign.P), new LetterImp(Sign.R), new LetterImp(Sign.I), new LetterImp(Sign.N), new LetterImp(Sign.T), new LetterImp(Sign.LPAR), new LetterImp(Sign.D8), new LetterImp(Sign.RPAR), new LetterImp(Sign.SEMICOLON)]),
+        ],
+      },
+      executionInput: {
+        cursorPosition: { row: 0, col: 0 },
+        text: createEmptyText()
+      }
+    },
+    execution: {
+      runState: RunState.NOT_RUNNING,
+      output: [],
+      commitedInput: [],
+      inputBuffer: new InputBuffer<string>([]),
+      worker: null,
+      resolveNextStep: () => { return },
+      lineno: 0,
+    },
+    ide: {
       signToGifMap: new Map(
 
         (Object.keys(Sign).map((key) => Sign[key as any])
@@ -27,17 +48,7 @@ const getInitialState = (): State => (
       { name: 'Flow', signs: [Sign.IF, Sign.ELSE, Sign.WHILE, Sign.FOR, Sign.BREAK, Sign.CONTINUE] },
       { name: 'Classes and functions', signs: [Sign.CLASS, Sign.PROP, Sign.FUNCTION, Sign.RETURN] }
       ],
-      text: [
-        new LetterRowImp([new LetterImp(Sign.X), new LetterImp(Sign.ASSIGN), new LetterImp(Sign.D8), new LetterImp(Sign.SEMICOLON)]),
-        new LetterRowImp([new LetterImp(Sign.P), new LetterImp(Sign.R), new LetterImp(Sign.I), new LetterImp(Sign.N), new LetterImp(Sign.T), new LetterImp(Sign.LPAR), new LetterImp(Sign.D8), new LetterImp(Sign.RPAR), new LetterImp(Sign.SEMICOLON)]),
-      ],
-    },
-    execution: {
-      runState: RunState.NOT_RUNNING,
-      output: [],
-      worker: null,
-      resolveNextStep: () => { return },
-      lineno: 0,
+      letterSize: { edgePx: 80, marginPx: 6 },
     }
   })
 

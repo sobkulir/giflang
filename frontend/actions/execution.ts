@@ -3,9 +3,10 @@ import produce from 'immer'
 import Worker from 'worker-loader!~/interpreter/giflang.worker'
 import { GiflangSetup, GiflangWorker } from '~/interpreter/giflang.worker'
 import { storeInstance } from '../app'
-import { CharsToSigns, SignsToTokens } from '../lib/editor'
+import { CharsToSigns, SignsToChars, SignsToTokens } from '../lib/editor'
 import { RunState } from '../types/execution'
 import { MyAction, State } from '../types/redux'
+import { createEmptyText } from '../types/text-area'
 
 export const appendToOutput =
   (output: string): MyAction<string> => ({
@@ -57,7 +58,9 @@ export const giflangSetup: GiflangSetup = {
   onPrint:
     (str: string) => { storeInstance.dispatch(appendToOutput(str))},
   onInput:
-    () => Promise.resolve('JANO'),
+    () => {
+      return storeInstance.getState().execution.inputBuffer.popFront()
+    },
   onFinish:
     (_err: string | undefined) =>
       { storeInstance.dispatch(finishExecution())},
@@ -97,9 +100,28 @@ export async function StartExecution(code: string, isDebugMode: boolean) {
 export const startExecution =
   (isDebugMode: boolean): MyAction<boolean> => ({
     type: 'Start execution',
+    payload: isDebugMode,
     reducer: produce((state: State) => {
-      state.execution.runState = RunState.STARTING
-      state.execution.output = []
-      StartExecution(SignsToTokens(state.editor.text), isDebugMode)
+      const execution = state.execution
+      execution.runState = RunState.STARTING
+      execution.output = []
+      execution.commitedInput = []
+      state.textAreaMap.executionInput.text = createEmptyText()
+      state.textAreaMap.executionInput.cursorPosition = {row: 0, col: 0}
+      StartExecution(
+        SignsToTokens(state.textAreaMap.mainEditor.text),
+        isDebugMode)
+    })
+  })
+
+export const addLineToInput =
+  (): MyAction<void> => ({
+    type: 'Add line to input',
+    reducer: produce((state: State) => {
+      const executionInput = state.textAreaMap.executionInput
+      state.execution.commitedInput.push(executionInput.text[0])
+      state.execution.inputBuffer.push(SignsToChars(executionInput.text))
+      executionInput.text = createEmptyText()
+      executionInput.cursorPosition = {row: 0, col: 0}
     })
   })

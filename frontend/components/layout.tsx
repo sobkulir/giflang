@@ -4,7 +4,7 @@ import IOBox from './io-box/io-box'
 import * as styles from './layout.scss'
 import LetterPicker from './letter-picker'
 import Menu from './menu'
-import TextArea from './text-area/text-area'
+import MainTextArea from './text-area/main-text-area'
 
 export default () => {
   const match = useParams<{ codeId: string }>()
@@ -17,7 +17,7 @@ export default () => {
       </div>
       <div className={styles.content}>
         <div className={styles.leftContent}>
-          <TextArea />
+          <MainTextArea />
           <IOBox />
         </div>
         <LetterPicker />

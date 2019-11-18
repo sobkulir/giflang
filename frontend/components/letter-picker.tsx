@@ -2,9 +2,10 @@
 import Typography from '@material-ui/core/Typography'
 import React from 'react'
 import { connect } from 'react-redux'
-import { addSignAfterCursor } from '../actions/editor'
-import { AlphabetCategory, CategorizedAlphabet, LetterSize, Sign, SignToGifMap } from '../types/editor'
+import { addSignAfterCursor } from '../actions/text-area'
+import { AlphabetCategory, CategorizedAlphabet, LetterSize, SignToGifMap } from '../types/ide'
 import { State } from '../types/redux'
+import { Sign, TextAreaType } from '../types/text-area'
 import * as styles from './letter-picker.scss'
 
 interface LetterPickerProps {
@@ -29,7 +30,9 @@ const Category: React.SFC<CategoryProps> = (props) => {
     padding: `${letterSize.marginPx * props.shrinkFactor}px`,
   })
 
-  const addSign = (sign: Sign) => () => { props.addSignAfterCursor(sign) }
+  const addSign = (sign: Sign) => () => {
+    props.addSignAfterCursor(TextAreaType.MAIN_EDITOR, sign)
+  }
 
   const row = props.category.signs.map((sign) =>
     <img
@@ -86,9 +89,9 @@ class LetterPicker extends React.Component<LetterPickerProps, {}> {
 
 export default connect(
   (state: State) => ({
-    alphabet: state.editor.alphabet,
-    signToGifMap: state.editor.signToGifMap,
-    letterSize: state.editor.letterSize,
+    alphabet: state.ide.alphabet,
+    signToGifMap: state.ide.signToGifMap,
+    letterSize: state.ide.letterSize,
   }),
   {
     addSignAfterCursor,

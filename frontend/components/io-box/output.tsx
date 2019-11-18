@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { LetterSize, SignToGifMap, Text } from '~/frontend/types/editor'
+import { LetterSize, SignToGifMap } from '~/frontend/types/ide'
+import { Text } from '~/frontend/types/text-area'
 import { Content } from '../text-area/content'
 import * as styles from './output.scss'
 

@@ -1,5 +1,14 @@
 .ioBox {
-    padding: 20px;
-    overflow: auto;
+    padding: 10px;
     height: 300px;
+    display: flex;
+    min-width: 0;
+
+    .ioCard {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 10px;
+    }
 }

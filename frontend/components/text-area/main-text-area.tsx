@@ -1,19 +1,22 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { addSignAfterCursor, moveCursor, newlineAfterCursor, removeAfterCursor, setCursorPosition } from '~/frontend/actions/editor'
-import { EditorState } from '~/frontend/types/editor'
+import { addSignAfterCursor, moveCursor, newlineAfterCursor, removeAfterCursor, setCursorPosition } from '~/frontend/actions/text-area'
 import { RunState } from '~/frontend/types/execution'
+import { LetterSize, SignToGifMap } from '~/frontend/types/ide'
 import { State } from '~/frontend/types/redux'
+import { TextArea, TextAreaType } from '~/frontend/types/text-area'
 import { Content } from './content'
 import { Cursor } from './cursor'
-import { HandleShorcuts } from './handle-shorcuts'
+import { HandleMainEditorShorcuts } from './handle-shorcuts'
 import { Highlighter } from './highlighter'
 import { LineNumbers } from './line-numbers'
-import * as styles from './text-area.scss'
+import * as styles from './main-text-area.scss'
 
-export interface TextAreaProps extends EditorState {
+export interface MainTextAreaProps extends TextArea {
   lineno: number,
   runState: RunState,
+  signToGifMap: SignToGifMap,
+  letterSize: LetterSize,
   setCursorPosition: typeof setCursorPosition,
   addSignAfterCursor: typeof addSignAfterCursor,
   moveCursor: typeof moveCursor,
@@ -21,12 +24,13 @@ export interface TextAreaProps extends EditorState {
   newlineAfterCursor: typeof newlineAfterCursor
 }
 
-class TextArea extends React.Component<TextAreaProps, {}> {
+class MainTextArea extends React.Component<MainTextAreaProps, {}> {
   readonly contentWrapperRef: React.RefObject<HTMLDivElement>
   readonly cursorRef: React.RefObject<Cursor>
+  readonly areaType = TextAreaType.MAIN_EDITOR
   scrollToCursorAfterUpdate: boolean
 
-  constructor(props: TextAreaProps) {
+  constructor(props: MainTextAreaProps) {
     super(props)
     this.scrollToCursorAfterUpdate = false
     this.contentWrapperRef = React.createRef()
@@ -57,6 +61,7 @@ class TextArea extends React.Component<TextAreaProps, {}> {
     const textWrapper = this.contentWrapperRef.current as HTMLDivElement
     const wrapperRect = textWrapper.getBoundingClientRect()
     this.props.setCursorPosition(
+      this.areaType,
       {
         x: Math.max(0, e.pageX - wrapperRect.left - window.pageXOffset),
         y: Math.max(0, e.pageY - wrapperRect.top - window.pageYOffset)
@@ -64,7 +69,7 @@ class TextArea extends React.Component<TextAreaProps, {}> {
   }
 
   handleKeyPress = (e: React.KeyboardEvent) => {
-    const didCauseAction = HandleShorcuts(e, this.props)
+    const didCauseAction = HandleMainEditorShorcuts(e, this.props)
     this.scrollToCursorAfterUpdate = didCauseAction
   }
 
@@ -109,7 +114,9 @@ class TextArea extends React.Component<TextAreaProps, {}> {
 
 export default connect(
   (state: State) => ({
-    ...state.editor,
+    ...state.textAreaMap[TextAreaType.MAIN_EDITOR],
+    signToGifMap: state.ide.signToGifMap,
+    letterSize: state.ide.letterSize,
     lineno: state.execution.lineno,
     runState: state.execution.runState
   }),
@@ -120,5 +127,5 @@ export default connect(
     removeAfterCursor,
     newlineAfterCursor
   }
-)(TextArea)
+)(MainTextArea)
 

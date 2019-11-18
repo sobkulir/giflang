@@ -1,0 +1,17 @@
+.inputArea {
+    flex: 1;
+    overflow: auto;
+    background-color: lightgray;
+    padding: 10px 0;
+    display: flex;
+    flex-direction: column;
+    padding-left: 10px;
+
+    .contentWrapper {
+        /* Position the wrapper so that children
+        can be positioned absolutely */
+        position: relative;
+        cursor: text;
+        flex: 1;
+    }
+}

@@ -1,6 +1,6 @@
 import React from 'react'
-import { LetterSize } from '~/frontend/types/editor'
 import { RunState } from '~/frontend/types/execution'
+import { LetterSize } from '~/frontend/types/ide'
 
 interface HighlighterProps {
   letterSize: LetterSize

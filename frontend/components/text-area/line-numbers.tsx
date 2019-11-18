@@ -1,6 +1,6 @@
 import Typography from '@material-ui/core/Typography'
 import React from 'react'
-import { LetterSize } from '~/frontend/types/editor'
+import { LetterSize } from '~/frontend/types/ide'
 
 interface LineNumbersProps {
   textRowCount: number

@@ -1,3 +1,4 @@
+import { LetterRowImp } from '../lib/text-area'
 
 export enum Sign {
   A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
@@ -13,11 +14,6 @@ export enum Sign {
   SPACE, SEMICOLON, QUOTE, COMMA, PROP,
 }
 
-export interface LetterSize {
-  edgePx: number
-  marginPx: number
-}
-
 export interface Letter {
   id: string
   sign: Sign
@@ -28,11 +24,7 @@ export interface LetterRow {
   letters: Letter[]
 }
 
-export type AlphabetCategory = { name: string, signs: Sign[] }
-export type CategorizedAlphabet = AlphabetCategory[]
 export type Text = LetterRow[]
-export type FileName = string
-export type SignToGifMap = Map<Sign, FileName>
 
 export interface PositionPixels {
   x: number
@@ -44,10 +36,15 @@ export interface PositionRowCol {
   col: number
 }
 
-export interface EditorState {
+export interface TextArea {
   text: Text,
   cursorPosition: PositionRowCol
-  letterSize: LetterSize,
-  signToGifMap: SignToGifMap,
-  alphabet: CategorizedAlphabet,
 }
+
+export enum TextAreaType {
+  MAIN_EDITOR = 'mainEditor', EXECUTION_INPUT = 'executionInput'
+}
+
+export type TextAreaMap = { [x in TextAreaType]: TextArea }
+
+export const createEmptyText = (): Text => [new LetterRowImp([])]
