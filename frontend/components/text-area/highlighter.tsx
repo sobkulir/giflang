@@ -1,4 +1,5 @@
 import React from 'react'
+import scrollIntoView from 'scroll-into-view-if-needed'
 import { RunState } from '~/frontend/types/execution'
 import { LetterSize } from '~/frontend/types/ide'
 import { Text } from '~/frontend/types/text-area'
@@ -37,6 +38,23 @@ const SingleHighlight: React.SFC<SingleHighlightProps> = React.memo((props) => {
 })
 
 export class Highlighter extends React.PureComponent<HighlighterProps> {
+  readonly scrollRef: React.RefObject<HTMLDivElement>
+
+  constructor(props: HighlighterProps) {
+    super(props)
+    this.scrollRef = React.createRef()
+  }
+
+  scrollIntoView() {
+    if (this.scrollRef.current) {
+      scrollIntoView(this.scrollRef.current, {
+        block: 'nearest',
+        inline: 'nearest',
+        scrollMode: 'if-needed'
+      })
+    }
+  }
+
   createHighlights = () => {
     const { first_line, last_line, first_column, last_column }
       = this.props.locator
@@ -63,7 +81,39 @@ export class Highlighter extends React.PureComponent<HighlighterProps> {
     return highlights
   }
 
+  getScrollRefStyles = (): React.CSSProperties => {
+    const { first_line, last_line, first_column, last_column }
+      = this.props.locator
+    const boxSize =
+      2 * this.props.letterSize.marginPx + this.props.letterSize.edgePx
+
+    let widthUnits = 0
+    if (first_line === last_line) {
+      widthUnits = last_column - first_column
+    } else if (this.props.text.length >= first_line) {
+      widthUnits = this.props.text[first_line - 1].letters.length
+    }
+    return {
+      position: 'absolute',
+      top: `${(first_line - 3) * boxSize}px`,
+      left: `${(first_column - 4) * boxSize}px`,
+      height: `${(last_line - first_line + 3) * boxSize}px`,
+      width: `${(widthUnits + 5) * boxSize}px`
+    }
+  }
+
+  isVisible = () => this.props.runState === RunState.DEBUG_RUNNING ||
+    this.props.runState === RunState.DEBUG_WAITING
+
   render() {
-    return <div>{this.createHighlights()}</div>
+    if (this.isVisible()) {
+      return (
+        <div>
+          <div style={this.getScrollRefStyles()} ref={this.scrollRef} />
+          {this.createHighlights()}
+        </div>)
+    } else {
+      return <div />
+    }
   }
 }

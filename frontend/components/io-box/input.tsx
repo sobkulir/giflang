@@ -4,7 +4,7 @@ import { addLineToInput } from '~/frontend/actions/execution'
 import { addSignAfterCursor, moveCursor, removeAfterCursor } from '~/frontend/actions/text-area'
 import { LetterSize, SignToGifMap } from '~/frontend/types/ide'
 import { State } from '~/frontend/types/redux'
-import { Text, TextArea, TextAreaType } from '~/frontend/types/text-area'
+import { ScrollableType, Text, TextArea, TextAreaType } from '~/frontend/types/text-area'
 import { Content } from '../text-area/content'
 import { Cursor } from '../text-area/cursor'
 import { HandleExecutionInputShortcuts } from '../text-area/handle-shorcuts'
@@ -29,6 +29,11 @@ class Input extends React.Component<InputProps> {
     this.cursorRef = React.createRef()
   }
 
+  componentDidUpdate() {
+    if (this.props.scroll === ScrollableType.CURSOR) {
+      this.cursorRef.current!.scrollIntoView()
+    }
+  }
   handleKeyPress = (e: React.KeyboardEvent) => {
     HandleExecutionInputShortcuts(e, this.props)
   }

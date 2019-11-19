@@ -36,9 +36,13 @@ export interface PositionRowCol {
   col: number
 }
 
+export enum ScrollableType {
+  CURSOR, HIGHLIGHT, NONE
+}
 export interface TextArea {
   text: Text,
-  cursorPosition: PositionRowCol
+  cursorPosition: PositionRowCol,
+  scroll: ScrollableType,
 }
 
 export enum TextAreaType {

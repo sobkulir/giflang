@@ -4,7 +4,7 @@ import { addSignAfterCursor, moveCursor, newlineAfterCursor, removeAfterCursor, 
 import { RunState } from '~/frontend/types/execution'
 import { LetterSize, SignToGifMap } from '~/frontend/types/ide'
 import { State } from '~/frontend/types/redux'
-import { TextArea, TextAreaType } from '~/frontend/types/text-area'
+import { ScrollableType, TextArea, TextAreaType } from '~/frontend/types/text-area'
 import { JisonLocator } from '~/interpreter/ast/ast-node'
 import { Content } from './content'
 import { Cursor } from './cursor'
@@ -28,14 +28,15 @@ export interface MainTextAreaProps extends TextArea {
 class MainTextArea extends React.Component<MainTextAreaProps, {}> {
   readonly contentWrapperRef: React.RefObject<HTMLDivElement>
   readonly cursorRef: React.RefObject<Cursor>
+  readonly highlighterRef: React.RefObject<Highlighter>
+
   readonly areaType = TextAreaType.MAIN_EDITOR
-  scrollToCursorAfterUpdate: boolean
 
   constructor(props: MainTextAreaProps) {
     super(props)
-    this.scrollToCursorAfterUpdate = false
     this.contentWrapperRef = React.createRef()
     this.cursorRef = React.createRef()
+    this.highlighterRef = React.createRef()
   }
 
   componentDidMount() {
@@ -43,10 +44,13 @@ class MainTextArea extends React.Component<MainTextAreaProps, {}> {
   }
 
   componentDidUpdate() {
-    if (this.scrollToCursorAfterUpdate) {
-      this.cursorRef.current!.scrollIntoView()
-      this.scrollToCursorAfterUpdate = false
+    switch (this.props.scroll) {
+      case ScrollableType.CURSOR:
+        this.cursorRef.current!.scrollIntoView(); break
+      case ScrollableType.HIGHLIGHT:
+        this.highlighterRef.current!.scrollIntoView(); break
     }
+
     // Set focus after an update to maintain focus after adding a letter from
     // the right panel (letter picker).
     this.setFocusOnText()
@@ -70,8 +74,7 @@ class MainTextArea extends React.Component<MainTextAreaProps, {}> {
   }
 
   handleKeyPress = (e: React.KeyboardEvent) => {
-    const didCauseAction = HandleMainEditorShorcuts(e, this.props)
-    this.scrollToCursorAfterUpdate = didCauseAction
+    HandleMainEditorShorcuts(e, this.props)
   }
 
   render() {
@@ -98,6 +101,7 @@ class MainTextArea extends React.Component<MainTextAreaProps, {}> {
             position={this.props.cursorPosition}
           />
           <Highlighter
+            ref={this.highlighterRef}
             letterSize={this.props.letterSize}
             locator={this.props.locator}
             runState={this.props.runState}

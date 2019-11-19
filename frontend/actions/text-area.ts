@@ -1,7 +1,7 @@
 import produce from 'immer'
 import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRight, MoveCursorUp, PositionPixelsToRowCol, TrimPositionRowCol } from '../lib/text-area'
 import { MyAction, State } from '../types/redux'
-import { createEmptyText, PositionPixels, Sign, TextAreaType } from '../types/text-area'
+import { createEmptyText, PositionPixels, ScrollableType, Sign, TextAreaType } from '../types/text-area'
 
 export const setCursorPosition =
   (areaType: TextAreaType, positionPixels: PositionPixels)
@@ -15,6 +15,7 @@ export const setCursorPosition =
             PositionPixelsToRowCol(state.ide.letterSize, positionPixels),
             area.text)
         area.cursorPosition = positionRowCol
+        state.textAreaMap[areaType].scroll = ScrollableType.CURSOR
       })
     })
 
@@ -30,6 +31,7 @@ export const addSignAfterCursor =
       area.text[position.row].letters
         .splice(position.col, 0, new LetterImp(sign))
       area.cursorPosition = MoveCursorRight(position, area.text)
+      state.textAreaMap[areaType].scroll = ScrollableType.CURSOR
     })
   })
 
@@ -57,6 +59,7 @@ export const moveCursor =
           area.cursorPosition = MoveCursorUp(position, text)
           break
       }
+      state.textAreaMap[areaType].scroll = ScrollableType.CURSOR
     })
   })
 
@@ -74,6 +77,7 @@ export const removeAfterCursor =
           text.splice(row + 1, 1)
         }
       }
+      state.textAreaMap[areaType].scroll = ScrollableType.CURSOR
     })
   })
 
@@ -88,5 +92,16 @@ export const newlineAfterCursor =
       text[row].letters.splice(col)
       text.splice(row + 1, 0, newRow)
       area.cursorPosition = MoveCursorRight(area.cursorPosition, area.text)
+      state.textAreaMap[areaType].scroll = ScrollableType.CURSOR
     })
   })
+
+export const scrollTo =
+  (areaType: TextAreaType, scrollType: ScrollableType)
+    : MyAction<ScrollableType> => ({
+      type: 'Scroll',
+      payload: scrollType,
+      reducer: produce((state: State) => {
+        state.textAreaMap[areaType].scroll = scrollType
+      })
+    })

@@ -58,6 +58,7 @@ DELIMITER                   ";"
 
 "SPACE"                     {
                                 /* ignore spaces unless in string literal */
+                                inc_token_counter(yylloc.last_line)
                                 this.begin('delimit')
                             }
 <string_literal>"SPACE"     { yytext = ' '; return delimit('LETTER') }
@@ -86,14 +87,19 @@ DELIMITER                   ";"
 
 // lexer extra code
 var token_counter = 0;
-var last_line = -1
+var last_line = -1;
 
-lexer.post_lex = function (token) {
-    if (this.yylloc.last_line !== last_line) {
-        last_line = this.yylloc.last_line
+var inc_token_counter = (curLine) => {
+    if (curLine !== last_line) {
+        last_line = curLine
         token_counter = 0
     }
     ++token_counter
+};
+
+lexer.post_lex = function (token) {
+    inc_token_counter(this.yylloc.last_line)
+    
     // 'abuse' the *column* part for tracking the token number;
     // meanwhile the `range` member will still be usable to debug
     // the raw *text* input as that one will track the positions within the raw input string.

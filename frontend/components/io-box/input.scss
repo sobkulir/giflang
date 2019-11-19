@@ -6,7 +6,10 @@
     display: flex;
     flex-direction: column;
     padding-left: 10px;
-
+    
+    :focus {
+        outline: none;
+    }
     .contentWrapper {
         /* Position the wrapper so that children
         can be positioned absolutely */

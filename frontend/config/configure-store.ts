@@ -3,7 +3,7 @@ import { InputBuffer } from '../lib/input-buffer'
 import { LetterImp, LetterRowImp } from '../lib/text-area'
 import { createDefaultLocator, RunState } from '../types/execution'
 import { MyAction, State } from '../types/redux'
-import { createEmptyText, Sign } from '../types/text-area'
+import { createEmptyText, ScrollableType, Sign } from '../types/text-area'
 
 
 const getInitialState = (): State => (
@@ -15,10 +15,12 @@ const getInitialState = (): State => (
           new LetterRowImp([new LetterImp(Sign.X), new LetterImp(Sign.ASSIGN), new LetterImp(Sign.D8), new LetterImp(Sign.SEMICOLON)]),
           new LetterRowImp([new LetterImp(Sign.P), new LetterImp(Sign.R), new LetterImp(Sign.I), new LetterImp(Sign.N), new LetterImp(Sign.T), new LetterImp(Sign.LPAR), new LetterImp(Sign.D8), new LetterImp(Sign.RPAR), new LetterImp(Sign.SEMICOLON)]),
         ],
+        scroll: ScrollableType.NONE
       },
       executionInput: {
         cursorPosition: { row: 0, col: 0 },
-        text: createEmptyText()
+        text: createEmptyText(),
+        scroll: ScrollableType.NONE
       }
     },
     execution: {

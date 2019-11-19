@@ -7,7 +7,7 @@ import { storeInstance } from '../app'
 import { CharsToSigns, SignsToChars, SignsToTokens } from '../lib/editor'
 import { RunState } from '../types/execution'
 import { MyAction, State } from '../types/redux'
-import { createEmptyText } from '../types/text-area'
+import { createEmptyText, ScrollableType } from '../types/text-area'
 
 export const appendToOutput =
   (output: string): MyAction<string> => ({
@@ -52,6 +52,7 @@ export const newNextStep =
     state.execution.runState = RunState.DEBUG_WAITING
     state.execution.resolveNextStep = args.resolveNextStep
     state.execution.locator = args.locator
+    state.textAreaMap.mainEditor.scroll = ScrollableType.HIGHLIGHT
   })
 })
 
