@@ -1,30 +1,69 @@
 import React from 'react'
 import { RunState } from '~/frontend/types/execution'
 import { LetterSize } from '~/frontend/types/ide'
+import { Text } from '~/frontend/types/text-area'
+import { JisonLocator } from '~/interpreter/ast/ast-node'
 
 interface HighlighterProps {
   letterSize: LetterSize
   runState: RunState
-  lineno: number
+  locator: JisonLocator
+  text: Text
 }
 
-export const Highlighter: React.SFC<HighlighterProps> = (props) => {
+interface SingleHighlightProps {
+  line: number
+  firstColumn: number
+  lastColumn: number
+  letterSize: LetterSize
+}
+
+const SingleHighlight: React.SFC<SingleHighlightProps> = React.memo((props) => {
   const getStyles = (): React.CSSProperties => {
     const boxSize =
       2 * props.letterSize.marginPx + props.letterSize.edgePx
-    const isVisible = props.runState === RunState.DEBUG_RUNNING
-      || props.runState === RunState.DEBUG_WAITING
     return {
-      display: `${(isVisible) ? 'block' : 'none'}`,
       position: 'absolute',
-      left: '-10px',
-      top: `${props.lineno * boxSize - boxSize / 2}`
+      left: `${(props.firstColumn - 1) * boxSize}`,
+      top: `${(props.line - 1) * boxSize}`,
+      background: 'orange',
+      opacity: '0.5',
+      width: `${(props.lastColumn - props.firstColumn + 1) * boxSize}px`,
+      height: `${boxSize}`
     }
   }
 
-  return (
-    <div style={getStyles()}>
-      >
-  </div>
-  )
+  return <div style={getStyles()} />
+})
+
+export class Highlighter extends React.PureComponent<HighlighterProps> {
+  createHighlights = () => {
+    const { first_line, last_line, first_column, last_column }
+      = this.props.locator
+    const highlights: React.ReactNode[] = []
+
+    for (let i = first_line; i <= last_line; i++) {
+      const startCol = (i === first_line) ? first_column : 1
+      let endCol = 1
+      if (i === last_line) {
+        endCol = last_column
+      } else if (this.props.text.length >= i) {
+        endCol = this.props.text[i - 1].letters.length
+      }
+      highlights.push((
+        <SingleHighlight
+          key={i}
+          letterSize={this.props.letterSize}
+          firstColumn={startCol}
+          lastColumn={endCol}
+          line={i}
+        />
+      ))
+    }
+    return highlights
+  }
+
+  render() {
+    return <div>{this.createHighlights()}</div>
+  }
 }

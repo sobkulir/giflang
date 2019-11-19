@@ -82,6 +82,39 @@ DELIMITER                   ";"
 <delimit><<EOF>>            { throw new Error('Delimiter expected') }
 <<EOF>>                     { return 'EOF' }
 
+%%
+
+// lexer extra code
+var token_counter = 0;
+var last_line = -1
+
+lexer.post_lex = function (token) {
+    if (this.yylloc.last_line !== last_line) {
+        last_line = this.yylloc.last_line
+        token_counter = 0
+    }
+    ++token_counter
+    // 'abuse' the *column* part for tracking the token number;
+    // meanwhile the `range` member will still be usable to debug
+    // the raw *text* input as that one will track the positions within the raw input string.
+    //
+    // make sure to tweak both first_column and last_column so that the default location tracking
+    // 'merging' code in the generated parser can still do its job: that way we'll get to
+    // see which *range* of tokens constitute a particular grammar rule/element, just like
+    // it were text columns.
+    // Could've done the same with first_line/last_line, but I felt it more suitable to use the
+    // column part for this as it's at the same very low granularity level as 'token index'...
+    this.yylloc.first_column = token_counter
+    this.yylloc.last_column = token_counter
+    return token;
+};
+
+// extra helper so multiple parse() calls will restart counting tokens:
+lexer.reset_token_counter = function () {
+    token_counter = 0;
+    last_line = -1
+};
+
 /lex
 
 /* operator associations and precedence */
@@ -193,7 +226,7 @@ UnaryExpr
     ;
 
 BinaryExpr
-    : BinaryExpr MUL BinaryExpr     { $$ = new yy.Expr.BinaryValueExpr(yy.Operator.MUL, $1, $3, @$) }
+    : BinaryExpr MUL BinaryExpr     { $$ = new yy.Expr.BinaryValueExpr(yy.Operator.MUL, $1, $3, @$); console.log(@$) }
     | BinaryExpr DIV BinaryExpr     { $$ = new yy.Expr.BinaryValueExpr(yy.Operator.DIV, $1, $3, @$) }
     | BinaryExpr MOD BinaryExpr     { $$ = new yy.Expr.BinaryValueExpr(yy.Operator.MOD, $1, $3, @$) }
 
@@ -334,3 +367,10 @@ InClassStatementList
 InClassStatement
     : FunctionDeclaration           { $$ = $1 }
     ;
+
+%%
+
+// extra helper: reset the token counter at the start of every parse() call:
+parser.pre_parse = function (yy) {
+    yy.lexer.reset_token_counter();
+};

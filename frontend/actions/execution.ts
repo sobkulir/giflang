@@ -1,6 +1,7 @@
 import * as Comlink from 'comlink'
 import produce from 'immer'
 import Worker from 'worker-loader!~/interpreter/giflang.worker'
+import { JisonLocator } from '~/interpreter/ast/ast-node'
 import { GiflangSetup, GiflangWorker } from '~/interpreter/giflang.worker'
 import { storeInstance } from '../app'
 import { CharsToSigns, SignsToChars, SignsToTokens } from '../lib/editor'
@@ -40,7 +41,7 @@ export const finishExecution =
 
 export type NextStepArgs = {
   resolveNextStep: () => void,
-  lineno: number
+  locator: JisonLocator
 }
 
 export const newNextStep =
@@ -50,7 +51,7 @@ export const newNextStep =
   reducer: produce((state: State) => {
     state.execution.runState = RunState.DEBUG_WAITING
     state.execution.resolveNextStep = args.resolveNextStep
-    state.execution.lineno = args.lineno
+    state.execution.locator = args.locator
   })
 })
 
@@ -65,10 +66,10 @@ export const giflangSetup: GiflangSetup = {
     (_err: string | undefined) =>
       { storeInstance.dispatch(finishExecution())},
   onNextStep:
-    (lineno: number) => {
+    (locator: JisonLocator) => {
       let resolveNextStep: any
       const ret = new Promise<void>((resolve, _) => resolveNextStep = resolve)
-      storeInstance.dispatch(newNextStep({resolveNextStep, lineno}))
+      storeInstance.dispatch(newNextStep({resolveNextStep, locator}))
       return ret
     }
   }

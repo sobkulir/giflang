@@ -1,7 +1,7 @@
 import { createStore } from 'redux'
 import { InputBuffer } from '../lib/input-buffer'
 import { LetterImp, LetterRowImp } from '../lib/text-area'
-import { RunState } from '../types/execution'
+import { createDefaultLocator, RunState } from '../types/execution'
 import { MyAction, State } from '../types/redux'
 import { createEmptyText, Sign } from '../types/text-area'
 
@@ -24,11 +24,11 @@ const getInitialState = (): State => (
     execution: {
       runState: RunState.NOT_RUNNING,
       output: [],
+      locator: createDefaultLocator(),
       commitedInput: [],
       inputBuffer: new InputBuffer<string>([]),
       worker: null,
       resolveNextStep: () => { return },
-      lineno: 0,
     },
     ide: {
       signToGifMap: new Map(

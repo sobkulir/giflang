@@ -5,6 +5,7 @@ import { RunState } from '~/frontend/types/execution'
 import { LetterSize, SignToGifMap } from '~/frontend/types/ide'
 import { State } from '~/frontend/types/redux'
 import { TextArea, TextAreaType } from '~/frontend/types/text-area'
+import { JisonLocator } from '~/interpreter/ast/ast-node'
 import { Content } from './content'
 import { Cursor } from './cursor'
 import { HandleMainEditorShorcuts } from './handle-shorcuts'
@@ -13,7 +14,7 @@ import { LineNumbers } from './line-numbers'
 import * as styles from './main-text-area.scss'
 
 export interface MainTextAreaProps extends TextArea {
-  lineno: number,
+  locator: JisonLocator,
   runState: RunState,
   signToGifMap: SignToGifMap,
   letterSize: LetterSize,
@@ -98,8 +99,9 @@ class MainTextArea extends React.Component<MainTextAreaProps, {}> {
           />
           <Highlighter
             letterSize={this.props.letterSize}
-            lineno={this.props.lineno}
+            locator={this.props.locator}
             runState={this.props.runState}
+            text={this.props.text}
           />
           <Content
             letterSize={this.props.letterSize}
@@ -117,7 +119,7 @@ export default connect(
     ...state.textAreaMap[TextAreaType.MAIN_EDITOR],
     signToGifMap: state.ide.signToGifMap,
     letterSize: state.ide.letterSize,
-    lineno: state.execution.lineno,
+    locator: state.execution.locator,
     runState: state.execution.runState
   }),
   {

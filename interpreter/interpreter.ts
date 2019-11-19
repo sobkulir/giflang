@@ -14,7 +14,8 @@ import { GiflangInput, GiflangPrint, InputFunction, PrintFunction } from './obje
 import { NumberClass } from './object-model/std/number-class'
 import { NumberInstance } from './object-model/std/number-instance'
 
-export type NextStepFunction = (lineno: number) => Promise<void>
+export type NextStepFunction =
+  (locator: JisonLocator) => Promise<void>
 
 export interface InterpreterSetup {
   onNextStep: NextStepFunction,
@@ -33,7 +34,7 @@ export class Interpreter
   public callStack: string[] = []
   public locator: JisonLocator =
     { first_column: 0, first_line: 0, last_column: 0, last_line: 0 }
-  public nextStep: NextStepFunction = async () => { return }
+  public waitForNextStep = async () => { return }
 
   constructor(readonly setup: InterpreterSetup, isDebugMode: boolean = false) {
     this.globals = new Environment(null)
@@ -50,8 +51,8 @@ export class Interpreter
     this.globals.getRef('FALSE').set(BoolInstance.getFalse())
 
     if (isDebugMode) {
-      this.nextStep = async (lineno: number) => {
-        await setup.onNextStep(lineno)
+      this.waitForNextStep = async () => {
+        await setup.onNextStep(this.locator)
       }
     }
   }
@@ -98,7 +99,7 @@ export class Interpreter
     return NoneInstance.getInstance()
   }
   async visitAssignmentValueExpr(expr: AssignmentValueExpr): Promise<Instance> {
-    await this.nextStep(expr.locator.first_line)
+    await this.waitForNextStep()
     const l = await this.evaluateRef(expr.lhs)
     const r = await this.evaluate(expr.rhs)
     l.set(r)
@@ -131,7 +132,7 @@ export class Interpreter
     return (boolRes.value) ? BoolInstance.getFalse() : BoolInstance.getTrue()
   }
   async visitBinaryValueExpr(expr: BinaryValueExpr): Promise<Instance> {
-    await this.nextStep(expr.locator.first_line)
+    await this.waitForNextStep()
     const l = await this.evaluate(expr.left)
     const r = await this.evaluate(expr.right)
 
@@ -183,7 +184,7 @@ export class Interpreter
   }
 
   async visitCallValueExpr(expr: CallValueExpr): Promise<Instance> {
-    await this.nextStep(expr.locator.first_line)
+    await this.waitForNextStep()
     const args = []
     for (const arg of expr.args) {
       args.push(await this.evaluate(arg))
