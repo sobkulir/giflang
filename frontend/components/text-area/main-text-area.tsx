@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { addSignAfterCursor, moveCursor, newlineAfterCursor, removeAfterCursor, setCursorPosition } from '~/frontend/actions/text-area'
+import { addSignAfterCursor, moveCursor, newlineAfterCursor, removeAfterCursor, scrollToType, setCursorPosition } from '~/frontend/actions/text-area'
 import { RunState } from '~/frontend/types/execution'
 import { LetterSize, SignToGifMap } from '~/frontend/types/ide'
 import { State } from '~/frontend/types/redux'
@@ -22,7 +22,8 @@ export interface MainTextAreaProps extends TextArea {
   addSignAfterCursor: typeof addSignAfterCursor,
   moveCursor: typeof moveCursor,
   removeAfterCursor: typeof removeAfterCursor,
-  newlineAfterCursor: typeof newlineAfterCursor
+  newlineAfterCursor: typeof newlineAfterCursor,
+  scrollToType: typeof scrollToType,
 }
 
 class MainTextArea extends React.Component<MainTextAreaProps, {}> {
@@ -49,6 +50,10 @@ class MainTextArea extends React.Component<MainTextAreaProps, {}> {
         this.cursorRef.current!.scrollIntoView(); break
       case ScrollableType.HIGHLIGHT:
         this.highlighterRef.current!.scrollIntoView(); break
+    }
+
+    if (this.props.scroll !== ScrollableType.NONE) {
+      this.props.scrollToType(this.areaType, ScrollableType.NONE)
     }
 
     // Set focus after an update to maintain focus after adding a letter from
@@ -131,7 +136,8 @@ export default connect(
     addSignAfterCursor,
     moveCursor,
     removeAfterCursor,
-    newlineAfterCursor
+    newlineAfterCursor,
+    scrollToType
   }
 )(MainTextArea)
 

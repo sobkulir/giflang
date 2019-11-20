@@ -5,6 +5,7 @@ import { JisonLocator } from '~/interpreter/ast/ast-node'
 import { GiflangSetup, GiflangWorker } from '~/interpreter/giflang.worker'
 import { storeInstance } from '../app'
 import { CharsToSigns, SignsToChars, SignsToTokens } from '../lib/editor'
+import { InputBuffer } from '../lib/input-buffer'
 import { RunState } from '../types/execution'
 import { MyAction, State } from '../types/redux'
 import { createEmptyText, ScrollableType } from '../types/text-area'
@@ -108,6 +109,7 @@ export const startExecution =
       execution.runState = RunState.STARTING
       execution.output = []
       execution.commitedInput = []
+      execution.inputBuffer = new InputBuffer<string>([])
       state.textAreaMap.executionInput.text = createEmptyText()
       state.textAreaMap.executionInput.cursorPosition = {row: 0, col: 0}
       StartExecution(
@@ -125,5 +127,6 @@ export const addLineToInput =
       state.execution.inputBuffer.push(SignsToChars(executionInput.text))
       executionInput.text = createEmptyText()
       executionInput.cursorPosition = {row: 0, col: 0}
+      state.textAreaMap.executionInput.scroll = ScrollableType.CURSOR
     })
   })

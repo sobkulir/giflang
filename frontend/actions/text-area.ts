@@ -96,7 +96,7 @@ export const newlineAfterCursor =
     })
   })
 
-export const scrollTo =
+export const scrollToType =
   (areaType: TextAreaType, scrollType: ScrollableType)
     : MyAction<ScrollableType> => ({
       type: 'Scroll',
