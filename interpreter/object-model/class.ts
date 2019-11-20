@@ -136,7 +136,7 @@ export class ObjectClass extends Class {
     args: Instance[]
   ): Promise<StringInstance> {
     CheckArityEq(args, 1)
-    const className = args[0].castOrThrow(ObjectInstance).getClass().name
+    const className = args[0].getClass().name
     return new StringInstance(
       StringClass.get(), `Instance of class "${className}"`)
   }

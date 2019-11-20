@@ -10,6 +10,7 @@ function CreateId(): string {
 export class LetterImp implements Letter {
   [immerable] = true
   readonly id: string
+
   constructor(readonly sign: Sign) {
     this.id = `${sign}_${CreateId()}`
   }

@@ -2,7 +2,9 @@ import * as Comlink from 'comlink'
 import produce from 'immer'
 import Worker from 'worker-loader!~/interpreter/giflang.worker'
 import { JisonLocator } from '~/interpreter/ast/ast-node'
+import { SerializedEnvironment } from '~/interpreter/environment'
 import { GiflangSetup, GiflangWorker } from '~/interpreter/giflang.worker'
+import { CallStack } from '~/interpreter/interpreter'
 import { storeInstance } from '../app'
 import { CharsToSigns, SignsToChars, SignsToTokens } from '../lib/editor'
 import { InputBuffer } from '../lib/input-buffer'
@@ -42,7 +44,9 @@ export const finishExecution =
 
 export type NextStepArgs = {
   resolveNextStep: () => void,
-  locator: JisonLocator
+  locator: JisonLocator,
+  callStack: CallStack,
+  environment: SerializedEnvironment
 }
 
 export const newNextStep =
@@ -53,6 +57,8 @@ export const newNextStep =
     state.execution.runState = RunState.DEBUG_WAITING
     state.execution.resolveNextStep = args.resolveNextStep
     state.execution.locator = args.locator
+    state.execution.callStack = args.callStack
+    state.execution.environment = args.environment
     state.textAreaMap.mainEditor.scroll = ScrollableType.HIGHLIGHT
   })
 })
@@ -68,10 +74,12 @@ export const giflangSetup: GiflangSetup = {
     (_err: string | undefined) =>
       { storeInstance.dispatch(finishExecution())},
   onNextStep:
-    (locator: JisonLocator) => {
+    (locator: JisonLocator,
+      callStack: CallStack, environment: SerializedEnvironment) => {
       let resolveNextStep: any
       const ret = new Promise<void>((resolve, _) => resolveNextStep = resolve)
-      storeInstance.dispatch(newNextStep({resolveNextStep, locator}))
+      storeInstance.dispatch(newNextStep(
+        {resolveNextStep, locator, callStack, environment}))
       return ret
     }
   }

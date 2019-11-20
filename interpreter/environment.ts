@@ -1,4 +1,8 @@
+import { CodeExecuter } from './code-executer'
 import { Instance, ValueRef } from './object-model/instance'
+import { Stringify } from './object-model/std/functions'
+
+export type SerializedEnvironment = string[]
 
 export class Environment {
   private readonly values: Map<string, Instance>
@@ -51,5 +55,17 @@ export class Environment {
       set: (value: Instance) => this.set(name, value),
       get: () => Promise.resolve(this.get(name)),
     }
+  }
+
+  async flatten(interpreter: CodeExecuter): Promise<SerializedEnvironment> {
+    const vars: string[] = []
+    let env: Environment = this
+    while (env.enclosing !== null) {
+      for (const x of env.values) {
+        vars.push(`${x[0]}: ${await Stringify(interpreter, x[1])}`)
+      }
+      env = env.enclosing
+    }
+    return vars
   }
 }

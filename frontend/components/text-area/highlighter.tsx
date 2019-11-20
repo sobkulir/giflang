@@ -1,6 +1,6 @@
 import React from 'react'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import { RunState } from '~/frontend/types/execution'
+import { isDebugMode, RunState } from '~/frontend/types/execution'
 import { LetterSize } from '~/frontend/types/ide'
 import { Text } from '~/frontend/types/text-area'
 import { JisonLocator } from '~/interpreter/ast/ast-node'
@@ -102,11 +102,8 @@ export class Highlighter extends React.PureComponent<HighlighterProps> {
     }
   }
 
-  isVisible = () => this.props.runState === RunState.DEBUG_RUNNING ||
-    this.props.runState === RunState.DEBUG_WAITING
-
   render() {
-    if (this.isVisible()) {
+    if (isDebugMode(this.props.runState)) {
       return (
         <div>
           <div style={this.getScrollRefStyles()} ref={this.scrollRef} />

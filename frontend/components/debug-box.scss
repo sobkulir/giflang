@@ -1,0 +1,32 @@
+.debugBox {
+    padding: 30px;
+    width: 300px;
+    background: pink;
+}
+
+.entryWrapper {
+    position: relative;
+    word-break: break-all;
+
+    .entryTooltip {
+        visibility: hidden;
+        background-color: #fff;
+        padding: 10px;
+        opacity: 0;
+        z-index: 1;
+        transition: opacity 0.5s ease;
+        position: absolute;
+    }
+
+    .entryText {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;  
+      
+        &:hover + .entryTooltip {
+            visibility: visible;
+            transition: opacity 0.5s ease;
+            opacity: 1;
+        }
+    }
+}

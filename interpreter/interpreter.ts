@@ -4,7 +4,7 @@ import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, Do
 import { Operator } from './ast/operator'
 import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, FunctionDeclStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
 import { CodeExecuter } from './code-executer'
-import { Environment } from './environment'
+import { Environment, SerializedEnvironment } from './environment'
 import { Class, ObjectClass, StringClass, UserClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
 import { BoolInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, ValueRef, WrappedFunctionInstance } from './object-model/instance'
 import { MagicMethod } from './object-model/magic-method'
@@ -14,8 +14,11 @@ import { GiflangInput, GiflangPrint, InputFunction, PrintFunction } from './obje
 import { NumberClass } from './object-model/std/number-class'
 import { NumberInstance } from './object-model/std/number-instance'
 
+export type CallStack = string[]
+
 export type NextStepFunction =
-  (locator: JisonLocator) => Promise<void>
+  (locator: JisonLocator,
+    callStack: CallStack, environment: SerializedEnvironment) => Promise<void>
 
 export interface InterpreterSetup {
   onNextStep: NextStepFunction,
@@ -34,11 +37,11 @@ export class Interpreter
   public callStack: string[] = []
   public locator: JisonLocator =
     { first_column: 0, first_line: 0, last_column: 0, last_line: 0 }
-  public waitForNextStep = async () => { return }
+  public waitForNextStep = async (locator: JisonLocator) => { return }
 
   constructor(readonly setup: InterpreterSetup, isDebugMode: boolean = false) {
     this.globals = new Environment(null)
-    this.environment = this.globals
+    this.environment = new Environment(this.globals)
     this.globals.getRef('PRINT').set(
       new WrappedFunctionInstance(
         WrappedFunctionClass.get(),
@@ -51,8 +54,9 @@ export class Interpreter
     this.globals.getRef('FALSE').set(BoolInstance.getFalse())
 
     if (isDebugMode) {
-      this.waitForNextStep = async () => {
-        await setup.onNextStep(this.locator)
+      this.waitForNextStep = async (locator: JisonLocator) => {
+        await setup.onNextStep(
+          locator, this.callStack, await this.environment.flatten(this))
       }
     }
   }
@@ -99,9 +103,9 @@ export class Interpreter
     return NoneInstance.getInstance()
   }
   async visitAssignmentValueExpr(expr: AssignmentValueExpr): Promise<Instance> {
-    await this.waitForNextStep()
     const l = await this.evaluateRef(expr.lhs)
     const r = await this.evaluate(expr.rhs)
+    await this.waitForNextStep(expr.locator)
     l.set(r)
     return r
   }
@@ -132,9 +136,9 @@ export class Interpreter
     return (boolRes.value) ? BoolInstance.getFalse() : BoolInstance.getTrue()
   }
   async visitBinaryValueExpr(expr: BinaryValueExpr): Promise<Instance> {
-    await this.waitForNextStep()
     const l = await this.evaluate(expr.left)
     const r = await this.evaluate(expr.right)
+    await this.waitForNextStep(expr.locator)
 
     switch (expr.operator) {
       case Operator.LT:
@@ -184,11 +188,11 @@ export class Interpreter
   }
 
   async visitCallValueExpr(expr: CallValueExpr): Promise<Instance> {
-    await this.waitForNextStep()
     const args = []
     for (const arg of expr.args) {
       args.push(await this.evaluate(arg))
     }
+    await this.waitForNextStep(expr.locator)
     return (await this.evaluate(expr.callee))
       .callMagicMethod(MagicMethod.__call__, args, this)
   }
@@ -295,19 +299,22 @@ export class Interpreter
     return new NormalCompletion()
   }
   async visitCompletionStmt(stmt: CompletionStmt): Promise<Completion> {
+    let retVal: Completion = new NormalCompletion()
     if (stmt.completionType === CompletionType.RETURN) {
       const value =
         stmt.right !== null
           ? await this.evaluate(stmt.right)
           : NoneInstance.getInstance()
-      return new ReturnCompletion(value)
+      retVal = new ReturnCompletion(value)
     } else if (stmt.completionType === CompletionType.BREAK) {
-      return new BreakCompletion()
+      retVal = new BreakCompletion()
     } else if (stmt.completionType === CompletionType.CONTINUE) {
-      return new ContinueCompletion()
+      retVal = new ContinueCompletion()
     } else {
-      return new NormalCompletion()
+      retVal = new NormalCompletion()
     }
+    await this.waitForNextStep(stmt.locator)
+    return retVal
   }
   async visitProgramStmt(stmt: ProgramStmt): Promise<Completion> {
     /* TODO: Hoisting? i.e. separate fncs, classes, stmts. */

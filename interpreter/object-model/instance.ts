@@ -73,7 +73,7 @@ export class Instance {
   }
 
   // Calls magic method and binds 'this'.
-  callMagicMethod(
+  async callMagicMethod(
     functionName: MagicMethod,
     args: Instance[],
     interpreter: CodeExecuter
@@ -92,7 +92,7 @@ export class Instance {
 
         interpreter.callStack.push(
           `${descriptiveName} called at line ${interpreter.locator.first_line}`)
-        const retValue = method.bind(this).call(interpreter, args)
+        const retValue = await method.bind(this).call(interpreter, args)
         interpreter.callStack.pop()
         return retValue
       } else {

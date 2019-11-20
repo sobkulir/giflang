@@ -27,6 +27,8 @@ const getInitialState = (): State => (
       runState: RunState.NOT_RUNNING,
       output: [],
       locator: createDefaultLocator(),
+      callStack: [],
+      environment: [],
       commitedInput: [],
       inputBuffer: new InputBuffer<string>([]),
       worker: null,

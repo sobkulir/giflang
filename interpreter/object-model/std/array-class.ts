@@ -55,7 +55,8 @@ export class ArrayClass extends Class {
   ): Promise<StringInstance> {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(ArrayInstance)
-    const stringified = (await Stringify(interpreter, self.values)).join(', ')
+    const stringified =
+      (await Stringify(interpreter, ...self.values)).join(', ')
     return new StringInstance(StringClass.get(), `[${stringified}]`)
   }
 
