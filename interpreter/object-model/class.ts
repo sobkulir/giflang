@@ -344,16 +344,13 @@ export class BoolClass extends Class {
     args: Instance[]
   ): Promise<StringInstance> {
     CheckArityEq(args, 1)
-    const self = args[0]
+    const self = args[0].castOrThrow(BoolInstance)
     let str = ''
     if (self === BoolInstance.getTrue()) {
       str = 'TRUE'
     }
     else if (self === BoolInstance.getFalse()) {
       str = 'FALSE'
-    }
-    else {
-      throw new Error('TODO: __str__ expected bool.')
     }
     return new StringInstance(StringClass.get(), str)
   }

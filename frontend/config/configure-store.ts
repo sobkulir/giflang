@@ -32,6 +32,7 @@ const getInitialState = (): State => (
       commitedInput: [],
       inputBuffer: new InputBuffer<string>([]),
       worker: null,
+      errorMsg: '',
       resolveNextStep: () => { return },
     },
     ide: {

@@ -7,7 +7,7 @@ export interface GiflangWorker {
 }
 
 export interface GiflangSetup extends InterpreterSetup {
-  onFinish: (error?: string) => void,
+  onFinish: (error: string) => void,
 }
 
 class Giflang implements GiflangWorker {
@@ -19,12 +19,12 @@ class Giflang implements GiflangWorker {
     try {
       const rootNode = ParseGiflang(code)
       await this.interpreter.visitProgramStmt(rootNode)
-      this.setup.onFinish()
+      this.setup.onFinish('')
     } catch (e) {
-      console.log(e)
-      this.setup.onFinish('Error')
-    } finally {
-      console.log(this.interpreter.callStack)
+      const exceptionMsg = (e as Error).toString()
+      const callstackMsg =
+        `Callstack:\n${this.interpreter.callStack.slice().reverse().toString()}`
+      this.setup.onFinish(`${exceptionMsg}\n${callstackMsg}`)
     }
   }
 }

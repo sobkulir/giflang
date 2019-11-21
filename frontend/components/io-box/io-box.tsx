@@ -11,7 +11,8 @@ import { Output } from './output'
 interface IOBoxProps {
   output: Text,
   signToGifMap: SignToGifMap,
-  letterSize: LetterSize
+  letterSize: LetterSize,
+  errorMsg: string,
 }
 
 interface IOCardProps {
@@ -41,6 +42,7 @@ class IOBox extends React.Component<IOBoxProps> {
             output={this.props.output}
             letterSize={this.factoredLetterSize}
             signToGifMap={this.props.signToGifMap}
+            errorMsg={this.props.errorMsg}
           />
         </IOCard>
         <IOCard title={'Input'}>
@@ -56,6 +58,7 @@ class IOBox extends React.Component<IOBoxProps> {
 export default connect(
   (state: State) => ({
     output: state.execution.output,
+    errorMsg: state.execution.errorMsg,
     signToGifMap: state.ide.signToGifMap,
     letterSize: state.ide.letterSize
   }))(IOBox)

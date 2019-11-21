@@ -22,7 +22,7 @@ class Menu extends React.Component<MenuProps, {}> {
     this.props.startExecution(/*debugMode=*/true)
   }
   stopExecution = (_: any) => {
-    this.props.finishExecution()
+    this.props.finishExecution('')
   }
   saveCode = (_: any) => {
     this.props.saveCode()

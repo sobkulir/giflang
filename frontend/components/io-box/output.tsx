@@ -8,6 +8,7 @@ interface OutputProps {
   output: Text
   letterSize: LetterSize
   signToGifMap: SignToGifMap
+  errorMsg: string
 }
 
 export const Output: React.SFC<OutputProps> = (props) =>
@@ -18,6 +19,9 @@ export const Output: React.SFC<OutputProps> = (props) =>
         text={props.output}
         signToGifMap={props.signToGifMap}
       />
+      <div className={styles.errorMsg}>
+        {props.errorMsg}
+      </div>
     </div>
   )
 

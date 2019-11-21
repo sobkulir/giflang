@@ -28,6 +28,7 @@ export interface ExecutionState {
   environment: SerializedEnvironment
   inputBuffer: InputBuffer<string>
   commitedInput: Text
+  errorMsg: string
   worker: Worker | null
   resolveNextStep: () => void
 }

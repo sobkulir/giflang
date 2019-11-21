@@ -33,10 +33,11 @@ export const appendToOutput =
   })
 
 export const finishExecution =
-  (): MyAction<void> => ({
+  (errorMsg: string): MyAction<string> => ({
     type: 'Execution finished',
     reducer: produce((state: State) => {
       state.execution.runState = RunState.NOT_RUNNING
+      state.execution.errorMsg = errorMsg
       state.execution.worker!.terminate()
       state.execution.worker = null
     })
@@ -71,8 +72,8 @@ export const giflangSetup: GiflangSetup = {
       return storeInstance.getState().execution.inputBuffer.popFront()
     },
   onFinish:
-    (_err: string | undefined) =>
-      { storeInstance.dispatch(finishExecution())},
+    (errorMsg: string) =>
+      { storeInstance.dispatch(finishExecution(errorMsg))},
   onNextStep:
     (locator: JisonLocator,
       callStack: CallStack, environment: SerializedEnvironment) => {
@@ -118,6 +119,7 @@ export const startExecution =
       execution.output = []
       execution.commitedInput = []
       execution.inputBuffer = new InputBuffer<string>([])
+      execution.errorMsg = ''
       state.textAreaMap.executionInput.text = createEmptyText()
       state.textAreaMap.executionInput.cursorPosition = {row: 0, col: 0}
       StartExecution(
