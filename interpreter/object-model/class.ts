@@ -303,7 +303,7 @@ export class NoneClass extends Class {
     CheckArityEq(args, 1)
     return new StringInstance(
       StringClass.get(),
-      'None'
+      'NONE'
     )
   }
 
@@ -347,10 +347,10 @@ export class BoolClass extends Class {
     const self = args[0]
     let str = ''
     if (self === BoolInstance.getTrue()) {
-      str = 'True'
+      str = 'TRUE'
     }
     else if (self === BoolInstance.getFalse()) {
-      str = 'False'
+      str = 'FALSE'
     }
     else {
       throw new Error('TODO: __str__ expected bool.')
