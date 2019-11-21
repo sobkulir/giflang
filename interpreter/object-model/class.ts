@@ -3,13 +3,14 @@ import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
 import { BoolInstance, Instance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
 import { MagicMethod } from './magic-method'
+import { Stringify } from './std/functions'
 import { NumberInstance } from './std/number-instance'
 
 export function CheckArityEq(args: Instance[], n: number) {
   // TODO: Add fcn name.
   if (args.length !== n) {
     throw Error(
-      `TODO: Wrong number of operands, expected ${n} got ${args.length}.`)
+      `Wrong number of operands, expected ${n} got ${args.length}.`)
   }
 }
 
@@ -18,7 +19,7 @@ export function CheckArityGe(args: Instance[], n: number) {
   if (args.length < n) {
     throw Error(
       // tslint:disable-next-line:max-line-length
-      `TODO: Wrong number of operands, expected at least ${n} got ${args.length}.`)
+      `Wrong number of operands, expected at least ${n} got ${args.length}.`)
   }
 }
 
@@ -35,7 +36,7 @@ export abstract class Class extends Instance {
   // Returns true if users can derive from given class.
   abstract canUserDeriveFrom(): boolean
   createBlankUserInstance(klass: Class): Instance {
-    throw new Error(`${this.name} class instance cannot be user-instantiated.`)
+    throw new Error(`${klass.name} class instance cannot be user-instantiated.`)
   }
 
   getInBases(name: string): Instance | null {
@@ -95,7 +96,8 @@ export class MetaClass extends Class {
         MagicMethod.__init__, args.slice(1), interpreter)
       return instance
     } else {
-      throw new Error('TODO: Cannot be instantiated.')
+      throw new Error(
+        `${Stringify(interpreter, args[0])} cannot be instantiated.`)
     }
   }
 
@@ -443,7 +445,7 @@ export class StringClass extends Class {
         self.value[key.value]
       )
     } else {
-      throw new Error('TODO: Index out of range.')
+      throw new Error(`Index ${key.value} out of range.`)
     }
   }
 
@@ -527,7 +529,7 @@ export class UserClass extends Class {
   }
   createBlankUserInstance(klass: Class): Instance {
     if (this.base === null) {
-      throw new Error('TODO: Internal error, user derived class has base null.')
+      throw new Error('Internal error, user derived class has base null.')
     }
     return this.base.createBlankUserInstance(klass)
   }

@@ -13,6 +13,7 @@ import { ArrayInstance } from './object-model/std/array-instance'
 import { GiflangInput, GiflangPrint, InputFunction, PrintFunction } from './object-model/std/functions'
 import { NumberClass } from './object-model/std/number-class'
 import { NumberInstance } from './object-model/std/number-instance'
+import { RuntimeError } from './runtime-error'
 
 export type CallStack = string[]
 
@@ -34,10 +35,10 @@ export class Interpreter
   CodeExecuter {
   private readonly globals: Environment
   private environment: Environment
-  public callStack: string[] = []
+  public callStack: string[] = ['main']
   public locator: JisonLocator =
     { first_column: 0, first_line: 0, last_column: 0, last_line: 0 }
-  public waitForNextStep = async (locator: JisonLocator) => { return }
+  public waitForNextStep = async (_locator: JisonLocator) => { return }
 
   constructor(readonly setup: InterpreterSetup, isDebugMode: boolean = false) {
     this.globals = new Environment(null)
@@ -318,8 +319,15 @@ export class Interpreter
   }
   async visitProgramStmt(stmt: ProgramStmt): Promise<Completion> {
     /* TODO: Hoisting? i.e. separate fncs, classes, stmts. */
-    for (const s of stmt.body) {
-      await this.execute(s)
+    try {
+      for (const s of stmt.body) {
+        await this.execute(s)
+      }
+    } catch (e) {
+      const exceptionMsg = (e as Error).message
+      const callstackMsg =
+        `Callstack:\n${this.callStack.slice().reverse().join('\n')}`
+      throw new RuntimeError(this.locator, `${exceptionMsg}\n${callstackMsg}`)
     }
     return new NormalCompletion()
   }

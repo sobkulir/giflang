@@ -29,7 +29,7 @@ export class ArrayClass extends Class {
     if (key.value >= 0 && key.value < self.values.length) {
       return self.values[key.value]
     } else {
-      throw new Error('TODO: Index out of range.')
+      throw new Error(`Index ${key.value} out of range.`)
     }
   }
 
@@ -45,7 +45,7 @@ export class ArrayClass extends Class {
       self.values[key.value] = data
       return data
     } else {
-      throw new Error('TODO: Assignment index out of range.')
+      throw new Error(`Assignment index ${key.value} out of range.`)
     }
   }
 
@@ -126,9 +126,9 @@ export class ArrayClass extends Class {
         [MagicMethod.__setitem__, ArrayClass.__setitem__],
         [MagicMethod.__bool__, ArrayClass.__bool__],
         [MagicMethod.__add__, ArrayClass.__add__],
-        ['length', ArrayClass._length_],
-        ['push', ArrayClass._push_],
-        ['pop', ArrayClass._pop_],
+        ['LENGTH', ArrayClass._length_],
+        ['PUSH', ArrayClass._push_],
+        ['POP', ArrayClass._pop_],
       ],
       WrappedFunctionClass.get()
     )

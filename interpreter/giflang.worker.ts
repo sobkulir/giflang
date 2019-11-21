@@ -21,10 +21,7 @@ class Giflang implements GiflangWorker {
       await this.interpreter.visitProgramStmt(rootNode)
       this.setup.onFinish('')
     } catch (e) {
-      const exceptionMsg = (e as Error).toString()
-      const callstackMsg =
-        `Callstack:\n${this.interpreter.callStack.slice().reverse().toString()}`
-      this.setup.onFinish(`${exceptionMsg}\n${callstackMsg}`)
+      this.setup.onFinish(`${e.toString()}`)
     }
   }
 }

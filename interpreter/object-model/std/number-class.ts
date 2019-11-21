@@ -75,11 +75,11 @@ export class NumberClass extends Class {
         [MagicMethod.__sub__, NumberClass.binaryOpNumber((x, y) => x - y)],
         [MagicMethod.__mul__, NumberClass.binaryOpNumber((x, y) => x * y)],
         [MagicMethod.__div__, NumberClass.binaryOpNumber((x, y) => {
-          if (y === 0) throw Error('TODO: Division by zero')
+          if (y === 0) throw Error('Division by zero')
           else return x / y
         })],
         [MagicMethod.__mod__, NumberClass.binaryOpNumber((x, y) => {
-          if (y === 0) throw Error('TODO: Modulo by zero')
+          if (y === 0) throw Error('Modulo by zero')
           else return x % y
         })],
         [MagicMethod.__lt__, NumberClass.binaryOpBool((x, y) => x < y)],

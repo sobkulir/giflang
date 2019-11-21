@@ -28,7 +28,7 @@ export class Environment {
       return this.enclosing.getRecursive(name)
     }
 
-    throw new Error('TODO: Unknown variable accessed')
+    throw new Error(`Unknown variable ${name} accessed`)
   }
 
   private set(name: string, value: Instance): void {

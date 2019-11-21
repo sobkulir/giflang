@@ -33,7 +33,7 @@ export class Instance {
   }
 
   getOrThrow(name: string): Instance {
-    if (this.klass == null) throw Error('Internal -- klass == null')
+    if (this.klass == null) throw Error('Internal error: klass === null')
 
     let value: Instance | null = null
     if (this.fields.has(name)) {
@@ -49,7 +49,7 @@ export class Instance {
     if (value) {
       return value
     } else {
-      throw new Error(`TODO: Instance does not have ${name}`)
+      throw new Error(`Instance does not have a property ${name}.`)
     }
   }
 
@@ -68,7 +68,7 @@ export class Instance {
     if (this instanceof TConstructor) {
       return this as T
     } else {
-      throw new Error('TODO: Invalid cast')
+      throw new Error('Invalid cast')
     }
   }
 
@@ -96,10 +96,10 @@ export class Instance {
         interpreter.callStack.pop()
         return retValue
       } else {
-        throw new Error(`TODO: ToString(${functionName}) is not callable.`)
+        throw new Error(`${functionName} is not callable.`)
       }
     } else {
-      throw new Error(`TODO: ${functionName} not defined.`)
+      throw new Error(`${functionName} not defined.`)
     }
   }
 }

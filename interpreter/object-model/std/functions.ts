@@ -31,7 +31,7 @@ export function GiflangInput(input: InputFunction)
     : Promise<StringInstance> => {
     const line = await input()
     if (!regexp.test(line)) {
-      throw new Error('TODO: Input can only contain uppercase \
+      throw new Error('Input can only contain uppercase \
 letters, digits and spaces "^[A-Z0-9 ]*$"')
     }
     return new StringInstance(StringClass.get(), line)
