@@ -3,6 +3,18 @@ import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRigh
 import { MyAction, State } from '../types/redux'
 import { createEmptyText, PositionPixels, ScrollableType, Sign, TextAreaType } from '../types/text-area'
 
+export const setText =
+  (areaType: TextAreaType, text: string)
+    : MyAction<string> => ({
+      type: 'Set cursor position',
+      payload: text,
+      reducer: produce((state: State) => {
+        state.textAreaMap[areaType].text = text.split('\n').map((line) =>
+          new LetterRowImp(line.split(';').filter((x) => (x)).map((token) =>
+            new LetterImp(Sign[token as any] as unknown as Sign))))
+      })
+    })
+
 export const setCursorPosition =
   (areaType: TextAreaType, positionPixels: PositionPixels)
     : MyAction<PositionPixels> => ({

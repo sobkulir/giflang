@@ -47,6 +47,7 @@
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-redux": "^7.1.1",
+    "react-top-loading-bar": "^1.2.0",
     "redux": "^4.0.4"
   }
 }

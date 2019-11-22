@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { finishExecution, startExecution } from '../actions/execution'
 import { saveCode } from '../actions/storage'
 import { RunState } from '../types/execution'
-import { State } from '../types/redux'
+import { State, ThunkActionDispatch } from '../types/redux'
 import * as styles from './menu.scss'
 
 interface MenuProps {
@@ -11,7 +11,7 @@ interface MenuProps {
   resolveNextStep: () => void,
   startExecution: typeof startExecution,
   finishExecution: typeof finishExecution
-  saveCode: typeof saveCode,
+  saveCode: ThunkActionDispatch<typeof saveCode>,
 }
 
 class Menu extends React.Component<MenuProps, {}> {

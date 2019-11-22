@@ -21,6 +21,8 @@ function SingleCharToSign(char: string): Sign {
     return Sign.SPACE
   } else if (char === '_') {
     return Sign._
+  } else if (char === '.') {
+    return Sign.DOT
   } else {
     throw new Error(`Cannot convert ${char} to Sign.`)
   }
@@ -44,7 +46,7 @@ const signCharMap: Map<Sign, string> = new Map([
   [Sign.D0, '0'], [Sign.D1, '1'], [Sign.D2, '2'], [Sign.D3, '3'],
   [Sign.D4, '4'], [Sign.D5, '5'], [Sign.D6, '6'], [Sign.D7, '7'],
   [Sign.D8, '8'], [Sign.D9, '9'],
-  [Sign.SPACE, ' '], [Sign._, '_'],
+  [Sign.SPACE, ' '], [Sign._, '_']
 ])
 
 export function SignsToChars(text: Text): string {
@@ -52,4 +54,3 @@ export function SignsToChars(text: Text): string {
     (row) => row.letters.map((letter) => signCharMap.get(letter.sign))
       .join('')).join('\n')
 }
-

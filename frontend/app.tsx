@@ -17,7 +17,7 @@ export const storeInstance = configureStore()
 ReactDOM.render(
     <Router history={History}>
         <Provider store={storeInstance}>
-            <Route path="/:codeId([a-zA-Z0-9]*)">
+            <Route path="/:codeId?" exact={true}>
                 <Layout />
             </Route>
         </Provider>
