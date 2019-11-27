@@ -370,7 +370,7 @@ RCURLY;
 
 P;R;I;N;T; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
 `,
-          output: '[[A, 3], [True, False]]\n',
+          output: '[[A, 3], [TRUE, FALSE]]\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -481,15 +481,15 @@ C; LPAR; RPAR; SEMICOLON;
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
-          name: 'Accessing __call__ works',
+          name: 'Accessing __CALL__ works',
           source: `
 FUNCTION; F; LPAR; X; RPAR;
 LCURLY;
   P;R;I;N;T; LPAR; X; RPAR; SEMICOLON;
 RCURLY;
 
-F; PROP; _;_;c;a;l;l;_;_; LPAR; D1; RPAR; SEMICOLON;
-F; PROP; _;_;c;a;l;l;_;_; PROP; _;_;c;a;l;l;_;_; LPAR; D1; RPAR; SEMICOLON;
+F; PROP; _;_;C;A;L;L;_;_; LPAR; D1; RPAR; SEMICOLON;
+F; PROP; _;_;C;A;L;L;_;_; PROP; _;_;C;A;L;L;_;_; LPAR; D1; RPAR; SEMICOLON;
 `,
           output: '1\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -816,14 +816,14 @@ P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
           source: `
 CLASS; C;
 LCURLY;
-  FUNCTION; _;_;I;N;I;T;_;_; LPAR; s;e;l;f; COMMA; x; RPAR;
+  FUNCTION; _;_;I;N;I;T;_;_; LPAR; S;E;L;F; COMMA; X; RPAR;
   LCURLY;
-    s;e;l;f; PROP; x; ASSIGN; x; SEMICOLON;
+    S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON;
   RCURLY;
 RCURLY;
 
-a; ASSIGN; C; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
+A; ASSIGN; C; LPAR; D1; RPAR; SEMICOLON;
+P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -833,15 +833,15 @@ P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
           source: `
 CLASS; C;
 LCURLY;
-  FUNCTION; m; LPAR; s;e;l;f; COMMA; x; RPAR;
+  FUNCTION; M; LPAR; S;E;L;F; COMMA; X; RPAR;
   LCURLY;
-    s;e;l;f; PROP; x; ASSIGN; D1; SEMICOLON;
+    S;E;L;F; PROP; X; ASSIGN; D1; SEMICOLON;
   RCURLY;
 RCURLY;
 
-a; ASSIGN; C; LPAR; RPAR; SEMICOLON;
-a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
+A; ASSIGN; C; LPAR; RPAR; SEMICOLON;
+A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
+P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -853,15 +853,15 @@ CLASS; C;
 LCURLY;
 RCURLY;
 
-FUNCTION; m; LPAR; s;e;l;f; COMMA; x; RPAR;
+FUNCTION; M; LPAR; S;E;L;F; COMMA; X; RPAR;
 LCURLY;
-  s;e;l;f; PROP; x; ASSIGN; x; SEMICOLON; 
+  S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON; 
 RCURLY;
 
-a; ASSIGN; C; LPAR; RPAR; SEMICOLON;
-a; PROP; m; ASSIGN; m; SEMICOLON;
-a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
+A; ASSIGN; C; LPAR; RPAR; SEMICOLON;
+A; PROP; M; ASSIGN; M; SEMICOLON;
+A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
+P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -871,21 +871,21 @@ P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
           source: `
 CLASS; C;
 LCURLY;
-  FUNCTION; _;_;I;N;I;T;_;_; LPAR; s;e;l;f; COMMA; x; RPAR;
+  FUNCTION; _;_;I;N;I;T;_;_; LPAR; S;E;L;F; COMMA; X; RPAR;
   LCURLY;
-    s;e;l;f; PROP; x; ASSIGN; x; SEMICOLON;
+    S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON;
   RCURLY;
 
-  FUNCTION; _;_;s;t;r;_;_; LPAR; s;e;l;f; RPAR;
+  FUNCTION; _;_;S;T;R;_;_; LPAR; S;E;L;F; RPAR;
   LCURLY;
-    RETURN; s;e;l;f; PROP; x; SEMICOLON;
+    RETURN; S;E;L;F; PROP; X; SEMICOLON;
   RCURLY;
 RCURLY;
 
-a; ASSIGN; C; LPAR; QUOTE; f;o;o; QUOTE; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; a; RPAR; SEMICOLON;
+A; ASSIGN; C; LPAR; QUOTE; F;O;O; QUOTE; RPAR; SEMICOLON;
+P;R;I;N;T; LPAR; A; RPAR; SEMICOLON;
 `,
-          output: 'foo\n',
+          output: 'FOO\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -893,17 +893,17 @@ P;R;I;N;T; LPAR; a; RPAR; SEMICOLON;
           source: `
 CLASS; C;
 LCURLY;
-  FUNCTION; _;_;c;a;l;l;_;_; LPAR; s;e;l;f; COMMA; x; RPAR;
+  FUNCTION; _;_;C;A;L;L;_;_; LPAR; S;E;L;F; COMMA; X; RPAR;
   LCURLY;
-    s;e;l;f; PROP; x; ASSIGN; x; SEMICOLON;
+    S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON;
   RCURLY;
 RCURLY;
 
-a; ASSIGN; C; LPAR; RPAR; SEMICOLON;
-a; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
-a; PROP; _;_;c;a;l;l;_;_; LPAR; D2; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
+A; ASSIGN; C; LPAR; RPAR; SEMICOLON;
+A; LPAR; D1; RPAR; SEMICOLON;
+P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
+A; PROP; _;_;C;A;L;L;_;_; LPAR; D2; RPAR; SEMICOLON;
+P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
 `,
           output: '1\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -913,9 +913,9 @@ P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
           source: `
 CLASS; C;
 LCURLY;
-  FUNCTION; m; LPAR; s;e;l;f; COMMA; x; RPAR;
+  FUNCTION; M; LPAR; S;E;L;F; COMMA; X; RPAR;
   LCURLY;
-    s;e;l;f; PROP; x; ASSIGN; x; SEMICOLON;
+    S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON;
   RCURLY;
 RCURLY;
 
@@ -923,9 +923,9 @@ CLASS; D; LPAR; C; RPAR;
 LCURLY;
 RCURLY;
 
-a; ASSIGN; D; LPAR; RPAR; SEMICOLON;
-a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
+A; ASSIGN; D; LPAR; RPAR; SEMICOLON;
+A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
+P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -935,25 +935,25 @@ P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
           source: `
 CLASS; C;
 LCURLY;
-  FUNCTION; m; LPAR; s;e;l;f; COMMA; x; RPAR;
+  FUNCTION; M; LPAR; S;E;L;F; COMMA; X; RPAR;
   LCURLY;
-    s;e;l;f; PROP; x; ASSIGN; x; SEMICOLON;
+    S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON;
   RCURLY;
 RCURLY;
 
 CLASS; D; LPAR; C; RPAR;
 LCURLY;
-  FUNCTION; m; LPAR; s;e;l;f; COMMA; x; RPAR;
+  FUNCTION; M; LPAR; S;E;L;F; COMMA; X; RPAR;
   LCURLY;
-    s;e;l;f; PROP; y; ASSIGN; x; SEMICOLON;
-    s;u;p;e;r; PROP; m; LPAR; s;e;l;f; COMMA; x; RPAR; SEMICOLON;
+    S;E;L;F; PROP; Y; ASSIGN; X; SEMICOLON;
+    S;U;P;E;R; PROP; M; LPAR; S;E;L;F; COMMA; X; RPAR; SEMICOLON;
   RCURLY;
 RCURLY;
 
-a; ASSIGN; D; LPAR; RPAR; SEMICOLON;
-a; PROP; m; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; a; PROP; x; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; a; PROP; y; RPAR; SEMICOLON;
+A; ASSIGN; D; LPAR; RPAR; SEMICOLON;
+A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
+P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
+P;R;I;N;T; LPAR; A; PROP; Y; RPAR; SEMICOLON;
 `,
           output: '1\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT

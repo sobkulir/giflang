@@ -512,7 +512,7 @@ export class UserClass extends Class {
     super(MetaClass.get(), name, base)
 
     const superEnv = new Environment(env)
-    superEnv.shallowSet('super', base)
+    superEnv.shallowSet('SUPER', base)
 
     for (const m of methods) {
       this.fields.set(m.name,
