@@ -37,11 +37,11 @@ class Layout extends React.PureComponent<LayoutProps> {
     switch (this.props.loadingBarState) {
       case LoadingBarState.START:
         this.loadingBarRef.current!.continuousStart()
-        setLoadingBarState(LoadingBarState.IN_PROGRESS)
+        this.props.setLoadingBarState(LoadingBarState.IN_PROGRESS)
         break
       case LoadingBarState.COMPLETE:
         this.loadingBarRef.current!.complete()
-        setLoadingBarState(LoadingBarState.IDLE)
+        this.props.setLoadingBarState(LoadingBarState.IDLE)
     }
   }
 

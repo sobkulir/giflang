@@ -139,7 +139,6 @@ export class Interpreter
   async visitBinaryValueExpr(expr: BinaryValueExpr): Promise<Instance> {
     const l = await this.evaluate(expr.left)
     const r = await this.evaluate(expr.right)
-    await this.waitForNextStep(expr.locator)
 
     switch (expr.operator) {
       case Operator.LT:

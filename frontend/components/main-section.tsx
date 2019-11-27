@@ -2,6 +2,7 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 import { State } from '../types/redux'
 import { LoadState } from '../types/storage'
+import * as styles from './main-section.scss'
 import MainTextArea from './text-area/main-text-area'
 
 interface MainSectionProps {
@@ -17,7 +18,7 @@ const MainSection: React.SFC<MainSectionProps> = (props) => {
   }
 
   return (
-    <div style={{ display: 'flex', flex: 1 }}>
+    <div className={styles.wrapper}>
       {mainArea}
     </div>
   )

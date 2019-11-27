@@ -12,11 +12,13 @@ import { setText } from './text-area'
 export const loadCode =
   (codeId: string): MyThunkAction<void> =>
     async (dispatch): Promise<void> => {
-      dispatch(setLoadingBarState(LoadingBarState.START))
       if (codeId === undefined) {
         dispatch(setLoadState(LoadState.LOADED))
         return
       }
+
+      dispatch(setLoadingBarState(LoadingBarState.START))
+
       const doc =
         await firebase.firestore().collection('programs').doc(codeId).get()
       const res = doc.data()
