@@ -1,5 +1,5 @@
 import { CodeExecuter } from '../../code-executer'
-import { StringClass } from '../class'
+import { CheckArityEq, StringClass } from '../class'
 import { Instance, NoneInstance, StringInstance, TWrappedFunction } from '../instance'
 import { MagicMethod } from '../magic-method'
 
@@ -26,14 +26,9 @@ export function GiflangPrint(print: PrintFunction)
 
 export function GiflangInput(input: InputFunction)
   : TWrappedFunction {
-  const regexp = new RegExp('^[A-Z0-9 ]*$')
   return async (_interpreter: CodeExecuter, args: Instance[])
     : Promise<StringInstance> => {
-    const line = await input()
-    if (!regexp.test(line)) {
-      throw new Error('Input can only contain uppercase \
-letters, digits and spaces "^[A-Z0-9 ]*$"')
-    }
-    return new StringInstance(StringClass.get(), line)
+    CheckArityEq(args, 0)
+    return new StringInstance(StringClass.get(), await input())
   }
 }

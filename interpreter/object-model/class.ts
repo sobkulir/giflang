@@ -1,3 +1,4 @@
+import { Sign, signToCharMap } from '../ast/sign'
 import { FunctionDeclStmt } from '../ast/stmt'
 import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
@@ -305,7 +306,7 @@ export class NoneClass extends Class {
     CheckArityEq(args, 1)
     return new StringInstance(
       StringClass.get(),
-      'NONE'
+      signToCharMap.get(Sign.NONE) as string
     )
   }
 
@@ -349,10 +350,10 @@ export class BoolClass extends Class {
     const self = args[0].castOrThrow(BoolInstance)
     let str = ''
     if (self === BoolInstance.getTrue()) {
-      str = 'TRUE'
+      str = signToCharMap.get(Sign.TRUE) as string
     }
     else if (self === BoolInstance.getFalse()) {
-      str = 'FALSE'
+      str = signToCharMap.get(Sign.FALSE) as string
     }
     return new StringInstance(StringClass.get(), str)
   }

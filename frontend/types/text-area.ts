@@ -1,17 +1,5 @@
+import { Sign } from '../../interpreter/ast/sign'
 import { LetterRowImp } from '../lib/text-area'
-
-export enum Sign {
-  A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
-  _,
-  D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
-  LT, LE, EQ, NE, GE, GT,
-  PLUS, MINUS, MUL, DIV, MOD, DOT,
-  NOT, OR, AND, TRUE, FALSE, NONE, ASSIGN,
-  LPAR, RPAR, LBRA, RBRA, LCURLY, RCURLY,
-  IF, ELSE, WHILE, FOR,
-  CLASS, FUNCTION, RETURN, CONTINUE, BREAK,
-  SPACE, SEMICOLON, QUOTE, COMMA, PROP,
-}
 
 export interface Letter {
   id: string

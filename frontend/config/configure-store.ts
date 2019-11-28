@@ -1,12 +1,13 @@
 import { AnyAction, applyMiddleware, createStore } from 'redux'
 import thunk, { ThunkMiddleware } from 'redux-thunk'
+import { Sign } from '~/interpreter/ast/sign'
 import { InputBuffer } from '../lib/input-buffer'
 import { LetterImp, LetterRowImp } from '../lib/text-area'
 import { createDefaultLocator, RunState } from '../types/execution'
 import { LoadingBarState } from '../types/ide'
 import { MyAction, State } from '../types/redux'
 import { LoadState, SaveState } from '../types/storage'
-import { createEmptyText, ScrollableType, Sign } from '../types/text-area'
+import { createEmptyText, ScrollableType } from '../types/text-area'
 
 const getInitialState = (): State => (
   {
@@ -48,12 +49,14 @@ const getInitialState = (): State => (
               `/img/${key}.webp`
             ])
       ),
-      alphabet: [{ name: 'Comparisons', signs: [Sign.LT, Sign.LE, Sign.EQ, Sign.NE, Sign.GE, Sign.GT] },
-      { name: 'Arithmetics', signs: [Sign.PLUS, Sign.MINUS, Sign.MUL, Sign.DIV, Sign.MOD, Sign.DOT] },
-      { name: 'Booleans', signs: [Sign.TRUE, Sign.FALSE, Sign.AND, Sign.OR, Sign.NOT] },
-      { name: 'Variables', signs: [Sign.ASSIGN, Sign.NONE] },
-      { name: 'Flow', signs: [Sign.IF, Sign.ELSE, Sign.WHILE, Sign.FOR, Sign.BREAK, Sign.CONTINUE] },
-      { name: 'Classes and functions', signs: [Sign.CLASS, Sign.PROP, Sign.FUNCTION, Sign.RETURN] }
+      alphabet: [
+        { name: 'Auxletters', signs: [Sign.AUX0, Sign.AUX1, Sign.AUX2, Sign.AUX3, Sign.AUX4, Sign.AUX5, Sign.AUX6, Sign.AUX7, Sign.AUX8, Sign.AUX9] },
+        { name: 'Comparisons', signs: [Sign.LT, Sign.LE, Sign.EQ, Sign.NE, Sign.GE, Sign.GT] },
+        { name: 'Arithmetics', signs: [Sign.PLUS, Sign.MINUS, Sign.MUL, Sign.DIV, Sign.MOD, Sign.DOT] },
+        { name: 'Booleans', signs: [Sign.TRUE, Sign.FALSE, Sign.AND, Sign.OR, Sign.NOT] },
+        { name: 'Variables', signs: [Sign.ASSIGN, Sign.NONE] },
+        { name: 'Flow', signs: [Sign.IF, Sign.ELSE, Sign.WHILE, Sign.FOR, Sign.BREAK, Sign.CONTINUE] },
+        { name: 'Classes and functions', signs: [Sign.CLASS, Sign.PROP, Sign.FUNCTION, Sign.RETURN] }
       ],
       letterSize: { edgePx: 80, marginPx: 6 },
     },

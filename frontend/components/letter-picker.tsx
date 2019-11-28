@@ -2,10 +2,11 @@
 import Typography from '@material-ui/core/Typography'
 import React from 'react'
 import { connect } from 'react-redux'
+import { Sign } from '~/interpreter/ast/sign'
 import { addSignAfterCursor } from '../actions/text-area'
 import { AlphabetCategory, CategorizedAlphabet, LetterSize, SignToGifMap } from '../types/ide'
 import { State } from '../types/redux'
-import { Sign, TextAreaType } from '../types/text-area'
+import { TextAreaType } from '../types/text-area'
 import * as styles from './letter-picker.scss'
 
 interface LetterPickerProps {

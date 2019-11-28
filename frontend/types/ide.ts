@@ -1,4 +1,4 @@
-import { Sign } from './text-area'
+import { Sign } from '~/interpreter/ast/sign'
 
 export interface LetterSize {
   edgePx: number

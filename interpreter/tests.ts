@@ -44,10 +44,10 @@ async function testSingle(test: Test)
     }
   } else if (test.expected === ExpectedResult.PASS_PARSE) {
     // PASS_PARSE
-    if (!parseFailed) {
-      didPass = true
-    } else {
+    if (parseFailed) {
       didPass = false
+    } else {
+      didPass = true
     }
   } else {
     if (parseFailed) {
@@ -323,6 +323,29 @@ SPACE; SPACE; A; SPACE; ASSIGN; SPACE; D1; SPACE; SEMICOLON; SPACE;`,
           expected: ExpectedResult.PASS_PARSE
         }
       ]
+    },
+    {
+      name: 'Identifier names',
+      tests: [
+        {
+          name: 'Identifier cannot start with a digit',
+          source: `
+D1;A;L;F;A; SEMICOLON;`,
+          expected: ExpectedResult.FAIL_PARSE
+        },
+        {
+          name: 'Identifier can start with letter and contain alphanum',
+          source: `
+I;D1;A;L;F;A; SEMICOLON;`,
+          expected: ExpectedResult.PASS_PARSE
+        },
+        {
+          name: 'Identifier can contain auxletters as first char',
+          source: `
+AUX0;A;AUX1;L;F;A; SEMICOLON;`,
+          expected: ExpectedResult.PASS_PARSE
+        },
+      ]
     }
   ],
 }
@@ -330,6 +353,34 @@ SPACE; SPACE; A; SPACE; ASSIGN; SPACE; D1; SPACE; SEMICOLON; SPACE;`,
 const runtime = {
   name: 'Language',
   suites: [
+    {
+      name: 'Strings',
+      tests: [
+        {
+          name: 'String can contain auxletter',
+          source: `
+P;R;I;N;T;LPAR;QUOTE;AUX0;AUX1;QUOTE;RPAR;SEMICOLON;
+`,
+          output: 'αβ\n',
+          expected: ExpectedResult.MATCH_OUTPUT
+        },
+        {
+          name: 'String can contain any valid token (except QUOTE)',
+          source: `
+P;R;I;N;T;LPAR;QUOTE;LT;GT;ASSIGN;QUOTE;RPAR;SEMICOLON;
+`,
+          output: '<>≔\n',
+          expected: ExpectedResult.MATCH_OUTPUT
+        },
+        {
+          name: 'String cannot contain unknown token',
+          source: `
+P;R;I;N;T;LPAR;QUOTE;UNKNOWN;QUOTE;RPAR;SEMICOLON;
+`,
+          expected: ExpectedResult.FAIL_PARSE
+        }
+      ]
+    },
     {
       name: 'Functions',
       tests: [

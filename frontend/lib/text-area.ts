@@ -1,6 +1,7 @@
 import { immerable } from 'immer'
+import { Sign } from '~/interpreter/ast/sign'
 import { LetterSize } from '../types/ide'
-import { Letter, LetterRow, PositionPixels, PositionRowCol, Sign, Text } from '../types/text-area'
+import { Letter, LetterRow, PositionPixels, PositionRowCol, Text } from '../types/text-area'
 
 function CreateId(): string {
   // Source: https://stackoverflow.com/a/8084248

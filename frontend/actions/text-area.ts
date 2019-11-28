@@ -1,7 +1,8 @@
 import produce from 'immer'
+import { Sign } from '~/interpreter/ast/sign'
 import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRight, MoveCursorUp, PositionPixelsToRowCol, TrimPositionRowCol } from '../lib/text-area'
 import { MyAction, State } from '../types/redux'
-import { createEmptyText, PositionPixels, ScrollableType, Sign, TextAreaType } from '../types/text-area'
+import { createEmptyText, PositionPixels, ScrollableType, TextAreaType } from '../types/text-area'
 
 export const setText =
   (areaType: TextAreaType, text: string)

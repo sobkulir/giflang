@@ -61,17 +61,19 @@ DELIMITER                   ";"
                                 inc_token_counter(yylloc.last_line)
                                 this.begin('delimit')
                             }
-<string_literal>"SPACE"     { yytext = ' '; return delimit('LETTER') }
 "SEMICOLON"                 { return delimit('SEMICOLON') }
 "DOT"                       { return delimit('DOT') }
 "PROP"                      { return delimit('PROP') }
 "COMMA"                     { return delimit('COMMA') }
 "QUOTE"                     { this.begin('string_literal'); return delimit('QUOTE') }
 <string_literal>"QUOTE"     { this.popState(); return delimit('QUOTE') }
-<INITIAL,string_literal>D[0-9]
-                            { yytext = yytext.substr(1); return delimit('DIGIT') }
-<INITIAL,string_literal>[A-Z_]
-                            { return delimit('LETTER') }
+
+"D"[0-9]                    { yytext = yy.Sign.signToCharMap.get(yy.Sign.stringToSign(yytext)); return delimit('DIGIT') }
+"AUX"[0-9]                  { yytext = yy.Sign.signToCharMap.get(yy.Sign.stringToSign(yytext)); return delimit('AUXLETTER') }
+[A-Z_]                      { yytext = yy.Sign.signToCharMap.get(yy.Sign.stringToSign(yytext)); return delimit('LETTER') }
+
+<string_literal>[A-Z_0-9]+?(?={DELIMITER})
+                            { yytext = yy.Sign.signToCharMap.get(yy.Sign.stringToSign(yytext)); return delimit('LETTER') }
 
 <delimit>{DELIMITER}        { this.popState() }
 
@@ -97,6 +99,7 @@ var inc_token_counter = (curLine) => {
     ++token_counter
 };
 
+// Source: https://stackoverflow.com/questions/58891186/custom-location-tracking-in-jison-gho
 lexer.post_lex = function (token) {
     inc_token_counter(this.yylloc.last_line)
     
@@ -149,17 +152,19 @@ Primitives
     ;
 
 Identifier
-    : LETTER Alfanum            { $$ = $1 + $2 }
+    : LETTER Alphanum           { $$ = $1 + $2 }
+    | AUXLETTER Alphanum        { $$ = $1 + $2 }
     ;
 
-Alfanum
-    : AlfanumAtom Alfanum       { $$ = $1 + $2 }
+Alphanum
+    : AlphanumAtom Alphanum     { $$ = $1 + $2 }
     | %epsilon                  { $$ = '' }
     ;
 
-AlfanumAtom
+AlphanumAtom
     : LETTER                    { $$ = $1 }
     | DIGIT                     { $$ = $1 }
+    | AUXLETTER                 { $$ = $1 }
     ;
 
 UFloat
@@ -172,7 +177,7 @@ UInt
     ;
 
 String
-    : QUOTE Alfanum QUOTE       { $$ = $2 }
+    : QUOTE Alphanum QUOTE      { $$ = $2 }
     ;
 
 PrimaryComnon

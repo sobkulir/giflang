@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { addLineToInput } from '~/frontend/actions/execution'
 import { addSignAfterCursor, Direction, moveCursor, newlineAfterCursor, removeAfterCursor } from '~/frontend/actions/text-area'
-import { Sign, TextAreaType } from '~/frontend/types/text-area'
+import { TextAreaType } from '~/frontend/types/text-area'
+import { Sign } from '~/interpreter/ast/sign'
 
 interface HandleCommonCallbacks {
   addSignAfterCursor: typeof addSignAfterCursor
