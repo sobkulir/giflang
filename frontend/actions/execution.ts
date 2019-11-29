@@ -9,6 +9,7 @@ import { storeInstance } from '../app'
 import { CharsToSigns, SignsToChars, SignsToTokens } from '../lib/editor'
 import { InputBuffer } from '../lib/input-buffer'
 import { RunState } from '../types/execution'
+import { FocusedArea } from '../types/ide'
 import { MyAction, State } from '../types/redux'
 import { createEmptyText, ScrollableType } from '../types/text-area'
 
@@ -92,6 +93,7 @@ export const executionStarted =
       state.execution.runState = 
         (isDebugMode) ? RunState.DEBUG_RUNNING : RunState.RUNNING
       state.execution.worker = worker
+      state.ide.focusedArea = FocusedArea.EXECUTION_INPUT
     })
   })
 
