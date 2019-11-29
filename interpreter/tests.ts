@@ -1,3 +1,4 @@
+import { PrintToken, Sign, signToCharMap } from './ast/sign'
 import { ProgramStmt } from './ast/stmt'
 import { Interpreter } from './interpreter'
 import { ParseGiflang } from './parser'
@@ -359,7 +360,7 @@ const runtime = {
         {
           name: 'String can contain auxletter',
           source: `
-P;R;I;N;T;LPAR;QUOTE;AUX0;AUX1;QUOTE;RPAR;SEMICOLON;
+${PrintToken};LPAR;QUOTE;AUX0;AUX1;QUOTE;RPAR;SEMICOLON;
 `,
           output: 'αβ\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -367,7 +368,7 @@ P;R;I;N;T;LPAR;QUOTE;AUX0;AUX1;QUOTE;RPAR;SEMICOLON;
         {
           name: 'String can contain any valid token (except QUOTE)',
           source: `
-P;R;I;N;T;LPAR;QUOTE;LT;GT;ASSIGN;QUOTE;RPAR;SEMICOLON;
+${PrintToken};LPAR;QUOTE;LT;GT;ASSIGN;QUOTE;RPAR;SEMICOLON;
 `,
           output: '<>≔\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -375,7 +376,7 @@ P;R;I;N;T;LPAR;QUOTE;LT;GT;ASSIGN;QUOTE;RPAR;SEMICOLON;
         {
           name: 'String cannot contain unknown token',
           source: `
-P;R;I;N;T;LPAR;QUOTE;UNKNOWN;QUOTE;RPAR;SEMICOLON;
+${PrintToken};LPAR;QUOTE;UNKNOWN;QUOTE;RPAR;SEMICOLON;
 `,
           expected: ExpectedResult.FAIL_PARSE
         }
@@ -402,7 +403,7 @@ LCURLY;
     F;I;B; LPAR; P; MINUS; D2; RPAR; SEMICOLON;
 RCURLY;
 
-P;R;I;N;T; LPAR; F;I;B; LPAR; D1;D0; RPAR; RPAR; SEMICOLON;
+${PrintToken}; LPAR; F;I;B; LPAR; D1;D0; RPAR; RPAR; SEMICOLON;
 `,
           output: '55\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -419,9 +420,10 @@ LCURLY;
     RBRA; SEMICOLON;
 RCURLY;
 
-P;R;I;N;T; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
+${PrintToken}; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
 `,
-          output: '[[A, 3], [TRUE, FALSE]]\n',
+          // tslint:disable-next-line:max-line-length
+          output: `[[A, 3], [${signToCharMap.get(Sign.TRUE)}, ${signToCharMap.get(Sign.FALSE)}]]\n`,
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
@@ -436,7 +438,7 @@ LCURLY;
   RCURLY;
   G; LPAR; RPAR; SEMICOLON;
   G; LPAR; RPAR; SEMICOLON;
-  P;R;I;N;T; LPAR; X; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; X; RPAR; SEMICOLON;
 RCURLY;
 
 F; LPAR; RPAR; SEMICOLON;
@@ -456,7 +458,7 @@ LCURLY;
   X; ASSIGN; D0; SEMICOLON;
   G; LPAR; RPAR; SEMICOLON;
   G; LPAR; RPAR; SEMICOLON;
-  P;R;I;N;T; LPAR; X; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; X; RPAR; SEMICOLON;
 RCURLY;
 
 F; LPAR; RPAR; SEMICOLON;
@@ -470,7 +472,7 @@ F; LPAR; RPAR; SEMICOLON;
 FUNCTION; F; LPAR; RPAR;
 LCURLY;
   BREAK; SEMICOLON;
-  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
 RCURLY;
 
 F; LPAR; RPAR; SEMICOLON;
@@ -484,7 +486,7 @@ F; LPAR; RPAR; SEMICOLON;
 FUNCTION; F; LPAR; RPAR;
 LCURLY;
   CONTINUE; SEMICOLON;
-  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
 RCURLY;
 
 F; LPAR; RPAR; SEMICOLON;
@@ -505,7 +507,7 @@ LCURLY;
   RETURN; X; PLUS; D1; SEMICOLON;
 RCURLY;
 
-P;R;I;N;T; LPAR; F; LPAR; I;N;C; RPAR; RPAR; SEMICOLON;
+${PrintToken}; LPAR; F; LPAR; I;N;C; RPAR; RPAR; SEMICOLON;
 `,
           output: '2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -519,7 +521,7 @@ LCURLY;
   FUNCTION; C;O;U;N;T; LPAR; RPAR;
   LCURLY;
     I; ASSIGN; I; PLUS; D1; SEMICOLON;
-    P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+    ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
   RCURLY;
   RETURN; C;O;U;N;T; SEMICOLON;
 RCURLY;
@@ -536,7 +538,7 @@ C; LPAR; RPAR; SEMICOLON;
           source: `
 FUNCTION; F; LPAR; X; RPAR;
 LCURLY;
-  P;R;I;N;T; LPAR; X; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; X; RPAR; SEMICOLON;
 RCURLY;
 
 F; PROP; _;_;C;A;L;L;_;_; LPAR; D1; RPAR; SEMICOLON;
@@ -554,7 +556,7 @@ F; PROP; _;_;C;A;L;L;_;_; PROP; _;_;C;A;L;L;_;_; LPAR; D1; RPAR; SEMICOLON;
           name: 'Positive if',
           source: `
 IF; LPAR; TRUE; RPAR;
-  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -563,7 +565,7 @@ IF; LPAR; TRUE; RPAR;
           name: 'Negative if',
           source: `
 IF; LPAR; FALSE; RPAR;
-  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
 `,
           output: '',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -572,7 +574,7 @@ IF; LPAR; FALSE; RPAR;
           name: 'Omitting brackets should fail',
           source: `
 IF; TRUE;
-  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
 `,
           expected: ExpectedResult.FAIL_PARSE
         },
@@ -580,9 +582,9 @@ IF; TRUE;
           name: 'Positive if else',
           source: `
 IF; LPAR; TRUE; RPAR;
-  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
 ELSE;
-  P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D0; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -591,9 +593,9 @@ ELSE;
           name: 'Negative if else',
           source: `
 IF; LPAR; FALSE; RPAR;
-  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
 ELSE;
-  P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D0; RPAR; SEMICOLON;
 `,
           output: '0\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -603,27 +605,27 @@ ELSE;
           source: `
 X; ASSIGN; D0; SEMICOLON;
 IF; LPAR; X; EQ; D0; RPAR;
-  P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D0; RPAR; SEMICOLON;
 ELSE; IF; LPAR; X; EQ; D1; RPAR;
-  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
 ELSE;
-  P;R;I;N;T; LPAR; D2; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D2; RPAR; SEMICOLON;
 
 X; ASSIGN; D1; SEMICOLON;
 IF; LPAR; X; EQ; D0; RPAR;
-  P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D0; RPAR; SEMICOLON;
 ELSE; IF; LPAR; X; EQ; D1; RPAR;
-  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
 ELSE;
-  P;R;I;N;T; LPAR; D2; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D2; RPAR; SEMICOLON;
 
 X; ASSIGN; D2; SEMICOLON;
 IF; LPAR; X; EQ; D0; RPAR;
-  P;R;I;N;T; LPAR; D0; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D0; RPAR; SEMICOLON;
 ELSE; IF; LPAR; X; EQ; D1; RPAR;
-  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
 ELSE;
-  P;R;I;N;T; LPAR; D2; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D2; RPAR; SEMICOLON;
 `,
           output: '0\n1\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -639,7 +641,7 @@ ELSE;
 I; ASSIGN; D0; SEMICOLON;
 WHILE; LPAR; I; LT; D2; RPAR;
 LCURLY;
-  P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
   I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
@@ -653,9 +655,9 @@ I; ASSIGN; D0; SEMICOLON;
 WHILE; LPAR; I; LT; D2; RPAR;
 LCURLY;
   I; ASSIGN; I; PLUS; D1; SEMICOLON;
-  P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
   CONTINUE; SEMICOLON;
-  P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
 RCURLY;
 `,
           output: '1\n2\n',
@@ -669,7 +671,7 @@ WHILE; LPAR; I; LT; D3; RPAR;
 LCURLY;
   IF; LPAR; I; EQ; D2; RPAR;
     BREAK; SEMICOLON;
-  P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
   I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
@@ -687,7 +689,7 @@ LCURLY;
   RCURLY;
 RCURLY;
 
-P;R;I;N;T; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
+${PrintToken}; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -703,10 +705,10 @@ LCURLY;
   LCURLY;
     J; ASSIGN; J; PLUS; D1; SEMICOLON;
     CONTINUE; SEMICOLON;
-    P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+    ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
   RCURLY;
 
-  P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
   I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
@@ -724,7 +726,7 @@ LCURLY;
     BREAK; SEMICOLON;
   RCURLY;
 
-  P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
   I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
@@ -745,7 +747,7 @@ LCURLY;
   RCURLY;
 RCURLY;
 
-P;R;I;N;T; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
+${PrintToken}; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -764,7 +766,7 @@ LCURLY;
   X; ASSIGN; D1; SEMICOLON;
   BREAK; SEMICOLON;
 RCURLY;
-P;R;I;N;T; LPAR; X; RPAR; SEMICOLON;
+${PrintToken}; LPAR; X; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -777,7 +779,7 @@ FOR; LPAR;
   I; LT; D2; SEMICOLON;
   I; ASSIGN; I; PLUS; D1; RPAR;
 LCURLY;
-  P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
 RCURLY;
 `,
           output: '0\n1\n',
@@ -791,7 +793,7 @@ FOR; LPAR;
   I; NE; J; SEMICOLON;
   I; ASSIGN; I; PLUS; D1; COMMA; J; ASSIGN; J; MINUS; D1; RPAR;
 LCURLY;
-  P;R;I;N;T; LPAR; I; COMMA; J; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; I; COMMA; J; RPAR; SEMICOLON;
 RCURLY;
 `,
           output: '0 4\n1 3\n',
@@ -805,7 +807,7 @@ FOR; LPAR;
   SEMICOLON; RPAR;
 LCURLY;
   BREAK; SEMICOLON;
-  P;R;I;N;T; LPAR; D1; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
 RCURLY;
 `,
           output: '',
@@ -819,9 +821,9 @@ FOR; LPAR;
   I; LT; D2; SEMICOLON;
   I; ASSIGN; I; PLUS; D1; RPAR;
 LCURLY;
-  P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
   CONTINUE; SEMICOLON;
-  P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
 RCURLY;
 `,
           output: '0\n1\n',
@@ -835,7 +837,7 @@ FOR; LPAR;
   I; LT; D4; SEMICOLON;
   I; ASSIGN; I; PLUS; D1; RPAR;
 LCURLY;
-  P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
   I; ASSIGN; I; PLUS; D1; SEMICOLON;
 RCURLY;
 `,
@@ -852,7 +854,7 @@ FOR; LPAR;
   I; ASSIGN; I; PLUS; D1; RPAR;
 LCURLY;
 RCURLY;
-P;R;I;N;T; LPAR; I; RPAR; SEMICOLON;
+${PrintToken}; LPAR; I; RPAR; SEMICOLON;
 `,
           output: '2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -874,7 +876,7 @@ LCURLY;
 RCURLY;
 
 A; ASSIGN; C; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
+${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -892,7 +894,7 @@ RCURLY;
 
 A; ASSIGN; C; LPAR; RPAR; SEMICOLON;
 A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
+${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -912,7 +914,7 @@ RCURLY;
 A; ASSIGN; C; LPAR; RPAR; SEMICOLON;
 A; PROP; M; ASSIGN; M; SEMICOLON;
 A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
+${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -934,7 +936,7 @@ LCURLY;
 RCURLY;
 
 A; ASSIGN; C; LPAR; QUOTE; F;O;O; QUOTE; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; A; RPAR; SEMICOLON;
+${PrintToken}; LPAR; A; RPAR; SEMICOLON;
 `,
           output: 'FOO\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -952,9 +954,9 @@ RCURLY;
 
 A; ASSIGN; C; LPAR; RPAR; SEMICOLON;
 A; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
+${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
 A; PROP; _;_;C;A;L;L;_;_; LPAR; D2; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
+${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
 `,
           output: '1\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -976,7 +978,7 @@ RCURLY;
 
 A; ASSIGN; D; LPAR; RPAR; SEMICOLON;
 A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
+${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -1003,8 +1005,8 @@ RCURLY;
 
 A; ASSIGN; D; LPAR; RPAR; SEMICOLON;
 A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; A; PROP; X; RPAR; SEMICOLON;
-P;R;I;N;T; LPAR; A; PROP; Y; RPAR; SEMICOLON;
+${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
+${PrintToken}; LPAR; A; PROP; Y; RPAR; SEMICOLON;
 `,
           output: '1\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -1021,7 +1023,7 @@ A; ASSIGN; D0; SEMICOLON;
 LCURLY;
   FUNCTION; F; LPAR; RPAR;
   LCURLY;
-    P;R;I;N;T; LPAR; A; RPAR; SEMICOLON;
+    ${PrintToken}; LPAR; A; RPAR; SEMICOLON;
   RCURLY;
 
   F; LPAR; RPAR; SEMICOLON;

@@ -2,6 +2,7 @@ import { JisonLocator } from './ast/ast-node'
 import { BreakCompletion, Completion, CompletionType, ContinueCompletion, NormalCompletion, ReturnCompletion } from './ast/completion'
 import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, DotAccessorRefExpr, Expr, NoneValueExpr, NumberValueExpr, RefExpr, SquareAccessorRefExpr, StringValueExpr, UnaryNotValueExpr, UnaryPlusMinusValueExpr, ValueExpr, VariableRefExpr, VisitorRefExpr, VisitorValueExpr } from './ast/expr'
 import { Operator } from './ast/operator'
+import { InputSign, PrintSign, signToCharMap } from './ast/sign'
 import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, FunctionDeclStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
 import { CodeExecuter } from './code-executer'
 import { Environment, SerializedEnvironment } from './environment'
@@ -43,11 +44,11 @@ export class Interpreter
   constructor(readonly setup: InterpreterSetup, isDebugMode: boolean = false) {
     this.globals = new Environment(null)
     this.environment = new Environment(this.globals)
-    this.globals.getRef('PRINT').set(
+    this.globals.getRef(signToCharMap.get(PrintSign) as string).set(
       new WrappedFunctionInstance(
         WrappedFunctionClass.get(),
         GiflangPrint(setup.onPrint), 'PRINT'))
-    this.globals.getRef('INPUT').set(
+    this.globals.getRef(signToCharMap.get(InputSign) as string).set(
       new WrappedFunctionInstance(
         WrappedFunctionClass.get(),
         GiflangInput(setup.onInput), 'INPUT'))

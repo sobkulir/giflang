@@ -1,6 +1,6 @@
 import { AnyAction, applyMiddleware, createStore } from 'redux'
 import thunk, { ThunkMiddleware } from 'redux-thunk'
-import { Sign } from '~/interpreter/ast/sign'
+import { InputSign, PrintSign, Sign } from '~/interpreter/ast/sign'
 import { InputBuffer } from '../lib/input-buffer'
 import { LetterImp, LetterRowImp } from '../lib/text-area'
 import { createDefaultLocator, RunState } from '../types/execution'
@@ -51,6 +51,7 @@ const getInitialState = (): State => (
       ),
       alphabet: [
         { name: 'Auxletters', signs: [Sign.AUX0, Sign.AUX1, Sign.AUX2, Sign.AUX3, Sign.AUX4, Sign.AUX5, Sign.AUX6, Sign.AUX7, Sign.AUX8, Sign.AUX9] },
+        { name: 'IO', signs: [PrintSign, InputSign] },
         { name: 'Comparisons', signs: [Sign.LT, Sign.LE, Sign.EQ, Sign.NE, Sign.GE, Sign.GT] },
         { name: 'Arithmetics', signs: [Sign.PLUS, Sign.MINUS, Sign.MUL, Sign.DIV, Sign.MOD, Sign.DOT] },
         { name: 'Booleans', signs: [Sign.TRUE, Sign.FALSE, Sign.AND, Sign.OR, Sign.NOT] },

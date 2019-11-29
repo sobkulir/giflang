@@ -68,12 +68,12 @@ DELIMITER                   ";"
 "QUOTE"                     { this.begin('string_literal'); return delimit('QUOTE') }
 <string_literal>"QUOTE"     { this.popState(); return delimit('QUOTE') }
 
-"D"[0-9]                    { yytext = yy.Sign.signToCharMap.get(yy.Sign.stringToSign(yytext)); return delimit('DIGIT') }
-"AUX"[0-9]                  { yytext = yy.Sign.signToCharMap.get(yy.Sign.stringToSign(yytext)); return delimit('AUXLETTER') }
-[A-Z_]                      { yytext = yy.Sign.signToCharMap.get(yy.Sign.stringToSign(yytext)); return delimit('LETTER') }
+"D"[0-9]                    { yytext = yy.Sign.stringSignToChar(yytext); return delimit('DIGIT') }
+"AUX"[0-9]+                 { yytext = yy.Sign.stringSignToChar(yytext); return delimit('AUXLETTER') }
+[A-Z_]                      { yytext = yy.Sign.stringSignToChar(yytext); return delimit('LETTER') }
 
 <string_literal>[A-Z_0-9]+?(?={DELIMITER})
-                            { yytext = yy.Sign.signToCharMap.get(yy.Sign.stringToSign(yytext)); return delimit('LETTER') }
+                            { yytext = yy.Sign.stringSignToChar(yytext); return delimit('LETTER') }
 
 <delimit>{DELIMITER}        { this.popState() }
 

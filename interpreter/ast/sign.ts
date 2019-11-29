@@ -2,7 +2,7 @@ export enum Sign {
   A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
   _, SPACE, SEMICOLON, QUOTE, COMMA, PROP,
   D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
-  AUX0, AUX1, AUX2, AUX3, AUX4, AUX5, AUX6, AUX7, AUX8, AUX9,
+  AUX0, AUX1, AUX2, AUX3, AUX4, AUX5, AUX6, AUX7, AUX8, AUX9, AUX10, AUX11,
   LT, LE, EQ, NE, GE, GT,
   PLUS, MINUS, MUL, DIV, MOD, DOT,
   NOT, OR, AND, TRUE, FALSE, NONE, ASSIGN,
@@ -10,6 +10,10 @@ export enum Sign {
   IF, ELSE, WHILE, FOR,
   CLASS, FUNCTION, RETURN, CONTINUE, BREAK,
 }
+
+export const PrintSign = Sign.AUX10
+export const PrintToken = Sign[Sign.AUX10].toString()
+export const InputSign = Sign.AUX11
 
 const signStrings: Set<string> = new Set(Object.keys(Sign)
   .map((key) => Sign[key as any])
@@ -32,7 +36,7 @@ export const signToCharMap: Map<Sign, string> = new Map([
 
   [Sign.AUX0, 'α'], [Sign.AUX1, 'β'], [Sign.AUX2, 'γ'], [Sign.AUX3, 'δ'],
   [Sign.AUX4, 'ε'], [Sign.AUX5, 'ζ'], [Sign.AUX6, 'η'], [Sign.AUX7, 'θ'],
-  [Sign.AUX8, 'ι'], [Sign.AUX9, 'κ'],
+  [Sign.AUX8, 'ι'], [Sign.AUX9, 'κ'], [PrintSign, 'λ'], [InputSign, 'μ'],
 
   [Sign.LT, '<'], [Sign.LE, '≤'], [Sign.EQ, '='], [Sign.NE, '≠'],
   [Sign.GE, '≥'], [Sign.GT, '>'],
@@ -66,9 +70,9 @@ export function charToSign(str: string): Sign {
   }
 }
 
-export function stringToSign(str: string): Sign {
+export function stringSignToChar(str: string): string {
   if (signStrings.has(str)) {
-    return Sign[str as keyof typeof Sign]
+    return signToCharMap.get(Sign[str as keyof typeof Sign]) as string
   } else {
     throw new Error(`Unknown sign "${str}"`)
   }
