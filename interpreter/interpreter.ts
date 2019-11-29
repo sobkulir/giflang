@@ -219,6 +219,8 @@ export class Interpreter
   }
 
   async visitIfStmt(stmt: IfStmt): Promise<Completion> {
+    await this.waitForNextStep(stmt.condition.locator)
+
     if (await this.isTruthy(await this.evaluate(stmt.condition))) {
       return this.execute(stmt.consequent)
     } else if (stmt.alternate != null) {
@@ -235,11 +237,14 @@ export class Interpreter
   }
   async visitWhileStmt(stmt: WhileStmt): Promise<Completion> {
     let lastCompletion: Completion = new NormalCompletion()
+
+    await this.waitForNextStep(stmt.condition.locator)
     while (await this.isTruthy(await this.evaluate(stmt.condition))) {
       lastCompletion = await this.execute(stmt.body)
       if (lastCompletion.isBreak() || lastCompletion.isReturn()) {
         break
       }
+      await this.waitForNextStep(stmt.condition.locator)
     }
 
     if (lastCompletion.isReturn()) return lastCompletion
@@ -260,6 +265,9 @@ export class Interpreter
 
     for (const expr of stmt.preamble) await this.evaluate(expr)
     let lastCompletion: Completion = new NormalCompletion()
+    if (stmt.condition !== null) {
+      await this.waitForNextStep(stmt.condition.locator)
+    }
     while (stmt.condition === null
       || await this.isTruthy(await this.evaluate(stmt.condition))) {
       lastCompletion = await this.execute(stmt.body)
@@ -267,6 +275,10 @@ export class Interpreter
         break
       }
       for (const expr of stmt.increments) await this.evaluate(expr)
+
+      if (stmt.condition !== null) {
+        await this.waitForNextStep(stmt.condition.locator)
+      }
     }
 
     this.environment = prevEnv
@@ -291,7 +303,7 @@ export class Interpreter
       if (baseInstance instanceof Class) {
         base = baseInstance as Class
       } else {
-        throw new Error(`TODO: ${stmt.baseName} does not denote a class.`)
+        throw new Error(`"${stmt.baseName}" does not denote a class.`)
       }
     }
 
