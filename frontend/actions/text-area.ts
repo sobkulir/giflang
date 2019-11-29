@@ -1,8 +1,9 @@
 import produce from 'immer'
 import { Sign } from '~/interpreter/ast/sign'
 import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRight, MoveCursorUp, PositionPixelsToRowCol, TrimPositionRowCol } from '../lib/text-area'
+import { FocusedArea } from '../types/ide'
 import { MyAction, State } from '../types/redux'
-import { createEmptyText, PositionPixels, ScrollableType, TextAreaType } from '../types/text-area'
+import { createEmptyText, PositionPixels, ScrollableType, TextArea, TextAreaType } from '../types/text-area'
 
 export const setText =
   (areaType: TextAreaType, text: string)
@@ -32,19 +33,40 @@ export const setCursorPosition =
       })
     })
 
+function addSignAfterCursorImp(area: TextArea, sign: Sign) {
+  const position = area.cursorPosition
+  if (area.text.length === 0) area.text = createEmptyText()
+
+  area.text[position.row].letters
+    .splice(position.col, 0, new LetterImp(sign))
+  area.cursorPosition = MoveCursorRight(position, area.text)
+  area.scroll = ScrollableType.CURSOR
+}
+
 export const addSignAfterCursor =
   (areaType: TextAreaType, sign: Sign): MyAction<Sign> => ({
     type: 'Add sign after cursor',
     payload: sign,
     reducer: produce((state: State) => {
-      const area = state.textAreaMap[areaType]
-      const position = area.cursorPosition
-      if (area.text.length === 0) area.text = createEmptyText()
+      addSignAfterCursorImp(state.textAreaMap[areaType], sign)
+    })
+  })
 
-      area.text[position.row].letters
-        .splice(position.col, 0, new LetterImp(sign))
-      area.cursorPosition = MoveCursorRight(position, area.text)
-      state.textAreaMap[areaType].scroll = ScrollableType.CURSOR
+export const addSignAfterFocusedCursor =
+  (sign: Sign): MyAction<Sign> => ({
+    type: 'Add sign after cursor',
+    payload: sign,
+    reducer: produce((state: State) => {
+      let areaType: TextAreaType
+      switch (state.ide.focusedArea) {
+        case FocusedArea.EXECUTION_INPUT:
+          areaType = TextAreaType.EXECUTION_INPUT; break
+        case FocusedArea.MAIN_EDITOR:
+          areaType = TextAreaType.MAIN_EDITOR; break
+        default:
+          return
+      }
+      addSignAfterCursorImp(state.textAreaMap[areaType], sign)
     })
   })
 

@@ -3,21 +3,20 @@ import Typography from '@material-ui/core/Typography'
 import React from 'react'
 import { connect } from 'react-redux'
 import { Sign } from '~/interpreter/ast/sign'
-import { addSignAfterCursor } from '../actions/text-area'
+import { addSignAfterFocusedCursor } from '../actions/text-area'
 import { AlphabetCategory, CategorizedAlphabet, LetterSize, SignToGifMap } from '../types/ide'
 import { State } from '../types/redux'
-import { TextAreaType } from '../types/text-area'
 import * as styles from './letter-picker.scss'
 
 interface LetterPickerProps {
-  addSignAfterCursor: typeof addSignAfterCursor
+  addSignAfterFocusedCursor: typeof addSignAfterFocusedCursor
   alphabet: CategorizedAlphabet,
   letterSize: LetterSize,
   signToGifMap: SignToGifMap,
 }
 
 interface CategoryProps {
-  addSignAfterCursor: typeof addSignAfterCursor
+  addSignAfterFocusedCursor: typeof addSignAfterFocusedCursor
   category: AlphabetCategory,
   signToGifMap: SignToGifMap,
   letterSize: LetterSize,
@@ -32,7 +31,7 @@ const Category: React.SFC<CategoryProps> = (props) => {
   })
 
   const addSign = (sign: Sign) => () => {
-    props.addSignAfterCursor(TextAreaType.MAIN_EDITOR, sign)
+    props.addSignAfterFocusedCursor(sign)
   }
 
   const row = props.category.signs.map((sign) =>
@@ -72,7 +71,7 @@ class LetterPicker extends React.Component<LetterPickerProps, {}> {
         category={category}
         signToGifMap={this.props.signToGifMap}
         letterSize={this.props.letterSize}
-        addSignAfterCursor={this.props.addSignAfterCursor}
+        addSignAfterFocusedCursor={this.props.addSignAfterFocusedCursor}
         shrinkFactor={this.shrinkFactor}
       />
     ))
@@ -95,7 +94,7 @@ export default connect(
     letterSize: state.ide.letterSize,
   }),
   {
-    addSignAfterCursor,
+    addSignAfterFocusedCursor,
   }
 )(LetterPicker)
 

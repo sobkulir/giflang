@@ -6,7 +6,7 @@ import { LoadingBarState } from '../types/ide'
 import { MyAction, MyThunkAction, State } from '../types/redux'
 import { DocumentReference, LoadState, SaveState } from '../types/storage'
 import { TextAreaType } from '../types/text-area'
-import { setLoadingBarState } from './loading-bar'
+import { setLoadingBarState } from './ide'
 import { setText } from './text-area'
 
 export const loadCode =

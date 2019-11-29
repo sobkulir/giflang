@@ -1,8 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import { setFocusedArea } from '~/frontend/actions/ide'
 import { addSignAfterCursor, moveCursor, newlineAfterCursor, removeAfterCursor, scrollToType, setCursorPosition } from '~/frontend/actions/text-area'
 import { RunState } from '~/frontend/types/execution'
-import { LetterSize, SignToGifMap } from '~/frontend/types/ide'
+import { FocusedArea, LetterSize, SignToGifMap } from '~/frontend/types/ide'
 import { State } from '~/frontend/types/redux'
 import { ScrollableType, TextArea, TextAreaType } from '~/frontend/types/text-area'
 import { JisonLocator } from '~/interpreter/ast/ast-node'
@@ -18,19 +19,20 @@ export interface MainTextAreaProps extends TextArea {
   runState: RunState,
   signToGifMap: SignToGifMap,
   letterSize: LetterSize,
+  focusedArea: FocusedArea,
   setCursorPosition: typeof setCursorPosition,
   addSignAfterCursor: typeof addSignAfterCursor,
   moveCursor: typeof moveCursor,
   removeAfterCursor: typeof removeAfterCursor,
   newlineAfterCursor: typeof newlineAfterCursor,
   scrollToType: typeof scrollToType,
+  setFocusedArea: typeof setFocusedArea
 }
 
 class MainTextArea extends React.Component<MainTextAreaProps, {}> {
   readonly contentWrapperRef: React.RefObject<HTMLDivElement>
   readonly cursorRef: React.RefObject<Cursor>
   readonly highlighterRef: React.RefObject<Highlighter>
-
   readonly areaType = TextAreaType.MAIN_EDITOR
 
   constructor(props: MainTextAreaProps) {
@@ -41,7 +43,7 @@ class MainTextArea extends React.Component<MainTextAreaProps, {}> {
   }
 
   componentDidMount() {
-    this.setFocusOnText()
+    this.setFocusIfNeeded()
   }
 
   componentDidUpdate() {
@@ -58,16 +60,21 @@ class MainTextArea extends React.Component<MainTextAreaProps, {}> {
 
     // Set focus after an update to maintain focus after adding a letter from
     // the right panel (letter picker).
-    this.setFocusOnText()
+    this.setFocusIfNeeded()
   }
 
-  setFocusOnText() {
-    const textWrapper = this.contentWrapperRef.current as HTMLDivElement
-    textWrapper.focus({ preventScroll: true })
+  setFocusIfNeeded() {
+    if (this.props.focusedArea === FocusedArea.MAIN_EDITOR) {
+      const textWrapper = this.contentWrapperRef.current as HTMLDivElement
+      textWrapper.focus({ preventScroll: true })
+    }
   }
 
   moveCursor = (e: React.MouseEvent) => {
     e.preventDefault()
+    if (this.props.focusedArea !== FocusedArea.MAIN_EDITOR) {
+      this.props.setFocusedArea(FocusedArea.MAIN_EDITOR)
+    }
     const textWrapper = this.contentWrapperRef.current as HTMLDivElement
     const wrapperRect = textWrapper.getBoundingClientRect()
     this.props.setCursorPosition(
@@ -129,7 +136,8 @@ export default connect(
     signToGifMap: state.ide.signToGifMap,
     letterSize: state.ide.letterSize,
     locator: state.execution.locator,
-    runState: state.execution.runState
+    runState: state.execution.runState,
+    focusedArea: state.ide.focusedArea
   }),
   {
     setCursorPosition,
@@ -137,7 +145,8 @@ export default connect(
     moveCursor,
     removeAfterCursor,
     newlineAfterCursor,
-    scrollToType
+    scrollToType,
+    setFocusedArea
   }
 )(MainTextArea)
 

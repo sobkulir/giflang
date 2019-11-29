@@ -1,8 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { addLineToInput } from '~/frontend/actions/execution'
+import { setFocusedArea } from '~/frontend/actions/ide'
 import { addSignAfterCursor, moveCursor, removeAfterCursor } from '~/frontend/actions/text-area'
-import { LetterSize, SignToGifMap } from '~/frontend/types/ide'
+import { FocusedArea, LetterSize, SignToGifMap } from '~/frontend/types/ide'
 import { State } from '~/frontend/types/redux'
 import { ScrollableType, Text, TextArea, TextAreaType } from '~/frontend/types/text-area'
 import { Content } from '../text-area/content'
@@ -14,34 +15,54 @@ export interface InputProps extends TextArea {
   letterSize: LetterSize
   signToGifMap: SignToGifMap
   commitedInput: Text,
+  focusedArea: FocusedArea,
   addSignAfterCursor: typeof addSignAfterCursor
   moveCursor: typeof moveCursor
   removeAfterCursor: typeof removeAfterCursor
   addLineToInput: typeof addLineToInput
+  setFocusedArea: typeof setFocusedArea
 }
 
 class Input extends React.Component<InputProps> {
+  readonly contentWrapperRef: React.RefObject<HTMLDivElement>
   readonly cursorRef: React.RefObject<Cursor>
-  readonly areaType = TextAreaType.EXECUTION_INPUT
 
   constructor(props: InputProps) {
     super(props)
     this.cursorRef = React.createRef()
+    this.contentWrapperRef = React.createRef()
   }
 
   componentDidUpdate() {
     if (this.props.scroll === ScrollableType.CURSOR) {
       this.cursorRef.current!.scrollIntoView()
     }
+
+    this.setFocusIfNeeded()
   }
+
   handleKeyPress = (e: React.KeyboardEvent) => {
     HandleExecutionInputShortcuts(e, this.props)
+  }
+
+  handleClick = (_: React.MouseEvent) => {
+    if (this.props.focusedArea !== FocusedArea.EXECUTION_INPUT) {
+      this.props.setFocusedArea(FocusedArea.EXECUTION_INPUT)
+    }
+  }
+
+  setFocusIfNeeded() {
+    if (this.props.focusedArea === FocusedArea.EXECUTION_INPUT) {
+      const textWrapper = this.contentWrapperRef.current as HTMLDivElement
+      textWrapper.focus({ preventScroll: true })
+    }
   }
 
   render() {
     return (
       <div
         className={styles.inputArea}
+        onClick={this.handleClick}
       >
         <Content
           letterSize={this.props.letterSize}
@@ -50,6 +71,7 @@ class Input extends React.Component<InputProps> {
         />
         <div
           className={styles.contentWrapper}
+          ref={this.contentWrapperRef}
           onKeyDown={this.handleKeyPress}
           tabIndex={0}
         >
@@ -74,12 +96,14 @@ export default connect(
     ...state.textAreaMap[TextAreaType.EXECUTION_INPUT],
     commitedInput: state.execution.commitedInput,
     signToGifMap: state.ide.signToGifMap,
+    focusedArea: state.ide.focusedArea
   }),
   {
     addSignAfterCursor,
     moveCursor,
     removeAfterCursor,
     addLineToInput,
+    setFocusedArea
   }
 )(Input)
 

@@ -4,7 +4,7 @@ import { Sign } from '~/interpreter/ast/sign'
 import { InputBuffer } from '../lib/input-buffer'
 import { LetterImp, LetterRowImp } from '../lib/text-area'
 import { createDefaultLocator, RunState } from '../types/execution'
-import { LoadingBarState } from '../types/ide'
+import { FocusedArea, LoadingBarState } from '../types/ide'
 import { MyAction, State } from '../types/redux'
 import { LoadState, SaveState } from '../types/storage'
 import { createEmptyText, ScrollableType } from '../types/text-area'
@@ -59,6 +59,7 @@ const getInitialState = (): State => (
         { name: 'Classes and functions', signs: [Sign.CLASS, Sign.PROP, Sign.FUNCTION, Sign.RETURN] }
       ],
       letterSize: { edgePx: 80, marginPx: 6 },
+      focusedArea: FocusedArea.MAIN_EDITOR
     },
     storage: {
       loadState: LoadState.INITIAL,
