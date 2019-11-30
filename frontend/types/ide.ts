@@ -23,4 +23,5 @@ export interface IDE {
   letterSize: LetterSize
   loadingBarState: LoadingBarState
   focusedArea: FocusedArea
+  isIOBoxVisible: boolean
 }

@@ -1,6 +1,7 @@
 import Typography from '@material-ui/core/Typography'
 import * as React from 'react'
 import { connect } from 'react-redux'
+import { setIsIOBoxVisible } from '~/frontend/actions/ide'
 import { LetterSize, SignToGifMap } from '~/frontend/types/ide'
 import { State } from '~/frontend/types/redux'
 import { Text } from '~/frontend/types/text-area'
@@ -13,6 +14,8 @@ interface IOBoxProps {
   signToGifMap: SignToGifMap,
   letterSize: LetterSize,
   errorMsg: string,
+  isIOBoxVisible: boolean,
+  setIsIOBoxVisible: typeof setIsIOBoxVisible
 }
 
 interface IOCardProps {
@@ -25,34 +28,69 @@ const IOCard: React.SFC<IOCardProps> = (props) => (
     {props.children}
   </div>
 )
-class IOBox extends React.Component<IOBoxProps> {
-  readonly factoredLetterSize: LetterSize
-  constructor(props: IOBoxProps) {
-    super(props)
-    this.factoredLetterSize = {
-      edgePx: this.props.letterSize.edgePx * 0.5,
-      marginPx: this.props.letterSize.marginPx * 0.8,
-    }
+
+interface ToggleButtonProps {
+  isIOBoxVisible: boolean,
+  setIsIOBoxVisible: typeof setIsIOBoxVisible
+}
+
+const ToggleButton: React.SFC<ToggleButtonProps> = (props) => {
+  const toggle = () => props.setIsIOBoxVisible(!props.isIOBoxVisible)
+  const label = (props.isIOBoxVisible) ? 'Hide' : 'Show'
+  return (
+    <div className={styles.toggleButton}>
+      <button onClick={toggle}>{label}</button>
+    </div>
+  )
+}
+
+const MinimizedIO: React.SFC = (_) => (
+  <div className={styles.minimizedIO}>
+    <Typography variant="h6">> I/O Console</Typography>
+  </div>
+)
+
+const MaximizedIO: React.SFC<IOBoxProps> = (props) => {
+  const factoredLetterSize = {
+    edgePx: props.letterSize.edgePx * 0.5,
+    marginPx: props.letterSize.marginPx * 0.8,
   }
-  render() {
-    return (
-      <div className={styles.ioBox}>
-        <IOCard title={'Output'}>
-          <Output
-            output={this.props.output}
-            letterSize={this.factoredLetterSize}
-            signToGifMap={this.props.signToGifMap}
-            errorMsg={this.props.errorMsg}
-          />
-        </IOCard>
-        <IOCard title={'Input'}>
-          <Input
-            letterSize={this.factoredLetterSize}
-          />
-        </IOCard>
-      </div>
-    )
+
+  return (
+    <div className={styles.maximizedIO}>
+      <IOCard title={'Output'}>
+        <Output
+          output={props.output}
+          letterSize={factoredLetterSize}
+          signToGifMap={props.signToGifMap}
+          errorMsg={props.errorMsg}
+        />
+      </IOCard>
+      <IOCard title={'Input'}>
+        <Input
+          letterSize={factoredLetterSize}
+        />
+      </IOCard>
+    </div>
+  )
+}
+
+const IOBox: React.SFC<IOBoxProps> = (props) => {
+  let content: React.ReactNode
+  if (props.isIOBoxVisible) {
+    content = <MaximizedIO {...props} />
+  } else {
+    content = <MinimizedIO />
   }
+  return (
+    <div className={styles.IOBox}>
+      <ToggleButton 
+        isIOBoxVisible={props.isIOBoxVisible}
+        setIsIOBoxVisible={props.setIsIOBoxVisible}
+      />
+      {content}
+    </div>
+  )
 }
 
 export default connect(
@@ -60,5 +98,9 @@ export default connect(
     output: state.execution.output,
     errorMsg: state.execution.errorMsg,
     signToGifMap: state.ide.signToGifMap,
-    letterSize: state.ide.letterSize
-  }))(IOBox)
+    letterSize: state.ide.letterSize,
+    isIOBoxVisible: state.ide.isIOBoxVisible
+  }),
+  {
+    setIsIOBoxVisible
+  })(IOBox)

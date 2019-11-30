@@ -1,5 +1,9 @@
-.ioBox {
+.IOBox {
+    position: relative;
     padding: 10px;
+}
+
+.maximizedIO {
     height: 300px;
     display: flex;
     min-width: 0;
@@ -11,4 +15,14 @@
         min-width: 0;
         padding: 10px;
     }
+}
+
+.minimizedIO {
+    height: 40px;
+}
+
+.toggleButton {
+    position: absolute;
+    top: 10;
+    right: 10;
 }

@@ -19,3 +19,12 @@ export const setFocusedArea =
       state.ide.focusedArea = focusedArea
     })
   })
+
+export const setIsIOBoxVisible =
+  (isVisible: boolean): MyAction<boolean> => ({
+    type: 'Set is IOBox visible',
+    payload: isVisible,
+    reducer: produce((state: State) => {
+      state.ide.isIOBoxVisible = isVisible
+    })
+  })

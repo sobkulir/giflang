@@ -60,7 +60,8 @@ const getInitialState = (): State => (
         { name: 'Classes and functions', signs: [Sign.CLASS, Sign.PROP, Sign.FUNCTION, Sign.RETURN] }
       ],
       letterSize: { edgePx: 80, marginPx: 6 },
-      focusedArea: FocusedArea.MAIN_EDITOR
+      focusedArea: FocusedArea.MAIN_EDITOR,
+      isIOBoxVisible: false
     },
     storage: {
       loadState: LoadState.INITIAL,

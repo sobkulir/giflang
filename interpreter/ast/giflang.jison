@@ -237,7 +237,7 @@ UnaryExpr
     ;
 
 BinaryExpr
-    : BinaryExpr MUL BinaryExpr     { $$ = new yy.Expr.BinaryValueExpr(yy.Operator.MUL, $1, $3, @$); console.log(@$) }
+    : BinaryExpr MUL BinaryExpr     { $$ = new yy.Expr.BinaryValueExpr(yy.Operator.MUL, $1, $3, @$) }
     | BinaryExpr DIV BinaryExpr     { $$ = new yy.Expr.BinaryValueExpr(yy.Operator.DIV, $1, $3, @$) }
     | BinaryExpr MOD BinaryExpr     { $$ = new yy.Expr.BinaryValueExpr(yy.Operator.MOD, $1, $3, @$) }
 
