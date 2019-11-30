@@ -31,9 +31,9 @@ class Menu extends React.Component<MenuProps, {}> {
     this.props.resolveNextStep()
   }
   isWorkerRunning() {
-    return this.props.runState in [
+    return [
       RunState.DEBUG_RUNNING, RunState.DEBUG_WAITING, RunState.RUNNING
-    ]
+    ].includes(this.props.runState)
   }
 
   render() {

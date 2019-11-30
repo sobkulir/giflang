@@ -3,7 +3,7 @@ import thunk, { ThunkMiddleware } from 'redux-thunk'
 import { InputSign, PrintSign, Sign } from '~/interpreter/ast/sign'
 import { InputBuffer } from '../lib/input-buffer'
 import { LetterImp, LetterRowImp } from '../lib/text-area'
-import { createDefaultLocator, RunState } from '../types/execution'
+import { RunState } from '../types/execution'
 import { FocusedArea, LoadingBarState } from '../types/ide'
 import { MyAction, State } from '../types/redux'
 import { LoadState, SaveState } from '../types/storage'
@@ -29,7 +29,7 @@ const getInitialState = (): State => (
     execution: {
       runState: RunState.NOT_RUNNING,
       output: [],
-      locator: createDefaultLocator(),
+      locator: undefined,
       callStack: [],
       environment: [],
       commitedInput: [],

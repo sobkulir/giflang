@@ -15,7 +15,7 @@ import { LineNumbers } from './line-numbers'
 import * as styles from './main-text-area.scss'
 
 export interface MainTextAreaProps extends TextArea {
-  locator: JisonLocator,
+  locator?: JisonLocator,
   runState: RunState,
   signToGifMap: SignToGifMap,
   letterSize: LetterSize,

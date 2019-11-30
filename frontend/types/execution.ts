@@ -9,21 +9,13 @@ export enum RunState {
 }
 
 export function isDebugMode(runState: RunState) {
-  return (runState === RunState.DEBUG_RUNNING
-    || runState === RunState.DEBUG_WAITING)
+  return [RunState.DEBUG_RUNNING, RunState.DEBUG_WAITING].includes(runState)
 }
-
-export const createDefaultLocator = (): JisonLocator => ({
-  first_line: 0,
-  first_column: 0,
-  last_line: 0,
-  last_column: 0
-})
 
 export interface ExecutionState {
   runState: RunState
   output: Text
-  locator: JisonLocator
+  locator?: JisonLocator
   callStack: CallStack
   environment: SerializedEnvironment
   inputBuffer: InputBuffer<string>

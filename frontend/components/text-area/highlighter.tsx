@@ -8,7 +8,7 @@ import { JisonLocator } from '~/interpreter/ast/ast-node'
 interface HighlighterProps {
   letterSize: LetterSize
   runState: RunState
-  locator: JisonLocator
+  locator?: JisonLocator
   text: Text
 }
 
@@ -55,9 +55,9 @@ export class Highlighter extends React.PureComponent<HighlighterProps> {
     }
   }
 
-  createHighlights = () => {
+  createHighlights = (locator: JisonLocator) => {
     const { first_line, last_line, first_column, last_column }
-      = this.props.locator
+      = locator
     const highlights: React.ReactNode[] = []
 
     for (let i = first_line; i <= last_line; i++) {
@@ -81,9 +81,9 @@ export class Highlighter extends React.PureComponent<HighlighterProps> {
     return highlights
   }
 
-  getScrollRefStyles = (): React.CSSProperties => {
+  getScrollRefStyles = (locator: JisonLocator): React.CSSProperties => {
     const { first_line, last_line, first_column, last_column }
-      = this.props.locator
+      = locator
     const boxSize =
       2 * this.props.letterSize.marginPx + this.props.letterSize.edgePx
 
@@ -103,14 +103,17 @@ export class Highlighter extends React.PureComponent<HighlighterProps> {
   }
 
   render() {
-    if (isDebugMode(this.props.runState)) {
+    if (isDebugMode(this.props.runState) && this.props.locator !== undefined) {
       return (
         <div>
-          <div style={this.getScrollRefStyles()} ref={this.scrollRef} />
-          {this.createHighlights()}
+          <div
+            style={this.getScrollRefStyles(this.props.locator)}
+            ref={this.scrollRef}
+          />
+          {this.createHighlights(this.props.locator)}
         </div>)
     } else {
-      return <div />
+      return null
     }
   }
 }

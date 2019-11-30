@@ -93,6 +93,7 @@ export const executionStarted =
       state.execution.runState = 
         (isDebugMode) ? RunState.DEBUG_RUNNING : RunState.RUNNING
       state.execution.worker = worker
+      state.execution.locator = undefined
       state.ide.focusedArea = FocusedArea.EXECUTION_INPUT
       state.ide.isIOBoxVisible = true
     })
