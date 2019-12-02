@@ -1,7 +1,48 @@
-\chapter{Title of the first chapter}
+\chapter{Introduction}
 
-An~example citation: \cite{Andel07}
+Traditional programming languages are defined in terms of plaintext tokens. These tokens
+are then used in grammar rules to specify which orderings of tokens are valid programs and
+which are not.
+<TODO: Example>
 
-\section{Title of the first subchapter of the first chapter}
+However, tokens do not have to consist of plaintext necessarily. Plaintext characters can be substituted for
+images, videos, sounds, etc. In this thesis we construct a programming language with characters and some
+of the tokens substituted for short looping videos or images (GIFs, WEBP). On an image below you can see a~sample
+program in Giflang\footnote{We named the programming language developed in this thesis Giflang}.
+<TODO: Example>
+TODO: Explanation of what the sample code does.
 
-\section{Title of the second subchapter of the first chapter}
+In order to be able to interpret and store programs like this we also define a textual representation. We discuss
+this in section /TODO/. E.g. the program from Fig. TODO can be stored as:
+
+/TODO: Code/
+
+You can see that there is a clear mapping between images and semicolon-delimited tokens. Therefore a byproduct of
+this thesis is a token-level programming language, i.e. a language that consists of delimited tokens. This tokens
+can have different presentational forms as mentioned before.
+
+A language like this one is of course impractical and hard to follow. We do not intend to create a language
+for practical use. Our $3$ main motivations for creating Giflang are:
+\begin{enumerate}
+\item An image-based programming language like this does not exist yet. We discuss other existing graphically oriented
+languages in section /TODO/. 
+\item Using it in bootcamps for elementary and high schoolers. We co-organize a long-term Computer Science competition
+named Prask\footnote{prask.ksp.sk todo}. After each semester we invite best contestants to a week-long bootcamp
+filled with creative games mostly related to Computer Science. Giflang can be used as part of the games.
+\item Allowing users to substitute images for their own can give younger users feeling of creating ''their own language''.
+\end{enumerate}
+
+Since we use images instead of characters we need to implement our own IDE to be able to create and run Giflang programs. Typically,
+IDEs are desktop applications. However, since ease of access and use have bigger priority than efficiency for this application
+we decided to move everything to a browser. Web technologies have improved significantly in the last decade\footnote{E.g. V8, new Ecmascript standards, web workers, etc}
+and also users 
+
+There are numerous programming languages that present flow of a program in a different way
+from traditional plaintext. For example <scratch>...
+\cite{Andel07}
+
+\section{Related work}
+
+\section{IDE as desktop vs browser application}
+
+\section{Thesis goals}
