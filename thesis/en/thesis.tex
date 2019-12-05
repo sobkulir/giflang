@@ -50,6 +50,7 @@
 \usepackage{booktabs}       % improved horizontal lines in tables
 \usepackage{paralist}       % improved enumerate and itemize
 \usepackage{xcolor}         % typesetting in color
+\usepackage{enumitem}		% enumerations with letters, etc
 
 %%% Basic information on the thesis
 
@@ -81,19 +82,31 @@
 \def\StudyBranch{Software and Data Engineering}
 
 % An optional dedication: you can thank whomever you wish (your supervisor,
-% consultant, a person who lent the software, etc.)
+% consultant, a person who lent the software, aetc.)
 \def\Dedication{%
 Dedication.
 }
 
 % Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
 \def\Abstract{%
-Abstract.
+The goal of this thesis is to create a programming language with characters and keywords substituted
+with images or animations (GIFs). We build a web IDE and a client-side interpreter for this language
+using modern web technologies including WebWorkers, TypeScript and React.
+
+The IDE features a code stepper with information about current location in the source
+code, environment variables and call stack. Additionally, there is a support for storing and loading
+source code from the cloud using Firebase. 
+
+Primarily, it will be used at programming camps for elementary and high schoolers. We create creative
+games for the camps usually related to Computer Science. The language from this thesis will be incorporated
+into the games.
+
+At the time of writing, we could not find any other such programming language.
 }
 
 % 3 to 5 keywords (recommended), each enclosed in curly braces
-\def\Keywords{%
-{visual programming language} {program interpretation} {symbolic debugger}
+\def\Keywords{
+{visual programming language} {program interpretation} {symbolic debugger} {giflang}
 }
 
 %% The hyperref package for clickable links in PDF and also for storing

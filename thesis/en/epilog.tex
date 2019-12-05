@@ -1,2 +1,51 @@
 \chapter*{Conclusion}
 \addcontentsline{toc}{chapter}{Conclusion}
+At the end of the thesis we revisit our goals set in Section \ref{chap1:thesis_goals} and discuss how successful we were at completing them.
+
+\begin{enumerate}
+\item \textit{Giflang language design} 
+   \begin{enumerate}[label=(\alph*)]
+     \item \textit{Choose a suitable language type (Object-Oriented, functional, \ldots)} \\
+     -- Pupils at the training camps where this language is primarily going to be used mostly program in Python. Based on that we chose to create an
+     Object-Oriented language that closely resembles Python.
+     \item \textit{Define syntax, semantics and basic standard library} \\
+     -- We defined the language in the form of /TODO: Once I actually define the language in the thesis/. The standard library has the basic structures usually
+     found in dynamic languages of this kind -- objects, arrays and strings. Their methods are similar to JavaScript, because we interpret them using their JavaScript
+     counterparts.
+   \end{enumerate}
+\item \textit{Client-side Interpreter}
+   \begin{enumerate}[label=(\alph*)]
+	 \item \textit{Design and implement an interpreter for Giflang} \\
+     -- We managed to implement the interpreter in JavaScript with the aid of a parsing library called Jison \cite{Jison}. The interpreter
+     has a straightforward structure -- it builds an AST and then interprets individual nodes using a Visitor pattern.
+     \item \textit{Support code stepping with information about current position in the source code, call stack and environment} \\
+     -- This goal turned out to be trickier than we first anticipated. We had to find a construct in JavaScript that would allow us to wait until a certain
+     condition is met. In this case the condition being that user has clicked on the `Next step' button. We explored several ways of implementing this including
+     busy-waiting, async/await, building custom continuations and using JavaScript's standard Atomics API. Performance-wise the best solution would be to use the built-in
+     library. However, it is not yet well supported so we opted for busy-waiting solution. Once the Atomics gain a better browser support we ought to change this.  
+	 \item \textit{Implement an API for standard I/O} \\
+     -- We had two options while implementing the standard I/O. We could either expect users to provide the whole input prior to the execution or allow users
+     to interactively provide input. The interactive I/O requires stopping the execution until users provide an input. We opted for the interactive version as we
+     could reuse the findings from building the code stepping.
+   \end{enumerate}
+\item \textit{Web IDE}
+   \begin{enumerate}[label=(\alph*)]
+     \item \textit{Design and implement an editor with characters replaced by images and support basic editing operations such as Delete,
+     Backspace or moving with arrows} \\
+     -- We managed to create an editor as described in the goal. Additionally, we added line numbers component that helps with orientation in the code.
+	 \item \textit{Allow specifying input to a running program and showing its output using images} \\
+     -- We implemented an Input/Output boxes where users can perform I/O operations. We reused components used for the editor to display text as
+     images.
+	 \item \textit{Support code stepping with visualizations of currently executed position in the source code} \\
+     -- Originally, we implemented this feature with highlighting the full currently executed line. After changing the location counting in the
+     lexical analysis we were able to adjust the highlighting to a currently executed node in the AST. However, environment values and call stack
+     is displayed in the text form rather than in the image form. Additionally, object properties are not displayed. We did not consider adding this functionality
+     technically challenging and we rather focused on the parts like code stepping during the last development period.
+	 \item \textit{Allow storing current program on the server and loading a previously saved program} \\
+     -- We integrated a proprietary solution called `Firebase' and store the programs in its database. This allowed us to quickly create a working
+     prototype without the need for a custom database and server.
+	 \item \textit{Allow changing images in the mapping of images to characters and keywords} \\
+     -- Our intend was to allow users uploading their images and changing them dynamically. However, we did not manage to implement this functionality
+     in time. It is easy to swap out the images, but the website needs to be run locally in order to do so.
+   \end{enumerate}
+\end{enumerate}
