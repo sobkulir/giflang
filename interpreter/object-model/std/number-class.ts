@@ -5,37 +5,37 @@ import { MagicMethod } from '../magic-method'
 import { NumberInstance } from './number-instance'
 
 export class NumberClass extends Class {
-  static async __str__(
+  static __str__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<StringInstance> {
+  ): StringInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(NumberInstance)
     return new StringInstance(StringClass.get(), self.value.toString())
   }
 
-  static async __pos__(
+  static __pos__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<NumberInstance> {
+  ): NumberInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(NumberInstance)
     return self
   }
 
-  static async __neg__(
+  static __neg__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<NumberInstance> {
+  ): NumberInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(NumberInstance)
     return new NumberInstance(NumberClass.get(), - self.value)
   }
 
-  static async __bool__(
+  static __bool__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<BoolInstance> {
+  ): BoolInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(NumberInstance)
     return (self.value === 0) ? BoolInstance.getFalse() : BoolInstance.getTrue()
@@ -43,8 +43,8 @@ export class NumberClass extends Class {
 
   static binaryOpNumber(
     action: (lhs: number, rhs: number) => number,
-  ): (_interpreter: CodeExecuter, args: Instance[]) => Promise<NumberInstance> {
-    return async (_interpreter: CodeExecuter, args: Instance[]) => {
+  ): (_interpreter: CodeExecuter, args: Instance[]) => NumberInstance {
+    return (_interpreter: CodeExecuter, args: Instance[]) => {
       CheckArityEq(args, 2)
       const lhs = args[0].castOrThrow(NumberInstance)
       const rhs = args[1].castOrThrow(NumberInstance)
@@ -54,8 +54,8 @@ export class NumberClass extends Class {
 
   static binaryOpBool(
     action: (lhs: number, rhs: number) => boolean,
-  ): (_interpreter: CodeExecuter, args: Instance[]) => Promise<BoolInstance> {
-    return async (_interpreter: CodeExecuter, args: Instance[]) => {
+  ): (_interpreter: CodeExecuter, args: Instance[]) => BoolInstance {
+    return (_interpreter: CodeExecuter, args: Instance[]) => {
       CheckArityEq(args, 2)
       const lhs = args[0].castOrThrow(NumberInstance)
       const rhs = args[1].castOrThrow(NumberInstance)

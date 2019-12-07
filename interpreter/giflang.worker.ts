@@ -3,7 +3,7 @@ import { Interpreter, InterpreterSetup } from './interpreter'
 import { ParseGiflang } from './parser'
 
 export interface GiflangWorker {
-  run(code: string): Promise<void>
+  run(code: string): void
 }
 
 export interface GiflangSetup extends InterpreterSetup {
@@ -15,10 +15,10 @@ class Giflang implements GiflangWorker {
   constructor(readonly setup: GiflangSetup, isDebugMode: boolean) {
     this.interpreter = new Interpreter(setup, isDebugMode)
   }
-  async run(code: string) {
+  run(code: string) {
     try {
       const rootNode = ParseGiflang(code)
-      await this.interpreter.visitProgramStmt(rootNode)
+      this.interpreter.visitProgramStmt(rootNode)
       this.setup.onFinish('')
     } catch (e) {
       this.setup.onFinish(`${e.toString()}`)

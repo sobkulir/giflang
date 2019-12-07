@@ -8,10 +8,10 @@ import { NumberClass } from './number-class'
 import { NumberInstance } from './number-instance'
 
 export class ArrayClass extends Class {
-  static async __init__(
+  static __init__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<ArrayInstance> {
+  ): ArrayInstance {
     CheckArityEq(args, 2)
     const self = args[0].castOrThrow(ArrayInstance)
     const rhs = args[1].castOrThrow(ArrayInstance)
@@ -19,10 +19,10 @@ export class ArrayClass extends Class {
     return self
   }
 
-  static async __getitem__(
+  static __getitem__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<Instance> {
+  ): Instance {
     CheckArityEq(args, 2)
     const self = args[0].castOrThrow(ArrayInstance)
     const key = args[1].castOrThrow(NumberInstance)
@@ -33,10 +33,10 @@ export class ArrayClass extends Class {
     }
   }
 
-  static async __setitem__(
+  static __setitem__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<Instance> {
+  ): Instance {
     CheckArityEq(args, 3)
     const self = args[0].castOrThrow(ArrayInstance)
     const key = args[1].castOrThrow(NumberInstance)
@@ -49,31 +49,31 @@ export class ArrayClass extends Class {
     }
   }
 
-  static async __str__(
+  static __str__(
     interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<StringInstance> {
+  ): StringInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(ArrayInstance)
     const stringified =
-      (await Stringify(interpreter, ...self.values)).join(', ')
+      (Stringify(interpreter, ...self.values)).join(', ')
     return new StringInstance(StringClass.get(), `[${stringified}]`)
   }
 
-  static async __bool__(
+  static __bool__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<BoolInstance> {
+  ): BoolInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(ArrayInstance)
     if (self.values.length === 0) return BoolInstance.getFalse()
     else return BoolInstance.getTrue()
   }
 
-  static async __add__(
+  static __add__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<ArrayInstance> {
+  ): ArrayInstance {
     CheckArityEq(args, 2)
     const self = args[0].castOrThrow(ArrayInstance)
     const rhs = args[1].castOrThrow(ArrayInstance)
@@ -83,10 +83,10 @@ export class ArrayClass extends Class {
     )
   }
 
-  static async _length_(
+  static _length_(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<NumberInstance> {
+  ): NumberInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(ArrayInstance)
     return new NumberInstance(
@@ -95,10 +95,10 @@ export class ArrayClass extends Class {
     )
   }
 
-  static async _push_(
+  static _push_(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<Instance> {
+  ): Instance {
     CheckArityEq(args, 2)
     const self = args[0].castOrThrow(ArrayInstance)
     const data = args[1]
@@ -106,10 +106,10 @@ export class ArrayClass extends Class {
     return self
   }
 
-  static async _pop_(
+  static _pop_(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<Instance> {
+  ): Instance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(ArrayInstance)
     self.values.pop()

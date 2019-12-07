@@ -6,13 +6,13 @@ import { MagicMethod } from './magic-method'
 
 export interface ValueRef {
   set(value: Instance): void
-  get(): Promise<Instance>
+  get(): Instance
 }
 
 export type TWrappedFunction = (
   interpreter: CodeExecuter,
   args: Instance[],
-) => Promise<Instance>
+) => Instance
 
 export class Instance {
   public fields: Map<string, Instance> = new Map()
@@ -60,7 +60,7 @@ export class Instance {
   getRef(name: string): ValueRef {
     return {
       set: (value: Instance) => this.set(name, value),
-      get: () => Promise.resolve(this.getOrThrow(name)),
+      get: () => this.getOrThrow(name),
     }
   }
 
@@ -73,11 +73,11 @@ export class Instance {
   }
 
   // Calls magic method and binds 'this'.
-  async callMagicMethod(
+  callMagicMethod(
     functionName: MagicMethod,
     args: Instance[],
     interpreter: CodeExecuter
-  ): Promise<Instance> {
+  ): Instance {
     const method = this.getClass().getInBases(functionName)
 
     if (method) {
@@ -92,7 +92,7 @@ export class Instance {
 
         interpreter.callStack.push(
           `${descriptiveName} called at line ${interpreter.locator.first_line}`)
-        const retValue = await method.bind(this).call(interpreter, args)
+        const retValue = method.bind(this).call(interpreter, args)
         interpreter.callStack.pop()
         return retValue
       } else {
@@ -124,7 +124,7 @@ export class NoneInstance extends ObjectInstance {
 }
 
 abstract class FunctionInstance extends ObjectInstance {
-  abstract call(interpreter: CodeExecuter, args: Instance[]): Promise<Instance>
+  abstract call(interpreter: CodeExecuter, args: Instance[]): Instance
 
   // Returns true if method has "this" bound.
   abstract isBound(): boolean
@@ -138,7 +138,7 @@ abstract class FunctionInstance extends ObjectInstance {
     return new WrappedFunctionInstance(
       WrappedFunctionClass.get(),
       (interpreter: CodeExecuter,
-        args: Instance[]): Promise<Instance> => {
+        args: Instance[]): Instance => {
         const boundArgs = args.slice()
         boundArgs.unshift(argToBind)
         return this.call(interpreter, boundArgs)
@@ -159,7 +159,7 @@ export class UserFunctionInstance extends FunctionInstance {
     super(klass)
   }
 
-  async call(interpreter: CodeExecuter, args: Instance[]): Promise<Instance> {
+  call(interpreter: CodeExecuter, args: Instance[]): Instance {
     const environment = new Environment(this.closure)
     const params = this.functionDef.parameters
     CheckArityEq(args, params.length)
@@ -168,7 +168,7 @@ export class UserFunctionInstance extends FunctionInstance {
       environment.shallowSet(params[i], args[i])
     }
 
-    const completion = await interpreter.executeInEnvironment(
+    const completion = interpreter.executeInEnvironment(
       this.functionDef.body.stmts,
       environment
     )
@@ -198,7 +198,7 @@ export class WrappedFunctionInstance extends FunctionInstance {
     super(klass)
   }
 
-  call(interpreter: CodeExecuter, args: Instance[]): Promise<Instance> {
+  call(interpreter: CodeExecuter, args: Instance[]): Instance {
     return this.wrappedFunction(interpreter, args)
   }
 

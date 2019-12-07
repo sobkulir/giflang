@@ -53,16 +53,16 @@ export class Environment {
   getRef(name: string): ValueRef {
     return {
       set: (value: Instance) => this.set(name, value),
-      get: () => Promise.resolve(this.get(name)),
+      get: () => this.get(name),
     }
   }
 
-  async flatten(interpreter: CodeExecuter): Promise<SerializedEnvironment> {
+  flatten(interpreter: CodeExecuter): SerializedEnvironment {
     const vars: string[] = []
     let env: Environment = this
     while (env.enclosing !== null) {
       for (const x of env.values) {
-        vars.push(`${x[0]}: ${await Stringify(interpreter, x[1])}`)
+        vars.push(`${x[0]}: ${Stringify(interpreter, x[1])}`)
       }
       env = env.enclosing
     }

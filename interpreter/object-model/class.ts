@@ -81,10 +81,10 @@ export abstract class Class extends Instance {
 
 export class MetaClass extends Class {
   // MetaClass's __call__ is responsible for creation of new objects.
-  static async __call__(
+  static __call__(
     interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<Instance> {
+  ): Instance {
     CheckArityGe(args, 1)
     if (args[0] instanceof Class) {
       const originalClass = args[0] as Class
@@ -93,7 +93,7 @@ export class MetaClass extends Class {
         nativeBase = nativeBase.base as Class
       }
       const instance = nativeBase.createBlankUserInstance(originalClass)
-      await instance.callMagicMethod(
+      instance.callMagicMethod(
         MagicMethod.__init__, args.slice(1), interpreter)
       return instance
     } else {
@@ -126,45 +126,45 @@ export class MetaClass extends Class {
 }
 
 export class ObjectClass extends Class {
-  static async __init__(
+  static __init__(
     _interpreter: CodeExecuter,
     args: Instance[]
-  ): Promise<Instance> {
+  ): Instance {
     CheckArityEq(args, 1)
     return args[0]
   }
 
-  static async __str__(
+  static __str__(
     _interpreter: CodeExecuter,
     args: Instance[]
-  ): Promise<StringInstance> {
+  ): StringInstance {
     CheckArityEq(args, 1)
     const className = args[0].getClass().name
     return new StringInstance(
       StringClass.get(), `Instance of class "${className}"`)
   }
 
-  static async __bool__(
+  static __bool__(
     _interpreter: CodeExecuter,
     args: Instance[]
-  ): Promise<Instance> {
+  ): Instance {
     CheckArityEq(args, 1)
     return BoolInstance.getTrue()
   }
 
-  static async __eq__(
+  static __eq__(
     _interpreter: CodeExecuter,
     args: Instance[]
-  ): Promise<BoolInstance> {
+  ): BoolInstance {
     CheckArityEq(args, 2)
     if (args[0].id === args[1].id) return BoolInstance.getTrue()
     else return BoolInstance.getFalse()
   }
 
-  static async __ne__(
+  static __ne__(
     _interpreter: CodeExecuter,
     args: Instance[]
-  ): Promise<BoolInstance> {
+  ): BoolInstance {
     CheckArityEq(args, 2)
     if (args[0].id !== args[1].id) return BoolInstance.getTrue()
     else return BoolInstance.getFalse()
@@ -202,10 +202,10 @@ export class ObjectClass extends Class {
 }
 
 export class WrappedFunctionClass extends Class {
-  static async __str__(
+  static __str__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<StringInstance> {
+  ): StringInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(WrappedFunctionInstance)
     return new StringInstance(
@@ -217,7 +217,7 @@ export class WrappedFunctionClass extends Class {
   static __call__(
     interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<Instance> {
+  ): Instance {
     CheckArityGe(args, 1)
     const self = args[0].castOrThrow(WrappedFunctionInstance)
     return self.call(interpreter, args.slice(1))
@@ -252,10 +252,10 @@ export class WrappedFunctionClass extends Class {
 }
 
 export class UserFunctionClass extends Class {
-  static async __str__(
+  static __str__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<StringInstance> {
+  ): StringInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(UserFunctionInstance)
     return new StringInstance(
@@ -267,7 +267,7 @@ export class UserFunctionClass extends Class {
   static __call__(
     interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<Instance> {
+  ): Instance {
     CheckArityGe(args, 1)
     const self = args[0].castOrThrow(UserFunctionInstance)
     return self.call(interpreter, args.slice(1))
@@ -299,10 +299,10 @@ export class UserFunctionClass extends Class {
 }
 
 export class NoneClass extends Class {
-  static async __str__(
+  static __str__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<StringInstance> {
+  ): StringInstance {
     CheckArityEq(args, 1)
     return new StringInstance(
       StringClass.get(),
@@ -310,10 +310,10 @@ export class NoneClass extends Class {
     )
   }
 
-  static async __bool__(
+  static __bool__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<BoolInstance> {
+  ): BoolInstance {
     CheckArityEq(args, 1)
     return BoolInstance.getFalse()
   }
@@ -342,10 +342,10 @@ export class NoneClass extends Class {
 }
 
 export class BoolClass extends Class {
-  static async __str__(
+  static __str__(
     _interpreter: CodeExecuter,
     args: Instance[]
-  ): Promise<StringInstance> {
+  ): StringInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(BoolInstance)
     let str = ''
@@ -358,10 +358,10 @@ export class BoolClass extends Class {
     return new StringInstance(StringClass.get(), str)
   }
 
-  static async __bool__(
+  static __bool__(
     _interpreter: CodeExecuter,
     args: Instance[]
-  ): Promise<BoolInstance> {
+  ): BoolInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(BoolInstance)
     return self
@@ -390,10 +390,10 @@ export class BoolClass extends Class {
 }
 
 export class StringClass extends Class {
-  static async __init__(
+  static __init__(
     _interpreter: CodeExecuter,
     args: Instance[]
-  ): Promise<StringInstance> {
+  ): StringInstance {
     CheckArityEq(args, 2)
     const self = args[0].castOrThrow(StringInstance)
     const rhs = args[1].castOrThrow(StringInstance)
@@ -401,29 +401,29 @@ export class StringClass extends Class {
     return self
   }
 
-  static async __str__(
+  static __str__(
     _interpreter: CodeExecuter,
     args: Instance[]
-  ): Promise<StringInstance> {
+  ): StringInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(StringInstance)
     return self
   }
 
-  static async __bool__(
+  static __bool__(
     _interpreter: CodeExecuter,
     args: Instance[]
-  ): Promise<BoolInstance> {
+  ): BoolInstance {
     CheckArityEq(args, 1)
     const self = args[0].castOrThrow(StringInstance)
     if (self.value.length === 0) return BoolInstance.getFalse()
     else return BoolInstance.getTrue()
   }
 
-  static async __add__(
+  static __add__(
     _interpreter: CodeExecuter,
     args: Instance[]
-  ): Promise<StringInstance> {
+  ): StringInstance {
     CheckArityEq(args, 2)
     const self = args[0].castOrThrow(StringInstance)
     const rhs = args[1].castOrThrow(StringInstance)
@@ -433,10 +433,10 @@ export class StringClass extends Class {
     )
   }
 
-  static async __getitem__(
+  static __getitem__(
     _interpreter: CodeExecuter,
     args: Instance[],
-  ): Promise<StringInstance> {
+  ): StringInstance {
     CheckArityEq(args, 2)
     const self = args[0].castOrThrow(StringInstance)
     const key = args[1].castOrThrow(NumberInstance)
@@ -450,17 +450,17 @@ export class StringClass extends Class {
     }
   }
 
-  static async __setitem__(
+  static __setitem__(
     _interpreter: CodeExecuter,
     _args: Instance[],
-  ): Promise<StringInstance> {
+  ): StringInstance {
     throw new Error('Strings are immutable.')
   }
 
   static comparatorOp(
     action: (lhs: string, rhs: string) => boolean,
-  ): (_interpreter: CodeExecuter, args: Instance[]) => Promise<BoolInstance> {
-    return async (_interpreter: CodeExecuter, args: Instance[]) => {
+  ): (_interpreter: CodeExecuter, args: Instance[]) => BoolInstance {
+    return (_interpreter: CodeExecuter, args: Instance[]) => {
       CheckArityEq(args, 2)
       const self = args[0].castOrThrow(StringInstance)
       const rhs = args[1].castOrThrow(StringInstance)
