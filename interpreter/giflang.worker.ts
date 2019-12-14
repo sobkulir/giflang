@@ -4,6 +4,7 @@ import { ParseGiflang } from './parser'
 
 export interface GiflangWorker {
   run(code: string): void
+  resolveNextStep(): void
 }
 
 export interface GiflangSetup extends InterpreterSetup {
@@ -16,13 +17,19 @@ class Giflang implements GiflangWorker {
     this.interpreter = new Interpreter(setup, isDebugMode)
   }
   run(code: string) {
-    try {
-      const rootNode = ParseGiflang(code)
-      this.interpreter.visitProgramStmt(rootNode)
-      this.setup.onFinish('')
-    } catch (e) {
-      this.setup.onFinish(`${e.toString()}`)
-    }
+    setTimeout(() => {
+      try {
+        const rootNode = ParseGiflang(code)
+        this.interpreter.visitProgramStmt(rootNode)
+        this.setup.onFinish('')
+      } catch (e) {
+        this.setup.onFinish(`${e.toString()}`)
+      }
+    })
+  }
+
+  resolveNextStep() {
+    this.interpreter.resolveNextStep()
   }
 }
 

@@ -57,8 +57,8 @@ export const newNextStep =
   payload: args,
   reducer: produce((state: State) => {
     state.execution.runState = RunState.DEBUG_WAITING
-    state.execution.resolveNextStep = args.resolveNextStep
     state.execution.locator = args.locator
+    state.execution.resolveNextStep = args.resolveNextStep
     state.execution.callStack = args.callStack
     state.execution.environment = args.environment
     state.textAreaMap.mainEditor.scroll = ScrollableType.HIGHLIGHT
@@ -76,24 +76,27 @@ export const giflangSetup: GiflangSetup = {
     (errorMsg: string) =>
       { storeInstance.dispatch(finishExecution(errorMsg))},
   onNextStep:
-    (locator: JisonLocator,
+    (arr: Int32Array, locator: JisonLocator,
       callStack: CallStack, environment: SerializedEnvironment) => {
-      let resolveNextStep: any
-      const ret = new Promise<void>((resolve, _) => resolveNextStep = resolve)
+      const resolveNextStep = () => {
+        Atomics.store(arr, 0, 1)
+        Atomics.notify(arr, 0, 1)
+      }
       storeInstance.dispatch(newNextStep(
         {resolveNextStep, locator, callStack, environment}))
-      return ret
     }
   }
 
 export const executionStarted =
-  (worker: Worker, isDebugMode: boolean): MyAction<Worker> => ({
+  (resolveNextStep: () => void, worker: Worker, isDebugMode: boolean)
+    : MyAction<Worker> => ({
     type: 'Execution started',
     reducer: produce((state: State) => {
       state.execution.runState = 
         (isDebugMode) ? RunState.DEBUG_RUNNING : RunState.RUNNING
       state.execution.worker = worker
       state.execution.locator = undefined
+      state.execution.resolveNextStep = resolveNextStep
       state.ide.focusedArea = FocusedArea.EXECUTION_INPUT
       state.ide.isIOBoxVisible = true
     })
@@ -109,8 +112,9 @@ export async function StartExecution(code: string, isDebugMode: boolean) {
 
   const worker = await new workerProxy(
     Comlink.proxy(giflangSetup), isDebugMode)
-  storeInstance.dispatch(executionStarted(vanillaWorker, isDebugMode))
-  worker.run(code)
+  storeInstance.dispatch(executionStarted(
+    () => {worker.resolveNextStep()}, vanillaWorker, isDebugMode))
+    worker.run(code)
 }
 
 export const startExecution =

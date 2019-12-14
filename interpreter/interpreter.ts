@@ -4,6 +4,7 @@ import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, Do
 import { Operator } from './ast/operator'
 import { InputSign, PrintSign, signToCharMap } from './ast/sign'
 import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, FunctionDeclStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
+import { Barrier } from './barrier'
 import { CodeExecuter } from './code-executer'
 import { Environment, SerializedEnvironment } from './environment'
 import { Class, ObjectClass, StringClass, UserClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
@@ -19,7 +20,8 @@ import { RuntimeError } from './runtime-error'
 export type CallStack = string[]
 
 export type NextStepFunction =
-  (locator: JisonLocator,
+  (arr: Int32Array,
+    locator: JisonLocator,
     callStack: CallStack, environment: SerializedEnvironment) => void
 
 export interface InterpreterSetup {
@@ -34,6 +36,7 @@ export class Interpreter
   VisitorValueExpr<Instance>,
   VisitorStmt<Completion>,
   CodeExecuter {
+  private readonly stepperBarrier: Barrier
   private readonly globals: Environment
   private environment: Environment
   public callStack: string[] = ['main']
@@ -54,13 +57,21 @@ export class Interpreter
         GiflangInput(setup.onInput), 'INPUT'))
     this.globals.getRef('TRUE').set(BoolInstance.getTrue())
     this.globals.getRef('FALSE').set(BoolInstance.getFalse())
+    this.stepperBarrier = new Barrier()
 
     if (isDebugMode) {
       this.waitForNextStep = (locator: JisonLocator) => {
+        this.stepperBarrier.reset()
         setup.onNextStep(
+          this.stepperBarrier.int32arr,
           locator, this.callStack, this.environment.flatten(this))
+        this.stepperBarrier.wait()
       }
     }
+  }
+
+  public resolveNextStep() {
+    this.stepperBarrier.notify()
   }
 
   private evaluateRef(expr: RefExpr): ValueRef {
