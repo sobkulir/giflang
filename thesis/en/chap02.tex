@@ -48,7 +48,7 @@ the client sending a request
 \begin{figure}[!hbt]
 	\includegraphics[width=\textwidth]{../img/websockets}
 	\caption{Difference between using HTTP polling and WebSockets}
-	\label{fig:chap1:websockets}
+	\label{fig:chap2:websockets}
 \end{figure}
 
 We will introduce two Web IDEs that use server side execution -- REPL.it and Ideone. They both support numerous languages such
@@ -65,7 +65,7 @@ requests are send, but that might result in higher latency between a state chang
 
 WebSockets address this issue. They allow opening a two-way interactive communication session between the user's browser and a server.
 With this API, browser can send messages to a server and receive event-driven responses without having to poll the server for a reply\footnote{source: mdn todo}.
-You can see this in Figure \ref{fig:chap1:websockets} where WebSocket communication is marked with red arrows.
+You can see this in Figure \ref{fig:chap2:websockets} where WebSocket communication is marked with red arrows.
 Before WebSockets were introduced around the year 2012 there was not a way to initiate a communication from server to browser as HTTP is a request-response
 protocol. This means that server can only respond to browser's requests.
 
@@ -119,7 +119,7 @@ Integrating functions defined in WebAssembly into a JavaScript script requires n
 as function arguments and return values.
 
 There are many ports of existing interpreters and compilers to WebAssembly, because there are tools like Emscripten\footnote{Add reference}
-that can compile C/C++ code to WebAssembly. For example we really like Iodide\footnote{Todo reference} project that brings scientific Python
+that can compile C/C++ code to WebAssembly. For example we really like Iodide\footnote{Todo reference} -- project that brings scientific Python
 to the client side of the browser.
 
 \subsection{Conclusion}
@@ -135,16 +135,169 @@ form of WebAssembly seemed very complex. It would allow us to use language like 
 decided to write the interpreter in JavaScript and run it in a WebWorker.
 
 \section{Picking the right Javascript flavour}
-Why typescript is awesome.
+JavaScript started evolving again in 2015, when a new standard -- ECMAScript 2015 -- was published. Prior to that, the last prominent
+standard was introduced in 2009. Currently, there is a new standard released every year. With all the new additions to the language, programming in
+JavaScript nowadays is way more pleasant than ever before.
 
+However, it is still a dynamically typed language. Since we prefer statically typed languages we looked into the options of writing client-side scripts in
+a statically typed language. It seems like every Silicon Valley tech giant tried to bring types to JavaSript. Google created Dart,
+Facebook made Flow and finally, Microsoft created TypeScript. All of these languages can be transpiled to JavaScript while enforcing the static types.
 
-\section{Frontend framework vs vanilla Javascript}
+Dart is a Java-like programming language, quite far from JavaScript in terms of its syntax. Flow is not a programming language in itself. It lets programmers
+annotate a JavaScript code with types and enforce them. TypeScript is similar to Flow, but it is more popular and has a bigger community.
 
-\subsection{Frontend Frameworks Struggle}
-Why react and how does it work
+Among the languages described above we picked TypeScript, mainly because it has currently a lot of momentum and it is being widely adopted.
+
+\section{The rise of single-page applications}
+In the old days of the web, before the year 2000, any data exchange between a server and a browser required reloading an entire page. 
+Ajax\footnote{Asynchronous JavaScript + XML} was introduced to solve this problem by allowing web applications to send and retrieve data from
+a server asynchronously (in the background) without interfering with the display and behavior of the existing page\footnote{wikipedia}.
+
+Ajax later gave rise to single-page applications (SPAs). SPA is a web application that interacts with the user by dynamically rewriting
+the current page rather than loading entire new pages from a server\footnote{wikipedia}. In this thesis, we build an SPA, because users should not
+face any page-reloads while interacting with a web IDE (e.g., when running or saving the code).  
+
+Browsers were originally designed for a stateless page-redraw model and thus with SPAs some new challenges emerged. The most predominant of them is
+probably keeping the displayed UI in sync with the state.
+
+Let us show what we mean by keeping the state in sync with the UI on a simple example. Consider a widget for creating a list of emails like one shown below.
+Users can add emails and delete them later. This example is inspired by the one shown in the article \cite{JSFramework}.
+\begin{figure}[!hbt]
+    \centering
+	\includegraphics[width=0.5\textwidth]{../img/emails}
+	\caption{A simple widget for creating a list of emails}
+	\label{fig:chap2:emails}
+\end{figure}
+
+We can represent the state of this application as a list of emails with a unique ID. Below is a JavaScript object holding the state displayed in
+Figure \ref{fig:chap2:emails}.
+\begin{code}
+let state = [
+    { email: 'john@doe.com', id: 0 },
+    { email: 'petr@novak.cz', id: 1 },
+    { email: 'sample@email.sk', id: 2 },
+]
+\end{code}
+
+Every user action that changes the state has to also update the UI accordingly. For example adding an email must add it to the state object, but also update
+the DOM\footnote{The Document Object Model (DOM) is a programming interface for HTML and XML documents.} by appending a new element to the email list.
+Similarly, removing an email should remove it from the list and from the UI.
+\begin{code}
+// DOM nodes of the list.
+let li_items = []
+// List of emails with IDs.
+let state = []
+
+function addEmail(email) {
+    // State change
+    const id = GetNextId()
+    state = state.concat({ email, id })
+
+    // UI change
+    const ul = document.createElement('ul')
+    const li = document.createElement('li')
+    const span = document.createElement('span')
+    const del = document.createElement('a')
+    span.innerText = email
+    del.innerText = 'delete'
+    del.setAttribute('data-delete-id', id)
+
+    ul.appendChild(li)
+    li.appendChild(del)
+    li.appendChild(span)
+    li_items[id] = li
+}
+
+function removeEmail(id) {
+    // State change
+    state = state.filter(item => item.id !== id)
+
+    // UI change
+    const ul = document.createElement('ul')
+    ul.removeChild(li_items[id])
+}
+\end{code}
+
+This example is very basic, but for more complex apps with bigger states, it is very easy to end up with the UI and the state out of sync. It is the case
+because we have to write code for both the state change and the UI change. On the other hand, JavaScript frameworks abstract away the fact that UI needs
+to be updated accordingly when the state changes. They simply give a guarantee that whenever the state is mutated, the UI gets updated.
+
+\subsection{React}
+React \cite{React} is a JavaScript framework created by Facebook. To make sure the UI corresponds to the state, the whole UI is re-rendered
+when the state changes. However, re-renders are costly operations and deleting the whole DOM and creating a new one from scratch on every re-render
+would be very slow. Instead, React renders the page into a Virtual DOM. Virtual DOM is a “virtual” representation of a UI kept in memory and
+synced with the “real” DOM by React\footnote{React docs}. This process is called reconciliation.
+
+The reconciliation takes the current virtual DOM and a snapshot of the last synced virtual DOM and tries to find the minimum number of operations to turn
+one into another. There are some generic solutions to this algorithmic problem of generating the minimum number of operations to transform one tree into another.
+However, the state-of-the-art algorithms \cite{TreeEditDistance} have a complexity in the order of $\mathcal{O}(n^3)$ where $n$ is the number of elements in
+the tree\footnote{taken from React docs}. Therefore, React team decided to implement a heuristic $\mathcal{O}(n)$ algorithm.
+
+\begin{figure}[!hbt]
+    \centering
+	\includegraphics[width=\textwidth]{../img/virtual_dom}
+	\caption{A flowchart of React updating the DOM.}
+	\label{fig:chap2:virtual_dom}
+\end{figure}
+
+There are many other frameworks (e.g., Angular, Vue.js, Ember.js). Each of them has a different approach to solving the UI and the state syncing. However, we picked
+React for this project, mainly because we used it in previous projects where it proved itself very useful and easy to use.
 
 \section{Storing programs}
+We want to allow users to save, load and share their programs. A typical solution to this problem is to create a database in the backend. However, since all
+of our application logic lies on the client side we looked into a way of opting out of creating a database and using a ready-made service. This means that
+our backend can consist of only a server serving static files.
 
-\subsection{Firebase vs typical storage model}
+\subsection{Backend as a service}
+Backend as a service (BaaS) is a model for providing app developers with a way to link their applications to backend cloud storage and APIs exposed by back end
+applications while also providing features such as user management or push notification.\footnote{wikipedia} These services are provided via the use of custom
+SDKs\footnote{Software development kit} and APIs.
 
-\subsection{Encoding program id in the URL}
+There are many different BaaS providers (e.g., Back4App, Parse Server or AWS Aurora), but we chose to use Firebase /TODO cite/ from Google. Since we do not
+need a complex functionality for our project, picking almost any other provider would still work well with our app.
+
+The biggest advantage of BaaS over a custom backend is that BaaS saves developers a lot of time as it typically offers user management and data storage.
+Providers usually promise seamless scaling of the app. On the other hand, BaaS gives developers less control as they have to adhere to the limits of the APIs
+and it can also cost more than a VPS with a custom server.
+
+\subsection{Sharing and forking the programs}
+\label{chap2:program_id}
+
+In order to allow users sharing their programs with other users, we need to give each program a unique ID which can then be used to load the program later.
+This ID can be put in the URL for example as a GET parameter or part of the path.
+
+When a user program is saved for the first time, it is given a unique ID. Any subsequent saves overwrite the current version. If we keep overwriting
+a saved program even after a page reload, user A might load a program of user B and overwrite the work of user B.
+
+In order to prevent users from overwriting each others' programs, we decided to always assign a new ID to a program that is saved for the first time after
+a page load. This allows users to fork an existing program without having an ability to change it.
+
+\begin{figure}[!hbt]
+    \centering
+    \begin{tikzpicture}[scale=0.2]
+    \tikzstyle{every node}+=[inner sep=0pt]
+    \draw [black] (21.4,-32.1) circle (3);
+    \draw (21.4,-32.1) node {$S$};
+    \draw [black] (45.6,-32.1) circle (3);
+    \draw (45.6,-32.1) node {$id$};
+    \draw [black] (67.6,-32.1) circle (3);
+    \draw (67.6,-32.1) node {$newId$};
+    \draw [black] (24.4,-32.1) -- (42.6,-32.1);
+    \fill [black] (42.6,-32.1) -- (41.8,-31.6) -- (41.8,-32.6);
+    \draw (33.5,-32.6) node [below] {Page\mbox{ }load\mbox{ }/id};
+    \draw [black] (46.923,-34.78) arc (54:-234:2.25);
+    \draw (45.6,-39.35) node [below] {Edits};
+    \fill [black] (44.28,-34.78) -- (43.4,-35.13) -- (44.21,-35.72);
+    \draw [black] (48.6,-32.1) -- (64.6,-32.1);
+    \fill [black] (64.6,-32.1) -- (63.8,-31.6) -- (63.8,-32.6);
+    \draw (56.6,-32.6) node [below] {First\mbox{ }save};
+    \draw [black] (68.923,-34.78) arc (54:-234:2.25);
+    \draw (67.6,-39.35) node [below] {Edits\mbox{ }and\mbox{ }saves};
+    \fill [black] (66.28,-34.78) -- (65.4,-35.13) -- (66.21,-35.72);
+    \end{tikzpicture}
+	\caption{A state machine showing how program ID changes in the web IDE.}
+	\label{fig:chap2:page_url}
+\end{figure}
+
+JSFiddle mentioned in the section \ref{chap1:related_work} uses the same approach. Additionally, JSFiddle also stores all intermediate versions. However,
+we did not find it crucial and chose to overwrite the current version after each save, except for the initial save.
