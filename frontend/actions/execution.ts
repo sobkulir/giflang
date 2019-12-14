@@ -6,7 +6,7 @@ import { SerializedEnvironment } from '~/interpreter/environment'
 import { GiflangSetup, GiflangWorker } from '~/interpreter/giflang.worker'
 import { CallStack } from '~/interpreter/interpreter'
 import { storeInstance } from '../app'
-import { CharsToSigns, SignsToChars, SignsToTokens } from '../lib/editor'
+import { CharsToSigns, SignsToChars } from '../lib/editor'
 import { InputBuffer } from '../lib/input-buffer'
 import { RunState } from '../types/execution'
 import { FocusedArea } from '../types/ide'
@@ -131,7 +131,7 @@ export const startExecution =
       state.textAreaMap.executionInput.text = createEmptyText()
       state.textAreaMap.executionInput.cursorPosition = {row: 0, col: 0}
       StartExecution(
-        SignsToTokens(state.textAreaMap.mainEditor.text),
+        SignsToChars(state.textAreaMap.mainEditor.text),
         isDebugMode)
     })
   })

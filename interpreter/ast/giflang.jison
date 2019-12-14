@@ -1,128 +1,68 @@
 %lex
 
-%{
+DIGIT       [0-9]
+LETTER      [A-Z_✓✕αβγδεζηθικλμ]
 
-/*  After reading a lexeme go to "delimit" state to
-      expect delimiter and return the lexeme. Arrow function
-    is used to bind this. */
-var delimit = (terminal) => { this.begin('delimit'); return terminal }
+IDENTIFIER  {LETTER}({LETTER}|{DIGIT})*
 
-%}
-
-DELIMITER                   ";"
-
-%x delimit
-%x string_literal
+KEYWORDS    [<≤=≠≥>+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.→,]
 
 %%
 
-"LT"                        { return delimit('LT') }
-"LE"                        { return delimit('LE') }
-"EQ"                        { return delimit('EQ') }
-"NE"                        { return delimit('NE') }
-"GE"                        { return delimit('GE') }
-"GT"                        { return delimit('GT') }
+"<"                         { return 'LT' }
+"≤"                         { return 'LE' }
+"="                         { return 'EQ' }
+"≠"                         { return 'NE' }
+"≥"                         { return 'GE' }
+">"                         { return 'GT' }
 
-"PLUS"                      { return delimit('PLUS') }
-"MINUS"                     { return delimit('MINUS') }
-"MUL"                       { return delimit('MUL') }
-"DIV"                       { return delimit('DIV') }
-"MOD"                       { return delimit('MOD') }
+"+"                         { return 'PLUS' }
+"-"                         { return 'MINUS' }
+"*"                         { return 'MUL' }
+"/"                         { return 'DIV' }
+"%"                         { return 'MOD' }
 
-"TRUE"                      { return delimit('TRUE') }
-"FALSE"                     { return delimit('FALSE') }
-"NOT"                       { return delimit('NOT') }
-"OR"                        { return delimit('OR') }
-"AND"                       { return delimit('AND') }
+"˜"                         { return 'NOT' }
+"|"                         { return 'OR' }
+"∧"                         { return 'AND' }
 
-"ASSIGN"                    { return delimit('ASSIGN') }
-"NONE"                      { return delimit('NONE') }
+"≔"                         { return 'ASSIGN' }
+"☐"                         { return 'NONE' }
 
-"LPAR"                      { return delimit('LPAR') }
-"RPAR"                      { return delimit('RPAR') }
-"LBRA"                      { return delimit('LBRA') }
-"RBRA"                      { return delimit('RBRA') }
-"LCURLY"                    { return delimit('LCURLY') }
-"RCURLY"                    { return delimit('RCURLY') }
+"("                         { return 'LPAR' }
+")"                         { return 'RPAR' }
+"["                         { return 'LBRA' }
+"]"                         { return 'RBRA' }
+"{"                         { return 'LCURLY' }
+"}"                         { return 'RCURLY' }
 
-"IF"                        { return delimit('IF') }
-"ELSE"                      { return delimit('ELSE') }
-"WHILE"                     { return delimit('WHILE') }
-"FOR"                       { return delimit('FOR') }
+"☝"                        { return 'IF' }
+"☞"                        { return 'ELSE' }
+"⟳"                        { return 'WHILE' }
+"♶"                        { return 'FOR' }
 
-"CLASS"                     { return delimit('CLASS') }
-"FUNCTION"                  { return delimit('FUNCTION') }
-"RETURN"                    { return delimit('RETURN') }
-"CONTINUE"                  { return delimit('CONTINUE') }
-"BREAK"                     { return delimit('BREAK') }
+"⚛"                         { return 'CLASS' }
+"ƒ"                         { return 'FUNCTION' }
+"⚹"                         { return 'RETURN' }
+"⚺"                         { return 'CONTINUE' }
+"⚻"                         { return 'BREAK' }
 
-"SPACE"                     {
-                                /* ignore spaces unless in string literal */
-                                inc_token_counter(yylloc.last_line)
-                                this.begin('delimit')
-                            }
-"SEMICOLON"                 { return delimit('SEMICOLON') }
-"DOT"                       { return delimit('DOT') }
-"PROP"                      { return delimit('PROP') }
-"COMMA"                     { return delimit('COMMA') }
-"QUOTE"                     { this.begin('string_literal'); return delimit('QUOTE') }
-<string_literal>"QUOTE"     { this.popState(); return delimit('QUOTE') }
+";"                         { return 'SEMICOLON' }
+"."                         { return 'DOT' }
+"→"                         { return 'PROP' }
+","                         { return 'COMMA' }
+\"({KEYWORDS}|{LETTER}|{DIGIT})*\"
+                            { yytext = yytext.substr(1, yytext.length - 2); return 'STRING' }
 
-"D"[0-9]                    { yytext = yy.Sign.stringSignToChar(yytext); return delimit('DIGIT') }
-"AUX"[0-9]+                 { yytext = yy.Sign.stringSignToChar(yytext); return delimit('AUXLETTER') }
-[A-Z_]                      { yytext = yy.Sign.stringSignToChar(yytext); return delimit('LETTER') }
+{DIGIT}+("."{DIGIT}+)?      { return 'NUMBER' }
+{IDENTIFIER}                { return 'IDENTIFIER' }
 
-<string_literal>[A-Z_0-9]+?(?={DELIMITER})
-                            { yytext = yy.Sign.stringSignToChar(yytext); return delimit('LETTER') }
 
-<delimit>{DELIMITER}        { this.popState() }
-
-<INITIAL,delimit,string_literal>\s+		/* ignore whitespace */
-<delimit>.                  { throw new Error('Delimiter expected: ' + yytext) }
-<string_literal>.           { throw new Error('End of string literal expected: ' + yytext) }
-<INITIAL>.                  { throw new Error(`Unknown gifcode "${yytext}"`) }
-
-<delimit><<EOF>>            { throw new Error('Delimiter expected') }
+\s+                         /* ignore whitespace */
+.                           { throw new Error(`Unknown char "${yytext}"`) }
 <<EOF>>                     { return 'EOF' }
 
 %%
-
-// lexer extra code
-var token_counter = 0;
-var last_line = -1;
-
-var inc_token_counter = (curLine) => {
-    if (curLine !== last_line) {
-        last_line = curLine
-        token_counter = 0
-    }
-    ++token_counter
-};
-
-// Source: https://stackoverflow.com/questions/58891186/custom-location-tracking-in-jison-gho
-lexer.post_lex = function (token) {
-    inc_token_counter(this.yylloc.last_line)
-    
-    // 'abuse' the *column* part for tracking the token number;
-    // meanwhile the `range` member will still be usable to debug
-    // the raw *text* input as that one will track the positions within the raw input string.
-    //
-    // make sure to tweak both first_column and last_column so that the default location tracking
-    // 'merging' code in the generated parser can still do its job: that way we'll get to
-    // see which *range* of tokens constitute a particular grammar rule/element, just like
-    // it were text columns.
-    // Could've done the same with first_line/last_line, but I felt it more suitable to use the
-    // column part for this as it's at the same very low granularity level as 'token index'...
-    this.yylloc.first_column = token_counter
-    this.yylloc.last_column = token_counter
-    return token;
-};
-
-// extra helper so multiple parse() calls will restart counting tokens:
-lexer.reset_token_counter = function () {
-    token_counter = 0;
-    last_line = -1
-};
 
 /lex
 
@@ -151,49 +91,17 @@ Primitives
     | %epsilon                      { $$ = [] }
     ;
 
-Identifier
-    : LETTER Alphanum           { $$ = $1 + $2 }
-    | AUXLETTER Alphanum        { $$ = $1 + $2 }
-    ;
-
-Alphanum
-    : AlphanumAtom Alphanum     { $$ = $1 + $2 }
-    | %epsilon                  { $$ = '' }
-    ;
-
-AlphanumAtom
-    : LETTER                    { $$ = $1 }
-    | DIGIT                     { $$ = $1 }
-    | AUXLETTER                 { $$ = $1 }
-    ;
-
-UFloat
-    : UInt DOT UInt             { $$ = $1 + '.' + $3 }
-    ;
-
-UInt
-    : UInt DIGIT                { $$ = $1 + $2 }
-    | DIGIT                     { $$ = $1 }
-    ;
-
-String
-    : QUOTE Alphanum QUOTE      { $$ = $2 }
-    ;
-
 PrimaryComnon
-    : Identifier                { $$ = new yy.Expr.VariableRefExpr($1, @$) }
+    : IDENTIFIER                { $$ = new yy.Expr.VariableRefExpr($1, @$) }
     | LPAR Expr RPAR            { $$ = $2 }
     | ArrayLiteral              { $$ = $1 }
     | Literal                   { $$ = $1 }
     ;
 
 Literal
-    : TRUE                      { $$ = new yy.Expr.VariableRefExpr('TRUE', @$) }
-    | FALSE                     { $$ = new yy.Expr.VariableRefExpr('FALSE', @$) }
-    | NONE                      { $$ = new yy.Expr.NoneValueExpr(@$) }
-    | UInt                      { $$ = new yy.Expr.NumberValueExpr($1, @$) }
-    | UFloat                    { $$ = new yy.Expr.NumberValueExpr($1, @$) }
-    | String                    { $$ = new yy.Expr.StringValueExpr($1, @$) }
+    : NONE                      { $$ = new yy.Expr.NoneValueExpr(@$) }
+    | NUMBER                      { $$ = new yy.Expr.NumberValueExpr($1, @$) }
+    | STRING                    { $$ = new yy.Expr.StringValueExpr($1, @$) }
     ;
 
 ArrayLiteral
@@ -207,7 +115,7 @@ ElementList
     ;
 
 MemberExpr
-    : MemberExpr PROP Identifier    { $$ = new yy.Expr.DotAccessorRefExpr($1, $3, @$) }
+    : MemberExpr PROP IDENTIFIER    { $$ = new yy.Expr.DotAccessorRefExpr($1, $3, @$) }
     | MemberExpr LBRA Expr RBRA     { $$ = new yy.Expr.SquareAccessorRefExpr($1, $3, @$) }
     | PrimaryComnon                 { $$ = $1 }
     ;
@@ -215,7 +123,7 @@ MemberExpr
 CallExpr
     : MemberExpr Arguments      { $$ = new yy.Expr.CallValueExpr($1, $2, @$) }
     | CallExpr Arguments        { $$ = new yy.Expr.CallValueExpr($1, $2, @$) }
-    | CallExpr PROP Identifier  { $$ = new yy.Expr.DotAccessorRefExpr($1, $3, @$) }
+    | CallExpr PROP IDENTIFIER  { $$ = new yy.Expr.DotAccessorRefExpr($1, $3, @$) }
     | CallExpr LBRA Expr RBRA   { $$ = new yy.Expr.SquareAccessorRefExpr($1, $3, @$) }
     ;
 
@@ -296,7 +204,7 @@ StatementList
     ;
 
 FunctionDeclaration
-    : FUNCTION Identifier Parameters Block
+    : FUNCTION IDENTIFIER Parameters Block
                                     { $$ = new yy.Stmt.FunctionDeclStmt($2, $3, $4, @$) }
     ;
 
@@ -306,8 +214,8 @@ Parameters
     ;
 
 IdentifierList
-    : Identifier                    { $$ = [$1] }
-    | IdentifierList COMMA Identifier
+    : IDENTIFIER                    { $$ = [$1] }
+    | IdentifierList COMMA IDENTIFIER
                                     { $1.push($3); $$ = $1 }
     ;
 
@@ -357,8 +265,8 @@ BreakStatement
     ;
 
 ClassDefinition
-    : CLASS Identifier ClassBlock   { $$ = new yy.Stmt.ClassDefStmt($2, null, $3, @$) }
-    | CLASS Identifier LPAR Identifier RPAR ClassBlock	
+    : CLASS IDENTIFIER ClassBlock   { $$ = new yy.Stmt.ClassDefStmt($2, null, $3, @$) }
+    | CLASS IDENTIFIER LPAR IDENTIFIER RPAR ClassBlock	
                                     { $$ = new yy.Stmt.ClassDefStmt($2, $4, $6, @$) }
     ;
 
@@ -380,8 +288,3 @@ InClassStatement
     ;
 
 %%
-
-// extra helper: reset the token counter at the start of every parse() call:
-parser.pre_parse = function (yy) {
-    yy.lexer.reset_token_counter();
-};

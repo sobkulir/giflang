@@ -15,10 +15,6 @@ export const PrintSign = Sign.AUX10
 export const PrintToken = Sign[Sign.AUX10].toString()
 export const InputSign = Sign.AUX11
 
-const signStrings: Set<string> = new Set(Object.keys(Sign)
-  .map((key) => Sign[key as any])
-  .filter((value) => typeof value === 'string') as string[])
-
 export const signToCharMap: Map<Sign, string> = new Map([
   [Sign.A, 'A'], [Sign.B, 'B'], [Sign.C, 'C'], [Sign.D, 'D'], [Sign.E, 'E'],
   [Sign.F, 'F'], [Sign.G, 'G'], [Sign.H, 'H'], [Sign.I, 'I'], [Sign.J, 'J'],
@@ -67,13 +63,5 @@ export function charToSign(str: string): Sign {
     return charToSignMap.get(str) as Sign
   } else {
     throw new Error(`Unknown char ${str}`)
-  }
-}
-
-export function stringSignToChar(str: string): string {
-  if (signStrings.has(str)) {
-    return signToCharMap.get(Sign[str as keyof typeof Sign]) as string
-  } else {
-    throw new Error(`Unknown sign "${str}"`)
   }
 }

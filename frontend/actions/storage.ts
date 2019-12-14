@@ -1,7 +1,7 @@
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import produce from 'immer'
-import { SignsToTokens } from '../lib/editor'
+import { SignsToChars } from '../lib/editor'
 import { LoadingBarState } from '../types/ide'
 import { MyAction, MyThunkAction, State } from '../types/redux'
 import { DocumentReference, LoadState, SaveState } from '../types/storage'
@@ -22,7 +22,7 @@ export const loadCode =
       const doc =
         await firebase.firestore().collection('programs').doc(codeId).get()
       const res = doc.data()
-      let code = `D4;D0;D4;\nN;O;T;SPACE;F;O;U;N;D;`
+      let code = `404\nNOT FOUND`
       if (res !== undefined) {
         code = res.code
       }
@@ -44,7 +44,7 @@ export const saveCode =
         dispatch(setDoc(doc))
       }
       await doc.set({
-        code: SignsToTokens(
+        code: SignsToChars(
           state.textAreaMap[TextAreaType.MAIN_EDITOR].text)
       })
       dispatch(setSaveState(SaveState.SAVED))

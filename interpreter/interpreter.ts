@@ -2,7 +2,7 @@ import { JisonLocator } from './ast/ast-node'
 import { BreakCompletion, Completion, CompletionType, ContinueCompletion, NormalCompletion, ReturnCompletion } from './ast/completion'
 import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, DotAccessorRefExpr, Expr, NoneValueExpr, NumberValueExpr, RefExpr, SquareAccessorRefExpr, StringValueExpr, UnaryNotValueExpr, UnaryPlusMinusValueExpr, ValueExpr, VariableRefExpr, VisitorRefExpr, VisitorValueExpr } from './ast/expr'
 import { Operator } from './ast/operator'
-import { InputSign, PrintSign, signToCharMap } from './ast/sign'
+import { InputSign, PrintSign, Sign, signToCharMap } from './ast/sign'
 import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, FunctionDeclStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
 import { Barrier } from './barrier'
 import { CodeExecuter } from './code-executer'
@@ -55,8 +55,11 @@ export class Interpreter
       new WrappedFunctionInstance(
         WrappedFunctionClass.get(),
         GiflangInput(setup.onInput), 'INPUT'))
-    this.globals.getRef('TRUE').set(BoolInstance.getTrue())
-    this.globals.getRef('FALSE').set(BoolInstance.getFalse())
+    this.globals.getRef(signToCharMap.get(Sign.TRUE) as string)
+      .set(BoolInstance.getTrue())
+    this.globals.getRef(signToCharMap.get(Sign.FALSE) as string)
+      .set(BoolInstance.getFalse())
+
     this.stepperBarrier = new Barrier()
 
     if (isDebugMode) {

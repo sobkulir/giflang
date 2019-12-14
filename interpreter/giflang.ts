@@ -8,13 +8,8 @@ const interpreter = new Interpreter(
     onInput: () => Promise.resolve('')
   })
 const root = ParseGiflang(`
-P;R;I;N;T;LPAR;QUOTE;S;T;A;R;T;QUOTE;RPAR;SEMICOLON;
-FOR; LPAR;
-I;ASSIGN;D0; SEMICOLON;
-I;LT;D1;D0;D0;D0;D0;D0; SEMICOLON;
-I;ASSIGN; I; PLUS; D1; RPAR;
-X;ASSIGN;D9;SEMICOLON;
-P;R;I;N;T;LPAR;QUOTE;E;N;D;QUOTE;RPAR;SEMICOLON;
+ 
+λ("HA H");
 `,
 )
 try {

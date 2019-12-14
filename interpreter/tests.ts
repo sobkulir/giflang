@@ -1,4 +1,4 @@
-import { PrintToken, Sign, signToCharMap } from './ast/sign'
+import { Sign, signToCharMap } from './ast/sign'
 import { ProgramStmt } from './ast/stmt'
 import { Interpreter } from './interpreter'
 import { ParseGiflang } from './parser'
@@ -132,29 +132,29 @@ const parser =
             {
               name: 'Single definition w/o arguments',
               source: `
-FUNCTION; F; LPAR; RPAR; LCURLY;
-  RETURN; D3; SEMICOLON;
-RCURLY;`,
+ƒ F() {
+  ⚹ 3;
+}`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Nested functions',
               source: `
-FUNCTION; F;D1; LPAR; RPAR; LCURLY;
-  FUNCTION; F;D2; LPAR; RPAR; LCURLY; RCURLY;
-RCURLY;`,
+ƒ F1() {
+  ƒ F2() { }
+}`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Name starting with a number',
               source: `
-FUNCTION; D1;N; LPAR; RPAR; LCURLY; RCURLY;`,
+ƒ 1N() { }`,
               expected: ExpectedResult.FAIL_PARSE,
             },
             {
               name: 'Multiple parameters',
               source: `
-FUNCTION; F; LPAR; P;D1; COMMA; P;D2; RPAR; LCURLY; RCURLY;`,
+ƒ F(P1, P2) { }`,
               expected: ExpectedResult.PASS_PARSE,
             },
           ]
@@ -165,73 +165,73 @@ FUNCTION; F; LPAR; P;D1; COMMA; P;D2; RPAR; LCURLY; RCURLY;`,
             {
               name: 'w/o arguments',
               source: `
-F; LPAR; RPAR; SEMICOLON;`,
+F();`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'With a single argument',
               source: `
-F; LPAR; A; RPAR; SEMICOLON;`,
+F(A);`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Missing parentheses',
               source: `
-F; LPAR; SEMICOLON;`,
+F(;`,
               expected: ExpectedResult.FAIL_PARSE,
             },
             {
               name: 'Missing parentheses with argument',
               source: `
-F; LPAR; A; SEMICOLON;`,
+F(A;`,
               expected: ExpectedResult.FAIL_PARSE,
             },
             {
               name: 'With multiple arguments',
               source: `
-F; LPAR; A;D1; COMMA; A;D2; RPAR; SEMICOLON;`,
+F(A1, A2);`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Invalid name of a function',
               source: `
-D1;A; LPAR; RPAR; SEMICOLON;`,
+1A();`,
               expected: ExpectedResult.FAIL_PARSE,
             },
             {
               name: 'Nested function call',
               source: `
-F;D1; LPAR; F;D2; LPAR; RPAR; RPAR; SEMICOLON;`,
+F1( F2() );`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Assignment to function call should fail',
               source: `
-F;U;N;C; LPAR; A;R;G; RPAR; ASSIGN; D5; SEMICOLON;`,
+FUNC(ARG) ≔ 5;`,
               expected: ExpectedResult.FAIL_PARSE,
             },
             {
               name: 'Assignment to accesed function call should fail',
               source: `
-A;R;R; LBRA; D0; RBRA; LPAR; A;R;G; RPAR; ASSIGN; D5; SEMICOLON;`,
+ARR[0](ARG) ≔ 5;`,
               expected: ExpectedResult.FAIL_PARSE,
             },
             {
               name: 'Assignment to a member of a returned array value',
               source: `
-F;U;N;C; LPAR; A;R;G; RPAR; LBRA; D0; RBRA; ASSIGN; D5; SEMICOLON;`,
+FUNC(ARG)[0] ≔ 5;`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Assignment to a member of a returned object value',
               source: `
-F;U;N;C; LPAR; A;R;G; RPAR; PROP; P;R;O;P; ASSIGN; D5; SEMICOLON;`,
+FUNC(ARG)→PROP ≔ 5;`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
               name: 'Defining a lambda should fail (for now)',
               source: `
-J; ASSIGN; FUNCTION; LPAR; RPAR; LCURLY; RCURLY; SEMICOLON;`,
+ J ≔ ƒ(){ };`,
               expected: ExpectedResult.FAIL_PARSE,
             },
           ]
@@ -244,49 +244,43 @@ J; ASSIGN; FUNCTION; LPAR; RPAR; LCURLY; RCURLY; SEMICOLON;`,
         {
           name: 'Array literal',
           source: `
-LBRA; D1;D2; COMMA; D4;D2; RBRA; SEMICOLON;`,
+[12, 42];`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
-          name: 'Multidimensonal array literal with values',
+          name: 'Multidimensional array literal with values',
           source: `
-            LBRA; LBRA; D1; RBRA; COMMA; D3; RBRA; SEMICOLON;`,
+[[1], 3];`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
           name: 'Empty array literal',
           source: `
-            LBRA; RBRA; SEMICOLON;`,
+[];`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
           name: 'Empty multidimensonal array literal',
           source: `
-                      LBRA; LBRA; RBRA; RBRA; SEMICOLON;`,
+[[]];`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
           name: 'Assignment to an element.',
           source: `
-LBRA; D1;D2; COMMA; D4;D2; RBRA; LBRA; D0; RBRA; ASSIGN; D1; SEMICOLON;`,
-          expected: ExpectedResult.PASS_PARSE
-        },
-        {
-          name: 'Assignment',
-          source: `
-LBRA; D1;D2; COMMA; D4;D2; RBRA; LBRA; D0; RBRA; ASSIGN; D1; SEMICOLON;`,
+[12, 42][0] ≔ 1;`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
           name: 'Calling an array literal',
           source: `
-LBRA; RBRA; LPAR; RPAR; SEMICOLON;`,
+[]();`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
-          name: 'Assignment to calling an array literal shoudl fail',
+          name: 'Assignment to calling an array literal should fail',
           source: `
-LBRA; RBRA; LPAR; RPAR; ASSIGN; DD3; SEMICOLON;`,
+[]() ≔ 3;`,
           expected: ExpectedResult.FAIL_PARSE
         },
       ]
@@ -297,31 +291,14 @@ LBRA; RBRA; LPAR; RPAR; ASSIGN; DD3; SEMICOLON;`,
         {
           name: 'Multiassignment',
           source: `
-A; ASSIGN; B; ASSIGN; D0; SEMICOLON;`,
+A ≔ B ≔ 0;`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
           name: 'Dangling assign operator should fail',
           source: `
-A; ASSIGN; SEMICOLON;`,
+A ≔ ;`,
           expected: ExpectedResult.FAIL_PARSE
-        }
-      ]
-    },
-    {
-      name: 'Spaces',
-      tests: [
-        {
-          name: 'Spaces in string literal are ok',
-          source: `
-QUOTE; SPACE; QUOTE; SEMICOLON;`,
-          expected: ExpectedResult.PASS_PARSE
-        },
-        {
-          name: 'Spaces outside of string literal are ignored',
-          source: `
-SPACE; SPACE; A; SPACE; ASSIGN; SPACE; D1; SPACE; SEMICOLON; SPACE;`,
-          expected: ExpectedResult.PASS_PARSE
         }
       ]
     },
@@ -331,19 +308,19 @@ SPACE; SPACE; A; SPACE; ASSIGN; SPACE; D1; SPACE; SEMICOLON; SPACE;`,
         {
           name: 'Identifier cannot start with a digit',
           source: `
-D1;A;L;F;A; SEMICOLON;`,
+1ALFA;`,
           expected: ExpectedResult.FAIL_PARSE
         },
         {
           name: 'Identifier can start with letter and contain alphanum',
           source: `
-I;D1;A;L;F;A; SEMICOLON;`,
+I1ALFA;`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
           name: 'Identifier can contain auxletters as first char',
           source: `
-AUX0;A;AUX1;L;F;A; SEMICOLON;`,
+αALFAβBETA;`,
           expected: ExpectedResult.PASS_PARSE
         },
       ]
@@ -360,7 +337,7 @@ const runtime = {
         {
           name: 'String can contain auxletter',
           source: `
-${PrintToken};LPAR;QUOTE;AUX0;AUX1;QUOTE;RPAR;SEMICOLON;
+λ("αβ");
 `,
           output: 'αβ\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -368,15 +345,15 @@ ${PrintToken};LPAR;QUOTE;AUX0;AUX1;QUOTE;RPAR;SEMICOLON;
         {
           name: 'String can contain any valid token (except QUOTE)',
           source: `
-${PrintToken};LPAR;QUOTE;LT;GT;ASSIGN;QUOTE;RPAR;SEMICOLON;
+λ("≤>=✓");
 `,
-          output: '<>≔\n',
+          output: '≤>=✓\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
           name: 'String cannot contain unknown token',
           source: `
-${PrintToken};LPAR;QUOTE;UNKNOWN;QUOTE;RPAR;SEMICOLON;
+λ("&&");
 `,
           expected: ExpectedResult.FAIL_PARSE
         }
@@ -388,22 +365,19 @@ ${PrintToken};LPAR;QUOTE;UNKNOWN;QUOTE;RPAR;SEMICOLON;
         {
           name: 'Fibonacci',
           source: `
-FUNCTION; F;I;B; LPAR; P; RPAR;
-LCURLY;  
-  IF; LPAR; P; EQ; D0; RPAR; 
-  LCURLY;
-    RETURN; D0; SEMICOLON;
-  RCURLY;
-  IF; LPAR; P; EQ; D1; RPAR;
-    RETURN; D1; SEMICOLON;
+ƒ FIB(X)
+{  
+  ☝(X = 0) 
+  {
+    ⚹ 0;
+  }
+  ☝(X = 1)
+    ⚹ 1;
   
-  RETURN;
-    F;I;B; LPAR; P; MINUS; D1; RPAR;
-    PLUS;
-    F;I;B; LPAR; P; MINUS; D2; RPAR; SEMICOLON;
-RCURLY;
+  ⚹ FIB(X - 1) + FIB(X - 2);
+}
 
-${PrintToken}; LPAR; F;I;B; LPAR; D1;D0; RPAR; RPAR; SEMICOLON;
+λ(FIB(10));
 `,
           output: '55\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -411,16 +385,12 @@ ${PrintToken}; LPAR; F;I;B; LPAR; D1;D0; RPAR; RPAR; SEMICOLON;
         {
           name: 'Returns complex object',
           source: `
-FUNCTION; F; LPAR; RPAR;
-LCURLY;  
-  RETURN; 
-    LBRA;
-      LBRA; QUOTE; A; QUOTE; COMMA; D3; RBRA; COMMA;
-      LBRA; TRUE; COMMA; FALSE; RBRA;
-    RBRA; SEMICOLON;
-RCURLY;
+ƒ F()
+{  
+  ⚹ [["A", 3], [✓, ✕]];
+}
 
-${PrintToken}; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
+λ(F());
 `,
           // tslint:disable-next-line:max-line-length
           output: `[[A, 3], [${signToCharMap.get(Sign.TRUE)}, ${signToCharMap.get(Sign.FALSE)}]]\n`,
@@ -429,19 +399,18 @@ ${PrintToken}; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
         {
           name: 'Closure captures enclosing environment',
           source: `
-FUNCTION; F; LPAR; RPAR;
-LCURLY;
-  X; ASSIGN; D0; SEMICOLON;
-  FUNCTION; G; LPAR; RPAR;
-  LCURLY;
-    X; ASSIGN; X; PLUS; D1; SEMICOLON;
-  RCURLY;
-  G; LPAR; RPAR; SEMICOLON;
-  G; LPAR; RPAR; SEMICOLON;
-  ${PrintToken}; LPAR; X; RPAR; SEMICOLON;
-RCURLY;
+ƒ F()
+{
+  X ≔ 0;
+  ƒ G() {
+     X ≔ X + 1;
+  }
+  G();
+  G();
+  λ(X);
+}
 
-F; LPAR; RPAR; SEMICOLON;
+F();
 `,
           output: '2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -449,19 +418,18 @@ F; LPAR; RPAR; SEMICOLON;
         {
           name: 'Closure captures variables defined after it',
           source: `
-FUNCTION; F; LPAR; RPAR;
-LCURLY;
-  FUNCTION; G; LPAR; RPAR;
-  LCURLY;
-    X; ASSIGN; X; PLUS; D1; SEMICOLON;
-  RCURLY;
-  X; ASSIGN; D0; SEMICOLON;
-  G; LPAR; RPAR; SEMICOLON;
-  G; LPAR; RPAR; SEMICOLON;
-  ${PrintToken}; LPAR; X; RPAR; SEMICOLON;
-RCURLY;
+ƒ F()
+{
+  ƒ G() {
+     X ≔ X + 1;
+  }
+  X ≔ 0;
+  G();
+  G();
+  λ(X);
+}
 
-F; LPAR; RPAR; SEMICOLON;
+F() ;
 `,
           output: '2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -469,13 +437,12 @@ F; LPAR; RPAR; SEMICOLON;
         {
           name: '(Bug) Break statement outside for/while break execution',
           source: `
-FUNCTION; F; LPAR; RPAR;
-LCURLY;
-  BREAK; SEMICOLON;
-  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
-RCURLY;
+ƒ F() {
+  ⚻;
+  λ(1);
+}
 
-F; LPAR; RPAR; SEMICOLON;
+F();
 `,
           output: '',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -483,13 +450,12 @@ F; LPAR; RPAR; SEMICOLON;
         {
           name: '(Bug) Continue statement outside for/while break execution',
           source: `
-FUNCTION; F; LPAR; RPAR;
-LCURLY;
-  CONTINUE; SEMICOLON;
-  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
-RCURLY;
+ƒ F() {
+  ⚺;
+  λ(1);
+}
 
-F; LPAR; RPAR; SEMICOLON;
+F();
 `,
           output: '',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -497,17 +463,15 @@ F; LPAR; RPAR; SEMICOLON;
         {
           name: 'Passing callback',
           source: `
-FUNCTION; F; LPAR; G; RPAR;
-LCURLY;
-  RETURN; G; LPAR; G; LPAR; D0; RPAR; RPAR; SEMICOLON;
-RCURLY;
+ƒ F(G) {
+  ⚹ G(G(0));
+}
 
-FUNCTION; I;N;C; LPAR; X; RPAR;
-LCURLY;
-  RETURN; X; PLUS; D1; SEMICOLON;
-RCURLY;
+ƒ INC(X) {
+  ⚹ X + 1;
+}
 
-${PrintToken}; LPAR; F; LPAR; I;N;C; RPAR; RPAR; SEMICOLON;
+λ(F(INC));
 `,
           output: '2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -515,20 +479,18 @@ ${PrintToken}; LPAR; F; LPAR; I;N;C; RPAR; RPAR; SEMICOLON;
         {
           name: 'Returning function works',
           source: `
-FUNCTION; F; LPAR; RPAR;
-LCURLY;
-  I; ASSIGN; D0; SEMICOLON;
-  FUNCTION; C;O;U;N;T; LPAR; RPAR;
-  LCURLY;
-    I; ASSIGN; I; PLUS; D1; SEMICOLON;
-    ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-  RCURLY;
-  RETURN; C;O;U;N;T; SEMICOLON;
-RCURLY;
+ƒ F() {
+  I ≔ 0;
+  ƒ COUNT() {
+    I ≔ I + 1;
+    λ(I);
+  }
+  ⚹ COUNT;
+}
 
-C; ASSIGN; F; LPAR; RPAR; SEMICOLON;
-C; LPAR; RPAR; SEMICOLON;
-C; LPAR; RPAR; SEMICOLON;
+C ≔ F();
+C();
+C();
 `,
           output: '1\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -536,13 +498,12 @@ C; LPAR; RPAR; SEMICOLON;
         {
           name: 'Accessing __CALL__ works',
           source: `
-FUNCTION; F; LPAR; X; RPAR;
-LCURLY;
-  ${PrintToken}; LPAR; X; RPAR; SEMICOLON;
-RCURLY;
+ƒ F(X) {
+  λ(X);
+}
 
-F; PROP; _;_;C;A;L;L;_;_; LPAR; D1; RPAR; SEMICOLON;
-F; PROP; _;_;C;A;L;L;_;_; PROP; _;_;C;A;L;L;_;_; LPAR; D1; RPAR; SEMICOLON;
+F→__CALL__(1);
+F→__CALL__→__CALL__(1);
 `,
           output: '1\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -555,8 +516,8 @@ F; PROP; _;_;C;A;L;L;_;_; PROP; _;_;C;A;L;L;_;_; LPAR; D1; RPAR; SEMICOLON;
         {
           name: 'Positive if',
           source: `
-IF; LPAR; TRUE; RPAR;
-  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
+☝(✓)
+  λ(1);
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -564,8 +525,8 @@ IF; LPAR; TRUE; RPAR;
         {
           name: 'Negative if',
           source: `
-IF; LPAR; FALSE; RPAR;
-  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
+☝(✕)
+  λ(1);
 `,
           output: '',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -573,18 +534,18 @@ IF; LPAR; FALSE; RPAR;
         {
           name: 'Omitting brackets should fail',
           source: `
-IF; TRUE;
-  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
+☝✓
+  λ(1);
 `,
           expected: ExpectedResult.FAIL_PARSE
         },
         {
           name: 'Positive if else',
           source: `
-IF; LPAR; TRUE; RPAR;
-  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
-ELSE;
-  ${PrintToken}; LPAR; D0; RPAR; SEMICOLON;
+☝(✓)
+  λ(1);
+☞
+  λ(0);
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -592,10 +553,10 @@ ELSE;
         {
           name: 'Negative if else',
           source: `
-IF; LPAR; FALSE; RPAR;
-  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
-ELSE;
-  ${PrintToken}; LPAR; D0; RPAR; SEMICOLON;
+☝(✕)
+  λ(1);
+☞
+  λ(0);
 `,
           output: '0\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -603,29 +564,29 @@ ELSE;
         {
           name: 'Else if',
           source: `
-X; ASSIGN; D0; SEMICOLON;
-IF; LPAR; X; EQ; D0; RPAR;
-  ${PrintToken}; LPAR; D0; RPAR; SEMICOLON;
-ELSE; IF; LPAR; X; EQ; D1; RPAR;
-  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
-ELSE;
-  ${PrintToken}; LPAR; D2; RPAR; SEMICOLON;
+X ≔ 0;
+☝(X = 0)
+  λ(0);
+☞☝(X = 1)
+  λ(1);
+☞
+  λ(2);
 
-X; ASSIGN; D1; SEMICOLON;
-IF; LPAR; X; EQ; D0; RPAR;
-  ${PrintToken}; LPAR; D0; RPAR; SEMICOLON;
-ELSE; IF; LPAR; X; EQ; D1; RPAR;
-  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
-ELSE;
-  ${PrintToken}; LPAR; D2; RPAR; SEMICOLON;
+X ≔ 1;
+☝(X = 0)
+  λ(0);
+☞☝(X = 1)
+  λ(1);
+☞
+  λ(2);
 
-X; ASSIGN; D2; SEMICOLON;
-IF; LPAR; X; EQ; D0; RPAR;
-  ${PrintToken}; LPAR; D0; RPAR; SEMICOLON;
-ELSE; IF; LPAR; X; EQ; D1; RPAR;
-  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
-ELSE;
-  ${PrintToken}; LPAR; D2; RPAR; SEMICOLON;
+X ≔ 2;
+☝(X = 0)
+ λ(0);
+☞☝(X = 1)
+ λ(1);
+☞
+ λ(2);
 `,
           output: '0\n1\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -638,12 +599,11 @@ ELSE;
         {
           name: 'Does iterate',
           source: `
-I; ASSIGN; D0; SEMICOLON;
-WHILE; LPAR; I; LT; D2; RPAR;
-LCURLY;
-  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-  I; ASSIGN; I; PLUS; D1; SEMICOLON;
-RCURLY;
+I ≔ 0;
+⟳(I < 2) {
+  λ(I);
+  I ≔ I + 1;
+}
 `,
           output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -651,14 +611,13 @@ RCURLY;
         {
           name: '"Continue" jumps to the next cycle',
           source: `
-I; ASSIGN; D0; SEMICOLON;
-WHILE; LPAR; I; LT; D2; RPAR;
-LCURLY;
-  I; ASSIGN; I; PLUS; D1; SEMICOLON;
-  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-  CONTINUE; SEMICOLON;
-  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-RCURLY;
+I ≔ 0;
+⟳(I < 2) {
+  I ≔ I + 1;
+  λ(I);
+  ⚺;
+  λ(I);
+}
 `,
           output: '1\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -666,14 +625,12 @@ RCURLY;
         {
           name: '"Break" jumps out of the loop',
           source: `
-I; ASSIGN; D0; SEMICOLON;
-WHILE; LPAR; I; LT; D3; RPAR;
-LCURLY;
-  IF; LPAR; I; EQ; D2; RPAR;
-    BREAK; SEMICOLON;
-  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-  I; ASSIGN; I; PLUS; D1; SEMICOLON;
-RCURLY;
+I ≔ 0;
+⟳(I < 3) {
+  ☝(I = 2) { ⚻; }
+  λ(I);
+  I ≔ I + 1;
+}
 `,
           output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -681,15 +638,13 @@ RCURLY;
         {
           name: '"Return" jumps out of the loop',
           source: `
-FUNCTION; F; LPAR; RPAR;
-LCURLY;
-  WHILE; LPAR; TRUE; RPAR;
-  LCURLY;
-    RETURN; D1; SEMICOLON;
-  RCURLY;
-RCURLY;
+ƒ F() {
+  ⟳(✓) {
+    ⚹ 1;
+  }
+}
 
-${PrintToken}; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
+λ(F()) ;
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -697,20 +652,18 @@ ${PrintToken}; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
         {
           name: '"Continue" affect enclosing while.',
           source: `
-I; ASSIGN; D0; SEMICOLON;
-WHILE; LPAR; I; LT; D2; RPAR;
-LCURLY;
-  J; ASSIGN; D3; SEMICOLON;
-  WHILE; LPAR; J; LT; D5; RPAR;
-  LCURLY;
-    J; ASSIGN; J; PLUS; D1; SEMICOLON;
-    CONTINUE; SEMICOLON;
-    ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-  RCURLY;
+I ≔ 0;
+⟳(I < 2) {
+  J ≔ 3;
+  ⟳(J < 5) {
+    J ≔ J + 1;
+    ⚺;
+    λ(I);
+  }
 
-  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-  I; ASSIGN; I; PLUS; D1; SEMICOLON;
-RCURLY;
+  λ(I);
+  I ≔ I + 1;
+}
 `,
           output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -718,17 +671,15 @@ RCURLY;
         {
           name: '"Break" affect enclosing while.',
           source: `
-I; ASSIGN; D0; SEMICOLON;
-WHILE; LPAR; I; LT; D2; RPAR;
-LCURLY;
-  WHILE; LPAR; TRUE; RPAR;
-  LCURLY;
-    BREAK; SEMICOLON;
-  RCURLY;
+I ≔ 0;
+⟳(I < 2) {
+  ⟳(✓) {
+    ⚻;
+  }
 
-  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-  I; ASSIGN; I; PLUS; D1; SEMICOLON;
-RCURLY;
+  λ(I) ;
+  I ≔ I + 1;
+}
 `,
           output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -736,18 +687,15 @@ RCURLY;
         {
           name: '"Return" jumps out of multiple loops',
           source: `
-FUNCTION; F; LPAR; RPAR;
-LCURLY;
-  WHILE; LPAR; TRUE; RPAR;
-  LCURLY;
-    WHILE; LPAR; TRUE; RPAR;
-    LCURLY;
-      RETURN; D1; SEMICOLON;
-    RCURLY;
-  RCURLY;
-RCURLY;
+ƒ F() {
+  ⟳(✓) {
+    ⟳(✓) {
+      ⚹ 1;
+    }
+  }
+}
 
-${PrintToken}; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
+λ(F());
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -760,13 +708,12 @@ ${PrintToken}; LPAR; F; LPAR; RPAR; RPAR; SEMICOLON;
         {
           name: 'for(;;) works',
           source: `
-X; ASSIGN; D0; SEMICOLON;
-FOR; LPAR; SEMICOLON; SEMICOLON; RPAR;
-LCURLY;
-  X; ASSIGN; D1; SEMICOLON;
-  BREAK; SEMICOLON;
-RCURLY;
-${PrintToken}; LPAR; X; RPAR; SEMICOLON;
+X ≔ 0;
+♶(;;) {
+  X ≔ 1;
+  ⚻;
+}
+λ(X);
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -774,27 +721,19 @@ ${PrintToken}; LPAR; X; RPAR; SEMICOLON;
         {
           name: 'for(i = 0; i < 2; ++i) works',
           source: `
-FOR; LPAR;
-  I; ASSIGN; D0; SEMICOLON;
-  I; LT; D2; SEMICOLON;
-  I; ASSIGN; I; PLUS; D1; RPAR;
-LCURLY;
-  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-RCURLY;
+♶(I ≔ 0; I < 2; I ≔ I + 1) {
+  λ(I);
+}
 `,
           output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
-          name: 'for(i = 0, j = 4; i != j; ++i, --j) works',
+          name: 'for(i = 0, j = 4; i !=  j ++i, --j) works',
           source: `
-FOR; LPAR;
-  I; ASSIGN; D0; COMMA; J; ASSIGN; D4; SEMICOLON;
-  I; NE; J; SEMICOLON;
-  I; ASSIGN; I; PLUS; D1; COMMA; J; ASSIGN; J; MINUS; D1; RPAR;
-LCURLY;
-  ${PrintToken}; LPAR; I; COMMA; J; RPAR; SEMICOLON;
-RCURLY;
+♶(I ≔ 0, J ≔ 4; I ≠ J; I ≔ I + 1 , J ≔ J - 1) {
+  λ(I, J);
+}
 `,
           output: '0 4\n1 3\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -802,13 +741,10 @@ RCURLY;
         {
           name: '"Break" jumps out of the cycle',
           source: `
-FOR; LPAR;
-  SEMICOLON;
-  SEMICOLON; RPAR;
-LCURLY;
-  BREAK; SEMICOLON;
-  ${PrintToken}; LPAR; D1; RPAR; SEMICOLON;
-RCURLY;
+♶(;;) {
+  ⚻;
+  λ(1);
+}
 `,
           output: '',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -816,30 +752,22 @@ RCURLY;
         {
           name: '"Continue" jumps to the next cycle',
           source: `
-FOR; LPAR;
-  I; ASSIGN; D0; SEMICOLON;
-  I; LT; D2; SEMICOLON;
-  I; ASSIGN; I; PLUS; D1; RPAR;
-LCURLY;
-  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-  CONTINUE; SEMICOLON;
-  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-RCURLY;
+♶(I ≔ 0; I < 2; I ≔ I + 1) {
+  λ(I);
+  ⚺;
+  λ(I);
+}
 `,
           output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
-          name: 'Controlling variable can be changed inside',
+          name: 'Control variable can be changed inside',
           source: `
-FOR; LPAR;
-  I; ASSIGN; D0; SEMICOLON;
-  I; LT; D4; SEMICOLON;
-  I; ASSIGN; I; PLUS; D1; RPAR;
-LCURLY;
-  ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
-  I; ASSIGN; I; PLUS; D1; SEMICOLON;
-RCURLY;
+♶(I ≔ 0; I < 4; I ≔ I + 1) {
+  λ(I);
+  I ≔ I + 1;
+}
 `,
           output: '0\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -847,14 +775,9 @@ RCURLY;
         {
           name: 'For cycle reuses environment variable',
           source: `
-I; ASSIGN; D0; SEMICOLON;
-FOR; LPAR;
-  I; ASSIGN; D0; SEMICOLON;
-  I; LT; D2; SEMICOLON;
-  I; ASSIGN; I; PLUS; D1; RPAR;
-LCURLY;
-RCURLY;
-${PrintToken}; LPAR; I; RPAR; SEMICOLON;
+I ≔ 0;
+♶(I ≔ 0; I < 2; I ≔ I + 1) { }
+λ(I);
 `,
           output: '2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -867,16 +790,14 @@ ${PrintToken}; LPAR; I; RPAR; SEMICOLON;
         {
           name: 'Instantiation calls init',
           source: `
-CLASS; C;
-LCURLY;
-  FUNCTION; _;_;I;N;I;T;_;_; LPAR; S;E;L;F; COMMA; X; RPAR;
-  LCURLY;
-    S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON;
-  RCURLY;
-RCURLY;
+⚛ C {
+  ƒ __INIT__(SELF, X) {
+     SELF→X ≔ X;
+  }
+}
 
-A; ASSIGN; C; LPAR; D1; RPAR; SEMICOLON;
-${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
+A ≔ C(1);
+λ(A→X);
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -884,17 +805,15 @@ ${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
         {
           name: 'Method calls bind self',
           source: `
-CLASS; C;
-LCURLY;
-  FUNCTION; M; LPAR; S;E;L;F; COMMA; X; RPAR;
-  LCURLY;
-    S;E;L;F; PROP; X; ASSIGN; D1; SEMICOLON;
-  RCURLY;
-RCURLY;
+⚛ C {
+  ƒ M(SELF, X) {
+    SELF→X ≔ 1;
+  }
+}
 
-A; ASSIGN; C; LPAR; RPAR; SEMICOLON;
-A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
-${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
+A ≔ C();
+A→M(1);
+λ(A→X);
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -902,19 +821,16 @@ ${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
         {
           name: 'Adding method at runtime',
           source: `
-CLASS; C;
-LCURLY;
-RCURLY;
+⚛ C { }
 
-FUNCTION; M; LPAR; S;E;L;F; COMMA; X; RPAR;
-LCURLY;
-  S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON; 
-RCURLY;
+ƒ M(SELF, X) {
+   SELF→X ≔ X; 
+}
 
-A; ASSIGN; C; LPAR; RPAR; SEMICOLON;
-A; PROP; M; ASSIGN; M; SEMICOLON;
-A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
-${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
+A ≔ C();
+A→M ≔ M;
+A→M(1);
+λ(A→X);
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -922,21 +838,18 @@ ${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
         {
           name: 'Overriding __str__ works',
           source: `
-CLASS; C;
-LCURLY;
-  FUNCTION; _;_;I;N;I;T;_;_; LPAR; S;E;L;F; COMMA; X; RPAR;
-  LCURLY;
-    S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON;
-  RCURLY;
+⚛ C {
+  ƒ __INIT__(SELF, X) {
+     SELF→X ≔ X;
+  }
 
-  FUNCTION; _;_;S;T;R;_;_; LPAR; S;E;L;F; RPAR;
-  LCURLY;
-    RETURN; S;E;L;F; PROP; X; SEMICOLON;
-  RCURLY;
-RCURLY;
+  ƒ __STR__(SELF) {
+    ⚹ SELF→X;
+  }
+}
 
-A; ASSIGN; C; LPAR; QUOTE; F;O;O; QUOTE; RPAR; SEMICOLON;
-${PrintToken}; LPAR; A; RPAR; SEMICOLON;
+A ≔ C("FOO");
+λ(A);
 `,
           output: 'FOO\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -944,19 +857,17 @@ ${PrintToken}; LPAR; A; RPAR; SEMICOLON;
         {
           name: 'Overriding __call__ works',
           source: `
-CLASS; C;
-LCURLY;
-  FUNCTION; _;_;C;A;L;L;_;_; LPAR; S;E;L;F; COMMA; X; RPAR;
-  LCURLY;
-    S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON;
-  RCURLY;
-RCURLY;
+⚛ C {
+  ƒ __CALL__(SELF, X) {
+    SELF→X ≔ X;
+  }
+}
 
-A; ASSIGN; C; LPAR; RPAR; SEMICOLON;
-A; LPAR; D1; RPAR; SEMICOLON;
-${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
-A; PROP; _;_;C;A;L;L;_;_; LPAR; D2; RPAR; SEMICOLON;
-${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
+A ≔ C();
+A(1);
+λ(A→X);
+A→__CALL__(2);
+λ(A→X);
 `,
           output: '1\n2\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -964,21 +875,18 @@ ${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
         {
           name: 'Method is looked up in bases',
           source: `
-CLASS; C;
-LCURLY;
-  FUNCTION; M; LPAR; S;E;L;F; COMMA; X; RPAR;
-  LCURLY;
-    S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON;
-  RCURLY;
-RCURLY;
+⚛ C {
+  ƒ M(SELF, X) {
+    SELF→X ≔ X;
+  }
+}
 
-CLASS; D; LPAR; C; RPAR;
-LCURLY;
-RCURLY;
+⚛ D(C) {
+}
 
-A; ASSIGN; D; LPAR; RPAR; SEMICOLON;
-A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
-${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
+A ≔ D();
+A→M(1);
+λ(A→X);
 `,
           output: '1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -986,27 +894,23 @@ ${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
         {
           name: 'Super works',
           source: `
-CLASS; C;
-LCURLY;
-  FUNCTION; M; LPAR; S;E;L;F; COMMA; X; RPAR;
-  LCURLY;
-    S;E;L;F; PROP; X; ASSIGN; X; SEMICOLON;
-  RCURLY;
-RCURLY;
+⚛ C {
+  ƒ M(SELF, X) {
+    SELF→X ≔ X;
+  }
+}
 
-CLASS; D; LPAR; C; RPAR;
-LCURLY;
-  FUNCTION; M; LPAR; S;E;L;F; COMMA; X; RPAR;
-  LCURLY;
-    S;E;L;F; PROP; Y; ASSIGN; X; SEMICOLON;
-    S;U;P;E;R; PROP; M; LPAR; S;E;L;F; COMMA; X; RPAR; SEMICOLON;
-  RCURLY;
-RCURLY;
+⚛ D(C) {
+  ƒ  M(SELF, X) {
+    SELF→Y ≔ X;
+    SUPER→M(SELF, X);
+  }
+}
 
-A; ASSIGN; D; LPAR; RPAR; SEMICOLON;
-A; PROP; M; LPAR; D1; RPAR; SEMICOLON;
-${PrintToken}; LPAR; A; PROP; X; RPAR; SEMICOLON;
-${PrintToken}; LPAR; A; PROP; Y; RPAR; SEMICOLON;
+A ≔ D();
+A→M(1);
+λ(A→X);
+λ(A→Y);
 `,
           output: '1\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -1019,17 +923,16 @@ ${PrintToken}; LPAR; A; PROP; Y; RPAR; SEMICOLON;
         {
           name: 'Variable shadowing',
           source: `
-A; ASSIGN; D0; SEMICOLON;
-LCURLY;
-  FUNCTION; F; LPAR; RPAR;
-  LCURLY;
-    ${PrintToken}; LPAR; A; RPAR; SEMICOLON;
-  RCURLY;
+A ≔ 0;
+{
+  ƒ F() {
+    λ(A);
+  }
 
-  F; LPAR; RPAR; SEMICOLON;
-  A; ASSIGN; D1; SEMICOLON;
-  F; LPAR; RPAR; SEMICOLON;
-RCURLY;          
+  F();
+  A ≔ 1;
+  F();
+}          
 `,
           output: '0\n1\n',
           expected: ExpectedResult.MATCH_OUTPUT
@@ -1046,7 +949,7 @@ testSuites([parser, runtime]).then((results) =>
 )
 
 //   /* Classes */
-//   `CLASS; C; LCURLY;
-//     FUNCTION; M;E;T;H;O;D; LPAR; RPAR; LCURLY; RCURLY;
-// RCURLY;`,m8D5; SEMICOLON;`,
+//   `CLAS S C{
+//     ƒ  METHOD() { }
+// }`,m85;`,
 // ])

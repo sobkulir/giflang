@@ -1,5 +1,5 @@
 import produce from 'immer'
-import { Sign } from '~/interpreter/ast/sign'
+import { charToSign, Sign } from '~/interpreter/ast/sign'
 import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRight, MoveCursorUp, PositionPixelsToRowCol, TrimPositionRowCol } from '../lib/text-area'
 import { FocusedArea } from '../types/ide'
 import { MyAction, State } from '../types/redux'
@@ -12,8 +12,8 @@ export const setText =
       payload: text,
       reducer: produce((state: State) => {
         state.textAreaMap[areaType].text = text.split('\n').map((line) =>
-          new LetterRowImp(line.split(';').filter((x) => (x)).map((token) =>
-            new LetterImp(Sign[token as any] as unknown as Sign))))
+          new LetterRowImp(line.split('').map((char) =>
+            new LetterImp(charToSign(char)))))
       })
     })
 
