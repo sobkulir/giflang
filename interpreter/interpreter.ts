@@ -1,9 +1,9 @@
 import { JisonLocator } from './ast/ast-node'
 import { BreakCompletion, Completion, CompletionType, ContinueCompletion, NormalCompletion, ReturnCompletion } from './ast/completion'
-import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, DotAccessorRefExpr, Expr, NoneValueExpr, NumberValueExpr, RefExpr, SquareAccessorRefExpr, StringValueExpr, UnaryNotValueExpr, UnaryPlusMinusValueExpr, ValueExpr, VariableRefExpr, VisitorRefExpr, VisitorValueExpr } from './ast/expr'
+import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, DotAccessorRefExpr, Expr, FunctionDeclExpr, NoneValueExpr, NumberValueExpr, RefExpr, SquareAccessorRefExpr, StringValueExpr, UnaryNotValueExpr, UnaryPlusMinusValueExpr, ValueExpr, VariableRefExpr, VisitorRefExpr, VisitorValueExpr } from './ast/expr'
 import { Operator } from './ast/operator'
 import { InputSign, PrintSign, Sign, signToCharMap } from './ast/sign'
-import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, FunctionDeclStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
+import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
 import { Barrier } from './barrier'
 import { CodeExecuter } from './code-executer'
 import { Environment, SerializedEnvironment } from './environment'
@@ -212,6 +212,19 @@ export class Interpreter
       .callMagicMethod(MagicMethod.__call__, args, this)
   }
 
+  visitFunctionDeclExpr(expr: FunctionDeclExpr): Instance {
+    const func = new UserFunctionInstance(
+      UserFunctionClass.get(),
+      expr,
+      this.environment,
+      expr.name
+    )
+    if (!expr.isAnonymous) {
+      this.environment.shallowSet(expr.name, func)
+    }
+    return func
+  }
+
   visitVariableRefExpr(expr: VariableRefExpr): ValueRef {
     return this.environment.getRef(expr.name)
   }
@@ -300,16 +313,6 @@ export class Interpreter
     else return new NormalCompletion()
   }
 
-  visitFunctionDeclStmt(stmt: FunctionDeclStmt): Completion {
-    const func = new UserFunctionInstance(
-      UserFunctionClass.get(),
-      stmt,
-      this.environment,
-      stmt.name
-    )
-    this.environment.getRef(stmt.name).set(func)
-    return new NormalCompletion()
-  }
   visitClassDefStmt(stmt: ClassDefStmt): Completion {
     let base: Class = ObjectClass.get()
     if (stmt.baseName) {

@@ -1,5 +1,5 @@
+import { FunctionDeclExpr } from '../ast/expr'
 import { Sign, signToCharMap } from '../ast/sign'
-import { FunctionDeclStmt } from '../ast/stmt'
 import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
 import { BoolInstance, Instance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
@@ -509,7 +509,7 @@ export class StringClass extends Class {
 export class UserClass extends Class {
   constructor(
     name: string,
-    base: Class, methods: FunctionDeclStmt[], env: Environment) {
+    base: Class, methods: FunctionDeclExpr[], env: Environment) {
     super(MetaClass.get(), name, base)
 
     const superEnv = new Environment(env)

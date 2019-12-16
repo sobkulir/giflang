@@ -1,13 +1,12 @@
 import { AstNode, JisonLocator } from './ast-node'
 import { CompletionType } from './completion'
-import { Expr } from './expr'
+import { Expr, FunctionDeclExpr } from './expr'
 
 export interface VisitorStmt<T> {
   visitIfStmt(stmt: IfStmt): T
   visitBlockStmt(stmt: BlockStmt): T
   visitWhileStmt(stmt: WhileStmt): T
   visitForStmt(stmt: ForStmt): T
-  visitFunctionDeclStmt(stmt: FunctionDeclStmt): T
   visitClassDefStmt(stmt: ClassDefStmt): T
   visitCompletionStmt(stmt: CompletionStmt): T
   visitProgramStmt(stmt: ProgramStmt): T
@@ -83,26 +82,11 @@ export class ForStmt extends Stmt {
   }
 }
 
-export class FunctionDeclStmt extends Stmt {
-  constructor(
-    readonly name: string,
-    readonly parameters: string[],
-    readonly body: BlockStmt,
-    loc: JisonLocator
-  ) {
-    super(loc)
-  }
-
-  accept<T>(visitor: VisitorStmt<T>): T {
-    return visitor.visitFunctionDeclStmt(this)
-  }
-}
-
 export class ClassDefStmt extends Stmt {
   constructor(
     readonly name: string,
     readonly baseName: string | null,
-    readonly methods: FunctionDeclStmt[],
+    readonly methods: FunctionDeclExpr[],
     loc: JisonLocator
   ) {
     super(loc)

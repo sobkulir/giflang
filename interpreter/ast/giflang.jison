@@ -51,7 +51,7 @@ KEYWORDS    [<≤=≠≥>+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.�
 "."                         { return 'DOT' }
 "→"                         { return 'PROP' }
 ","                         { return 'COMMA' }
-\"({KEYWORDS}|{LETTER}|{DIGIT})*\"
+\"({KEYWORDS}|{LETTER}|{DIGIT}|[ \n])*\"
                             { yytext = yytext.substr(1, yytext.length - 2); return 'STRING' }
 
 {DIGIT}+("."{DIGIT}+)?      { return 'NUMBER' }
@@ -92,10 +92,11 @@ Primitives
     ;
 
 PrimaryComnon
-    : IDENTIFIER                { $$ = new yy.Expr.VariableRefExpr($1, @$) }
-    | LPAR Expr RPAR            { $$ = $2 }
-    | ArrayLiteral              { $$ = $1 }
-    | Literal                   { $$ = $1 }
+    : IDENTIFIER                    { $$ = new yy.Expr.VariableRefExpr($1, @$) }
+    | LPAR Expr RPAR                { $$ = $2 }
+    | ArrayLiteral                  { $$ = $1 }
+    | Literal                       { $$ = $1 }
+    | FunctionDeclarationAnonymous  { $$ = $1 }
     ;
 
 Literal
@@ -183,7 +184,7 @@ Expr
 Statement
     : Block                         { $$ = $1 }
     | Expr SEMICOLON                { $$ = new yy.Stmt.ExprStmt($1, @$) }
-    | FunctionDeclaration           { $$ = $1 }
+    | FunctionDeclaration           { $$ = new yy.Stmt.ExprStmt($1, @$) }
     | /* Empty statement */ SEMICOLON
                                     { $$ = new yy.Stmt.EmptyStmt(@$) }
     | IfStatement                   { $$ = $1  }
@@ -205,7 +206,12 @@ StatementList
 
 FunctionDeclaration
     : FUNCTION IDENTIFIER Parameters Block
-                                    { $$ = new yy.Stmt.FunctionDeclStmt($2, $3, $4, @$) }
+                                    { $$ = new yy.Expr.FunctionDeclExpr($2, $3, $4, @$) }
+    ;
+
+FunctionDeclarationAnonymous
+    : FUNCTION Parameters Block
+                                    { $$ = new yy.Expr.FunctionDeclExpr(/* name = */ null, $2, $3, @$) }
     ;
 
 Parameters
@@ -272,19 +278,15 @@ ClassDefinition
 
 ClassBlock
     : LCURLY RCURLY                 { $$ = [] }
-    | LCURLY InClassStatementList RCURLY
+    | LCURLY ClassMethodList RCURLY
                                     { $$ = $2 }
     ;
 
-InClassStatementList
-    : InClassStatementList InClassStatement
+ClassMethodList
+    : ClassMethodList FunctionDeclaration
                                     { $$ = $1.concat($2) }
-    | InClassStatement
+    | FunctionDeclaration
                                     { $$ = [$1] }
-    ;
-
-InClassStatement
-    : FunctionDeclaration           { $$ = $1 }
     ;
 
 %%

@@ -1,5 +1,6 @@
 import { AstNode, JisonLocator } from './ast-node'
 import { Operator } from './operator'
+import { BlockStmt } from './stmt'
 
 export type Expr = RefExpr | ValueExpr
 
@@ -22,6 +23,7 @@ export interface VisitorValueExpr<T> {
   visitUnaryNotValueExpr(expr: UnaryNotValueExpr): T
   visitBinaryValueExpr(expr: BinaryValueExpr): T
   visitCallValueExpr(expr: CallValueExpr): T
+  visitFunctionDeclExpr(expr: FunctionDeclExpr): T
 }
 
 export class AssignmentValueExpr extends ValueExpr {
@@ -129,6 +131,32 @@ export class CallValueExpr extends ValueExpr {
 
   accept<T>(visitor: VisitorValueExpr<T>): T {
     return visitor.visitCallValueExpr(this)
+  }
+}
+
+export class FunctionDeclExpr extends ValueExpr {
+  // If a name argument is omitted an anonymous function is created.
+  readonly isAnonymous: boolean
+  readonly name: string
+
+  constructor(
+    name: string | null,
+    readonly parameters: string[],
+    readonly body: BlockStmt,
+    loc: JisonLocator,
+  ) {
+    super(loc)
+    if (name === null) {
+      this.isAnonymous = true
+      this.name = `$anonymous_${loc.first_line}:${loc.first_column}`
+    } else {
+      this.isAnonymous = false
+      this.name = name
+    }
+  }
+
+  accept<T>(visitor: VisitorValueExpr<T>): T {
+    return visitor.visitFunctionDeclExpr(this)
   }
 }
 

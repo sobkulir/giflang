@@ -1,4 +1,4 @@
-import { FunctionDeclStmt } from '../ast/stmt'
+import { FunctionDeclExpr } from '../ast/expr'
 import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
 import { BoolClass, CheckArityEq, Class, NoneClass, WrappedFunctionClass } from './class'
@@ -152,7 +152,7 @@ abstract class FunctionInstance extends ObjectInstance {
 export class UserFunctionInstance extends FunctionInstance {
   constructor(
     klass: Class,
-    private readonly functionDef: FunctionDeclStmt,
+    private readonly functionDef: FunctionDeclExpr,
     private readonly closure: Environment,
     private readonly name: string,
   ) {
