@@ -59,7 +59,13 @@
 %%% An environment for typesetting of program code and input/output
 %%% of programs. (Requires the fancyvrb package -- fancy verbatim.)
 
-\DefineVerbatimEnvironment{code}{Verbatim}{fontsize=\small, frame=single}
+\lstnewenvironment{code}{\lstset{
+  mathescape,
+  frame=single,
+  basicstyle=\ttfamily\small,
+  columns=fullflexible,
+  keepspaces=true,
+}}{}
 
 %%% The field of all real and natural numbers
 \newcommand{\R}{\mathbb{R}}
