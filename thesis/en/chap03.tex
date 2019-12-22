@@ -1,47 +1,52 @@
 
 \chapter{Language design}
+\label{chap3:language_design}
+
 When creating Giflang we had two options:
 \begin{enumerate}
-    \item Use a language with an existing web interpreter. 
-    \item Create a new language and a web interpreter.
+    \item Use a language with an existing web interpreter
+    \item Create a new language and a web interpreter
 \end{enumerate}
 
-In the first section of this chapter we explain why we decided to not reuse an existing language. Later, we discuss the design of our own language and
-formally define it.
+In the first section of this chapter we explain why we decided to not reuse an existing language. Later, we discuss the design of our own language. We do not
+precisely define all the semantics, but rather provide a high-level overview. We think that it is more important to explain \emph{why} Giflang uses specific
+constructs, rather than show \emph{how} these constructs behave in every case.
 
-\section{Reusing an existing language}
-In the previous chapter \ref{chap2} we concluded that interpreting the user code on the client-side is the best option for our project. Therefore, when
-looking for a language to reuse we need to limit ourselves to the ones that have an existing web interpreter (i.e., an interpreter written in either
-JavaScript or WebAssembly). The two major languages we considered reusing were Python and JavaScript.
+The language documentation with examples can be found in the web IDE. /TODO: Where?/
+
+\section{Reusing an existing interpreter}
+In the previous Chapter \ref{chap2} we concluded that interpreting the user code on the client-side is the best option for our project. Therefore, when
+looking for a language to reuse we need to limit ourselves to the ones that have an existing web interpreter, i.e., an interpreter written in either
+JavaScript or WebAssembly. The two major languages that have existing web interpreters are Python and JavaScript.
 
 \subsection{Python}
-There are multiple Python web interpreters, for example Pyodide or Brython /TODO references/. Pyodide works by compiling CPython to WebAssembly
-using Emscripten. On the other hand, Brython works by transpiling Python to JavaScript. We were not able to find a Python web interpreter that would
+There are multiple Python web interpreters, for example Pyodide \cite{Pyodide} or Brython \cite{Brython}. Pyodide works by compiling CPython \cite{CPython}
+to WebAssembly using Emscripten. On the other hand, Brython works by transpiling Python to JavaScript. We were not able to find a Python web interpreter that would
 support code stepping out of the box. We considered forking either Pyodide or Brython and adding this functionality.
 
-Adding code stepping to Pyodide would require changing the underlying CPython implementation. CPython is very complex and was not built for this use case and thus
-we did opt out of choosing this option. On the other hand, Brython is fully written in JavaScript and also builds an AST from a Python code in JavaScript. There
-is a fork of Brython /TODO ref/ that implements code stepping. However, at closer inspection we found out it runs the code all at once and records trace info at each
-executed line by inserting a trace function call there. Afterwards, it only gives the user an illusion of code stepping.
+Adding code stepping to Pyodide would require changing the underlying CPython implementation. CPython is very complex and was not built for this use case.
+On the other hand, Brython is fully written in JavaScript and also builds an AST from a Python code in JavaScript. There
+is a fork of Brython \cite{PythonDebugger} that implements code stepping. However, at closer inspection we found out it runs the code all at once and records trace information
+at each executed line by inserting a trace function call there. Afterwards, it only gives the user an illusion of code stepping.
 
-It is possible to create a ``live'' code stepping for Brython in a similar fashion for example with the aid of Atomics API discussed in /TODO section/.
-We did not find a simple way of increasing the stepping granularity from just lines, though. We definitely could have adjusted Brython instead
-of creating a custom interpreter. However, it would take non-trivial effort to change the Brython's internals and we rather put this effort into creating
+It is possible to create a ``live'' code stepping for Brython in a similar fashion, for example with the aid of Atomics API discussed in /TODO section/.
+We did not find a simple way of increasing the stepping granularity from just lines to arbitrary AST nodes, though. We definitely could have adjusted Brython instead
+of creating a custom interpreter. However, it would take a non-trivial effort to change the Brython's internals and we rather put this effort into creating
 a new interpreter from scratch and learning a lot about languages and interpreters along the way.
 
 \subsection{JavaScript}
-There are numerous JavaScript interpreters written in JavaScript. The one closest to our needs being JS-Interpreter /TODO ref/ that supports running JavaScript
-line by line in isolation. It was designed for use in Blockly /TODO ref/, a library for building visual programming editors.
+There are numerous JavaScript interpreters written in JavaScript. The one closest to our needs is JS-Interpreter \cite{JSInterpreter} that supports running JavaScript
+with code stepping in isolation. It was designed for use in Blockly \cite{Blockly}, a library for building visual programming editors.
 
-JS-Interpreter supports only ES5\footnote{ECMAScript 5 or ECMAScript 2009} standard of JavaScript. This standard has no `class` keyword or block-scoping variables
-with `let` keyword. We find ES5 way of defining classes using functions and prototypes confusing:
+JS-Interpreter supports only ES5\footnote{ECMAScript 5 or ECMAScript 2009} standard of JavaScript. This standard has no \texttt{class} keyword or block-scoped
+variables with \texttt{let} keyword. We find ES5 way of defining classes using functions and prototypes confusing:
 \begin{code}
 // ES 5
 function Person(name) {
     this.name = name;  
 }
 
-Animal.prototype.greet = function () {
+Person.prototype.greet = function () {
     console.log('Hello my name is ' + this.name);
 }
 
@@ -58,12 +63,12 @@ class Person {
 \end{code}
 
 We could add support for ES6 features to the JS-Interpreter and use it for our project. However, as in the case of Brython we decided to rather put the effort into
-creating a new solution than forking an existing one.
+creating a new solution than putting a lot of effort an existing one.
 
 \section{Text format}
 Before we dive into the language itself, let us first discuss the text representation of the language. Since it is intended for being displayed in
-graphics using images we considered defining the language as semicolon delimited tokens where each token can be substituted with a single image.
-Below is an identity function defined in both a character-level and a token-level format.
+graphics using images, we considered defining the language in terms of semicolon delimited tokens where each token can be substituted with a single image.
+Below is an identity function defined in both a \emph{character-level} and a \emph{token-level format}.
 \begin{code}
 // Token-level
 FUNCTION; I;D; LPAR; A; RPAR; LCURLY;
@@ -80,18 +85,18 @@ function ID(A) {
 ID(8);
 \end{code}
 
-We could just replace all characters of the character-level format with images, but keywords like ``function'' would result in multiple images. In the token-level
-format we define function as a single token ``FUNCTION'' and is thus replaced with a single image.
+We could just replace all characters of the character-level format with images, but keywords like \texttt{function} would result in multiple images. In the token-level
+format we define function as a single token \texttt{FUNCTION} and is thus replaced with a single image.
 
-In case of the character-level format we could replace everything character by character with images unless ``function'' or any other keyword is found in which
-case we would replace it with a single image. However, it is not perfect. For example we should consider:
+In case of the character-level format, we could replace everything character by character with images unless \texttt{function} or any other keyword is found in which
+case we would replace it with a single image. However, there are some cases to keep an eye on; for example we should consider:
 \begin{itemize}
-    \item An identifier ``functionA'' should not have its ``function'' part replaced for an image.
-    \item When an image for a keyword, e.g., ``function'' is used inside a string, it should be represented as a single character.
+    \item An identifier \texttt{functionA} should not have its \texttt{function} part replaced for an image.
+    \item When an image for a keyword, e.g., \texttt{function} is used inside a string, it should be represented as a single character.
 \end{itemize}
 
-One possible solution is to represent keywords as single characters in the character-level format. This makes the image substitution trivial, as we can substitute
-every character. The ``keyword characters'' have to be unique among other characters, though. For example we can use a Unicode letter `f' with a hook $f$
+Another option is to represent keywords as single characters in the character-level format. This makes the image substitution trivial, as we can substitute
+every character. The ``keyword characters'' have to be unique among other characters. To illustrate this, we can use a Unicode letter `f' with a hook $f$
 to represent a function and a character $\hookleftarrow$ for return.
 \begin{code}
 $f$ ID(A) {
@@ -102,31 +107,31 @@ ID(8);
 \end{code}
 
 The above approach that uses Unicode characters has a nice property regarding the use of the keywords in a string. According to the ECMAScript specification,
-Section 8.4/TODO cite/: When a String contains actual textual data, each element is considered to be a single UTF-16 code unit. This means that if we
+Section 8.4/TODO cite/: \emph{When a String contains actual textual data, each element is considered to be a single UTF-16 code unit.} This means that if we
 only use characters that can be encoded into a single 16-bit code unit, all keywords will take space of a single character in a string.
 
-At first we implemented the token-level format approach. It made parsing a little hard as typical lexer responsibilities like processing an identifier
-had to be moved to the syntactical analysis. Later on we decided to switch to the character-level format with keywords substituted for Unicode characters. This
-simplified the parsing.
+At first we implemented the token-level format approach. It made the implementation of the parser harder, as typical lexer responsibilities like processing
+an identifier had to be moved to the syntactical analysis. Later on, we decided to switch to the character-level format with keywords substituted for
+Unicode characters. We change the format mostly because we realized that the token-level format only introduced more complexity with no real benefits.
 
 \section{Deciding on a language type}
-Now that we know we want to build our own language it is time to decide on what kind of language it should be and what features it should have. There are
-multiple types of programming languages and here we will briefly go through the most known ones.
+Since we have chosen to build our own language it is time to decide on what kind of language it should be and what features it should have. There are
+multiple types of programming languages and we will briefly go through the most known ones.
 
 \subsection{Functional programming}
 Functional programming treats computation as the evaluation of mathematical functions and avoids changing-state and mutable data.\footnote{wikipedia}
-This means that functional programming languages don’t support imperative flow controls like loop statements, conditional statements like if-else and
+This means that functional programming languages do not support imperative flow controls like loop statements, conditional statements like if-else and
 switch statements.
 
-On the other hand, pure functions are very typical for functional programming. Pure functions are functions whose outcome depends solely on their arguments
+On the other hand, pure functions are very typical for functional programming. \emph{Pure functions} are functions whose outcome depends solely on their arguments
 and create no side-effects (e.g., by changing a global variable). Eliminating side effects can make understanding a program easier, which is one of the
 key motivations for the development of functional programming.\footnote{wiki}
 
 Additionally, functional programming often relies on recursion and functions being first-class entities. Being a first-class entity means that functions can appear
-anywhere in the program where other first-class entities like numbers can, including as arguments to other functions and as their return values.
+anywhere in the program where other first-class entities like numbers can, including arguments to other functions and their return values.
 
-One of the typical examples of a functional programming language is Haskell. It was created in 1990 and it is statically typed and supports type inference
-and lazy evaluation. Below is a sample program in Haskell finding edit distance\footnote{} between two strings from the official docs.
+One of the typical examples of a functional programming language is Haskell. It was created in 1990, it is statically typed, supports type inference,
+and lazy evaluation. Below is a sample program in Haskell finding the edit distance\footnote{} between two strings from the official docs.
 \begin{code}
 import Data.Array as Array
 
@@ -150,9 +155,10 @@ editDistance xs ys = table ! (m,n)
 \end{code}
 
 \subsection{Object-oriented programing}
-Object-oriented programming (OOP) is based around the concept of ``objects'', which can contain data, in the form of fields (also known as attributes or properties),
-and code, in the form of methods.\footnote{wiki} Object's methods can access and modify the object they are operation using a keyword like ``this'' or ``self''.
-Typical programs are then made out of objects that interact together.
+Object-oriented programming (OOP) is based around the concept of ``objects'' which can contain data, in the form of fields (also known as attributes or properties),
+and code, in the form of methods.\footnote{wiki} Object's methods can access and modify the object they are operating on using a keyword like \texttt{this}
+or \texttt{self}.
+Programs are then made out of objects that interact together.
 
 The most popular OOP languages are class-based (e.g., C++, Java, Python), meaning that objects are instances of classes, which also determine their types.\footnote{wiki}
 There are also alternatives, for example JavaScript is prototype-based.
@@ -211,7 +217,7 @@ int main() {
 
 \subsection{Esoteric programming languages}
 An esoteric programming language is designed to experiment with weird ideas, to be hard to program in, or as a joke, rather than for practical use. We can not
-describe esoteric languages in general as they all use different ideas. However, we will show a few examples of esoteric languages.
+describe esoteric languages in general as they all use different ideas.
 
 Probably the most popular esoteric language is brainf***. It operates on an array of memory cells, also referred to as the tape. All of the cells are initially
 set to zero. There is a single pointer, initially pointing to the first memory cell. The language has the following commands:
@@ -237,36 +243,40 @@ set to zero. There is a single pointer, initially pointing to the first memory c
     $]$ & Jump back to the matching [ if the cell under the pointer is nonzero \\
     \hline
     \end{tabular}
-    \caption{The list of brainf*** commands}
+    \caption{A list of brainf*** commands}
 \end{figure}
 
-Other examples of esoteric languages:
+Other examples of esoteric languages are:
 \begin{itemize}
     \item Shakespeare /TODO ref/, a programming language whose source code resembles Shakespeare plays. 
     \item Befunge /TODO ref/, a language where the code is layed out on a two-dimensional grid of instructions, and execution can proceed in any direction of that grid.
 \end{itemize}
 
 \subsection{Conclusion}
-There are also other programming types for example logic programming. However, we did not plan on using concepts from these languages and therefore we did
-not explain them here. It would be great to combine a language presented in images with an esoteric language of some sort. However, we did not
-come up with an interesting enough model and we did not want to blindly reuse an existing one. Therefore, we settled on a more conservative approach.
+There are also other programming language types apart from the ones mentioned here, for example logic programming. We did not plan on using
+concepts from these languages and therefore we did not list them. It would be great to combine a language presented in images with an esoteric language
+of some sort. However, we did not come up with an interesting enough model and we did not want to blindly reuse an existing one. In the end we settled on
+a more conservative approach.
 
 Since our intended audience is typically experienced in Python we decided to base our language around "Pythonic" features. We also think
 the class-based model of Python is more intuitive than prototype-based one found for example in JavaScript.
 
-Even though the author of this thesis likes statically-typed languages, Giflang is dynamically-typed. The primary reason is that the images take a lot of
+Even though the author of this thesis likes statically-typed languages, Giflang is dynamically-typed. The primary reason is that images take a lot of
 space on the user screen and hence we tried to keep the language concise. Adding typed declarations would probably make it less error-prone, but more verbose.
 
 \section{Object model}
-As mentioned in the end of the previous section we base Giflang on Python. Everything is an object in Python. An object A can have multiple
-related objects:
+As mentioned in the end of the previous section we base Giflang on Python. Everything is an object in Python. We will now explain in more detail what exactly
+it means. An object \texttt{A} can have multiple related objects:
 \begin{itemize}
-    \item An instance B that denotes the type of A. We call B a \texttt{klass} of the instance A and we say that A is an instance of B.
-    \item If A is a class (i.e., an instance of MetaClass), it can have multiple base classes. These base classes are just another Python objects. Let B denote
-    one of the base classes. We then say that A derives from B. 
+    \item An object \texttt{B} that denotes the type of \texttt{A}. We call \texttt{B} \emph{a klass} of the instance \texttt{A} and we say that \texttt{A}
+    is an instance of \texttt{B}.
+    \item If \texttt{A} is a class it can have multiple \emph{base classes}. Let \texttt{B} denote one of the base classes. We say that \texttt{A}
+    \emph{derives from} \texttt{B}. 
 \end{itemize}
 
-As the Figure \ref{fig:chap3:python_structure} shows classes are instances of a MetaClass and the MetaClass is an instance of itself.
+Since classes are objects, they have to be instances of \emph{some} class. We call this ``class of classes'' a \texttt{MetaClass}. Now of course
+\texttt{MetaClass} is also an object and thus has to be an instance of \emph{some} class. To break the chain, \texttt{MetaClass} is an instance of itself.
+Figure \ref{fig:chap3:python_structure} describes the Python's object structure in more detail.
 
 \begin{figure}[!hbt]
     \centering
@@ -309,7 +319,7 @@ As the Figure \ref{fig:chap3:python_structure} shows classes are instances of a 
 	\label{fig:chap3:python_structure}
 \end{figure}
 
-MetaClass is actually called \texttt{type} in Python. Below is an interactive Python session that unveils the internals of Python shown in the
+\texttt{MetaClass} is actually called \texttt{type} in Python. Below is an interactive Python session that unveils the internals of Python shown in the
 Figure \ref{fig:chap3:python_structure}.
 \begin{code}
 >>> class X:
@@ -332,7 +342,10 @@ AttributeError: 'X' object has no attribute '__bases__'
 <class 'type'>
 \end{code}
 
-We decided to reuse this model as the base of Giflang. Another Python feature we reused are magic methods as they provide a very straightforward way
+We decided to reuse this model as the base of Giflang.
+
+\subsection{Magic Methods}
+Another Python feature we reused are magic methods. They provide a very straightforward way
 to overload operators. Magic methods are prefixed and suffixed with two underscores. Below is a Python example that uses magic methods:
 \begin{code}
 class Number:
@@ -361,33 +374,71 @@ print(x())
 \end{code}
 
 The example shows how to create a constructor, overload an operator and create a new instance of a class by calling the class with arguments for the constructor.
-Number class also defines a \texttt{\_\_call\_\_} method so naturally we might expect the call \texttt{Number(2)} to result in the string `An instance was called :)'. However,
-as we know, it is not the case. Instead, \texttt{Number(2)} results in a new instance of the Number class. The author of this thesis thinks that this is
-the reason why magic method resolution in Python starts from the instance type rather than from the instance itself, as it is the case with regular methods.
+\texttt{Number} class also defines a \texttt{\_\_call\_\_} method so naturally we might expect the call \texttt{Number(2)} to result in the string
+`An instance was called :)'. However, it is not the case. Instead, \texttt{Number(2)} results in a new instance of the texttt{Number} class. The author of this
+thesis thinks that this is the reason why magic method resolution in Python starts from the instance type rather than from the instance itself, as it is
+the case with regular methods.
 
 Following up on the idea from the previous paragraph, because the call \texttt{Number(2)} does not result in the call of the \texttt{\_\_call\_\_} function on the
 \texttt{Number} type, it has to result in a \texttt{\_\_call\_\_} method further up the chain. In this case, \texttt{Number} is an instance of the \texttt{type},
-or the MetaClass class. Its \texttt{\_\_call\_\_} method is responsible for creating a new instance and calling the \texttt{\_\_init\_\_} method. Oversimplified,
+or the \texttt{MetaClass} class. Its \texttt{\_\_call\_\_} method is responsible for creating a new instance and calling the \texttt{\_\_init\_\_} method. Oversimplified,
 the \texttt{type}'s \texttt{\_\_call\_\_} function might look like this:
 \begin{code}
 class type:
     # Since classes are instances of the 'type' class, self
-    # in this method is the class object. 
+    # in this method is a class object. 
     def __call__(self, *args, **kwargs):
         obj = instantiate(self)
         obj.__init__(*args, **kwargs)
         return obj
 \end{code}
 
-In reality, creating a new instance is a little more complicated, To give users more control over the instantiation, another magic method \texttt{\_\_new\_\_}
-is called instead of a made up function \texttt{instantiate} in the example above. We did not go into more detail since we decided to not include the
+In reality, creating a new instance is a little more complicated, To give users more control over the instantiation, another magic method (\texttt{\_\_new\_\_})
+is called instead of a made up function \texttt{instantiate} in the example above. We will not go into more details since we decided not to include the
 \texttt{\_\_new\_\_} magic method into Giflang as it is mainly used only for a few specific use cases (e.g., creating a singleton).
 
 Having a keyword for introducing new variables, e.g., \texttt{var}, would mean that magic methods could be resolved the same way as normal methods. However,
-we like the simplicity of creating a new instance via calling a class and therefore used this approach in Giflang as well.
+we like the simplicity of creating a new instance via calling a class and hence used this approach in Giflang as well.
+
+\section{Basic types}
+There are 7 basic types supported natively in Giflang:
+\begin{itemize}
+    \item Object
+    \item Number
+    \item Boolean
+    \item None
+    \item Function
+    \item List
+    \item String
+\end{itemize}
+
+Since the interpreter is written in JavaScript, we based the types mostly around JavaScript types. For example, \texttt{Number} is a wrapper of the JavaScript
+\texttt{number}. Because of this, it has a standard double-precision 64-bit floating point format (IEEE 754). Boolean \texttt{True} and \texttt{False}
+and also \texttt{None} are all represented using a single image. In the language itself they are just global variables, similar to Python.
+
+Functions are first-class entities, which means that users can create anonymous functions, pass callbacks, etc. Closures are also supported.
+Lists and strings are basically wrappers around JavaScript arrays and strings as it was the simplest approach. There are no primitive types and everything is an
+\texttt{Object}. Of course, it would be more effective to implement the \texttt{Number} as a primitive type, but as stated earlier, performance was not one of the main
+objectives and implementing the \texttt{Number} as an \texttt{Object} was easier.
+
+As with any other language there needs to be a support basic conversions. We could create explicit conversion functions, but since Giflang is dynamically typed, we can
+implement conversions in the constructors of the target types. For example, calling \texttt{Number('1')} should result in a conversion from a \texttt{String} to
+a \texttt{Number}.
 
 \section{Flow constructs}
-Giflang supports basic flow constructs: \texttt{if}, \texttt{while} and \texttt{for}. The author of this thesis is a fan of C-like \texttt{for} and therefore
+Giflang supports the following flow constructs: \texttt{if}, \texttt{while} and \texttt{for}. The author of this thesis is a fan of the C-like \texttt{for} and therefore
+used it in Giflang as well. When evaluating a condition, a \texttt{\_\_bool\_\_} magic method is called on the resulting object to convert it to a boolean. By default,
+everything except for \texttt{0}, \texttt{None}, \texttt{False}, an empty string and an empty list evaluates to \texttt{True}.
 
+\section{Standard library}
+Giflang's standard library is quite modest. There is only support for the very basics: \texttt{list}, \texttt{string}, \texttt{I/O}. As mentioned earlier, lists
+and strings wrap standard JavaScript lists and strings. The I/O is provided in the form of three functions:
+\begin{itemize}
+    \item \texttt{input} function reads a single line
+    \item \texttt{println} calls \texttt{\_\_str\_\_} magic method on its arguments to stringify them and outputs them on a single line adding a newline at the end
+    \item \texttt{print} has the same semantics as \texttt{println}, but omits the newline at the end
+\end{itemize}
 
-\section{Native types}
+We did not extend the library further since lists, strings, and I/O are the necessary building blocks that should suffice for most of the basic use-cases.
+This thesis is quite broad in scope and the standard library of Giflang was one of the places where we cut a corner. Extending the library further would not
+be hard, but we decided to invest the time into different areas of the project.
