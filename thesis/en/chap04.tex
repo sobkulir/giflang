@@ -70,7 +70,7 @@ to make the execution as fast as possible. However, we do not incorporate any op
     % Text Node
     \draw (156.5,57) node   [align=left] {{\fontfamily{pcr}\selectfont \textit{Source code}}};
     \end{tikzpicture}
-    \caption{A diagram of Giflang interpreter}
+    \caption{A diagram of the Giflang interpreter}
 \end{figure}
 
 \subsection{Parsing}
@@ -87,13 +87,13 @@ For example it can split an input \texttt{'4 + size'} into following tokens:
 \end{code}
 
 Grammar rules are then defined in terms of tokens, for example:
-\begin{figure}
-    \begin{code}
-    expression -> factor OPERATOR expression
-    expression -> factor
-    factor -> IDENTIFIER
-    factor -> NUMBER
-    \end{code}
+\begin{figure}[!hbt]
+\begin{code}
+expression -> factor OPERATOR expression
+expression -> factor
+factor -> IDENTIFIER
+factor -> NUMBER
+\end{code}
     \caption{An example of a grammar definition}
     \label{fig:chap4:grammar}
 \end{figure}
@@ -104,13 +104,18 @@ symbols and can not be replaced by other terminals or nonterminals. Nonterminals
 of terminal symbols according to the production rules.
 
 In order to parse a grammar like the one above, we can either create our own parser or use \emph{a parser generator}. We will briefly describe both options.
+There are many ways of creating a custom parser, but we will discuss the most common one, a recursive-descent parser. Parsers are a large topic and
+we do not intent to dive deep into it.
 
 \subsubsection*{Recursive-descent parser}
-A recursive-descent parser is a method of creating a parser from mutually recursive procedures where each procedure implements one of the nonterminals
-of the grammar. We mention recursive-descent parsers here because it is very easy to create them. To give us a better idea of what it means to create
-a function for each nonterminal, we created a parser for the grammar from Figure \ref{fig:chap4:grammar}
-
+A recursive-descent parser is a method of creating a parser using mutually recursive procedures where each procedure implements one of the nonterminals
+of the grammar. To give us a better idea of what it means to create a function for each nonterminal, we created a parser for the grammar from
+the Figure \ref{fig:chap4:grammar} in Python.
 \begin{code}
+# Unimplemented functions:
+#   * curToken -- returns the current token
+#   * nextToken -- advances to the next token
+
 def accept(token):
     if curToken() == token:
         nextToken()
@@ -137,11 +142,251 @@ def expression():
     if accept('OPERATOR'):
         expression()
         # Action
+        return
+    # Action 
 \end{code}
-\subsubsection*{Jison}
 
-\subsection{Object model}
-Everything is an object...
+We can see that the grammar can be transformed into the code very naturally using a recursive-descent parser. The \texttt{'\# Action'} comments mark places where
+grammar rules are applied and we could add bits of code there that would build a derivation tree.
+
+Recursive-descent parsers can run in linear time with respect to the input string size, granted that the parsed grammar is an LL(k). \emph{An LL(k) grammar} is
+a context-free grammar that is parsed by an LL parser, which parses the input from \textbf{L}eft to right and creates a \textbf{L}eftmost derivation.
+Additionally, it requires at most $k$ lookahead tokens to uniquely identify which rule should be applied next.
+
+\subsubsection*{Parser generators}
+Creating parsers can be a repetitive process -- applying the same patterns to different grammars. Parser generators solve this by generating parsers from grammar
+specifications. There are dozens of parser generators, but we will only describe one of them, GNU Bison/TODO cite/.
+
+We will also use Flex in the examples, a lexical analyzer generator that is often used alongside Bison. Both Flex and Bison can target C, C++, and Java.
+
+Flex takes token descriptions as regular expressions. The following code is not a valid Flex source, but it demonstrates the idea behind Flex:
+\begin{code}
+%{ %}
+
+DIGIT           [0-9]
+LETTER          [a-zA-Z]
+
+%%
+{DIGIT}+                        return NUMBER;
+{LETTER}({LETTER}|{DIGIT})*     return IDENTIFIER;
+[+-]                            return OPERATOR;
+%%
+\end{code}
+
+Flex can create a lexer from the source code above. Let us now show a Bison source for the grammar from the Figure \ref{fig:chap4:grammar}:
+\begin{code}
+%{ %}
+
+%token NUMBER IDENTIFIER OPERATOR
+%start expression
+
+%%
+expression
+    : factor OPERATOR expression    { /* Action */ }
+    | factor                        { /* Action */ }
+    ;
+factor
+    : IDENTIFIER                    { /* Action */ }
+    | NUMBER                        { /* Action */ }
+    ;
+%%
+\end{code}
+
+Parse generators can employ many different parsing algorithms, but the most common ones are LL parser and LALR, as it is also case with Bison. We will not describe
+the mentioned parsers since we do not find it important in our case.
+
+\subsubsection*{Conclusion}
+The main advantage of creating a custom parser over a parser generator is the option to create better error reporting and error recovery. It would also be a
+good learning experience to make a parser with a lexer from scratch. However, we opted for using a parser generator as in the very beginning of the project
+we wanted to focus on interpreting the AST rather than parsing.
+
+There are numerous parser generators for JavaScript, most notably ANTLR and acorn /TODO cite/. Since we had prior experience with Bison, we decided to use
+Jison /TODO cite/, a Bison-like JavaScript library. The Jison source file location is \texttt{interpreter/ast/giflang.jison}.
+
+\subsection{Employing the Visitor pattern}
+Probably the easiest way to create an interpreter is by using \emph{the interpreter design pattern}. The basic idea is to have a class for each symbol
+(terminal or nonterminal). The syntax tree is then build from these classes. Every class defines an \texttt{evaluate} method that interprets given node
+of the syntax tree, possibly evaluating its children nodes as well.
+
+Below is a Python example of the interpreter pattern that evaluates the grammar from the Figure \ref{fig:chap4:grammar}. We did not define a class for each
+symbol to make it more concise.
+\begin{code}
+class Node:
+    def evaluate(self, env):
+        raise Exception('Method not implemented')
+
+class Expression(Node):
+    def __init__(self, left, right, op):
+        self.left, self.right, self.op = left, right, op
+
+    def evaluate(self, env):
+        lval, rval = self.left.evaluate(env), self.right.evaluate(env)
+        if self.op == '+':
+            return lval + rval
+        elif self.op == '-':
+            return lval - rval
+        else:
+            raise Error('Unknown operator ' + self.op)
+
+class Number(Node):
+    def __init__(self, value):
+        self.value = value
+    
+    def evaluate(self, env):
+        return self.value
+
+class VariableAccess(Node):
+    def __init__(self, identifier):
+        self.identifier = identifier
+    
+    def evaluate(self, env):
+        if self.identifier in env:
+            return env[self.identifier]
+        else:
+            raise Error('Unknown variable ' + self.identifier)
+
+# Expression: 2 + x - 9
+exp = Expression(
+    Number(2),
+    Expression(VariableAccess('x'), Number(9), '-'),
+    '+')
+# Prints 3
+print(exp.evaluate({'x': 10}))
+\end{code}
+
+When using the interpreter pattern, the execution logic in the form of \texttt{evalute} methods is spread among multiple classes. In order to couple the
+logic together we decided to use the visitor pattern. The visitor pattern /TODO/
+\begin{code}
+class Node:
+    def accept(self, visitor):
+        raise Exception('Method not implemented')
+
+class Expression(Node):
+    def __init__(self, left, right, op):
+        self.left, self.right, self.op = left, right, op
+
+    def accept(self, visitor):
+        return visitor.visitExpression(self)
+
+# We omit implementation of Number and VariableAccess nodes as
+# they are very similar to the Expression node, i.e., they only
+# define an accept method.
+
+class Interpreter:
+    def __init__(self, env):
+        self.env = env
+    
+    def visitExpression(self, exprNode):
+        lval = exprNode.left.accept(self)
+        rval = exprNode.right.accept(self)
+        if exprNode.op == '+':
+            return lval + rval
+        elif exprNode.op == '-':
+            return lval - rval
+        else:
+            raise Error('Unknown operator ' + exprNode.op)
+    
+    def visitNumber(self, numberNode):
+        return numberNode.value
+    
+    def visitVariableAccess(self, variableAccessNode):
+        id = variableAccessNode.identifier
+        if id in self.env:
+            return self.env[id]
+        else:
+            raise Error('Unknown variable ' + id)
+
+# Expression: 2 + x - 9
+exp = Expression(
+    Number(2),
+    Expression(VariableAccess('x'), Number(9), '-'),
+    '+')
+interpreter = Interpreter({'x': 10})
+# Prints 3
+print(exp.accept(interpreter))
+\end{code}
+
+In the example above, the Interpreter class is a Visitor and its methods implement the execution logic.
+
+The types of return values of different nodes might be different. When implementing the interpreter we found three different return types:
+\begin{enumerate}
+    \item \emph{An instance} -- for example literal or expression nodes return an instance
+    \item \emph{An instance reference} -- accesing a variable, a property, or an array element has to result in an assignable value (i.e., a reference)
+    \item \emph{A completion} -- cycles can contain \texttt{break} or \texttt{continue} statements that do not result in an instance, but rather a completion
+\end{enumerate} 
+
+In the implementation, we split the nodes into three categories based on their return types: \texttt{ValueExpr}, \texttt{RefExpr}, and \texttt{Stmt}.
+The node classes can be found in \texttt{interpreter/ast/\{expr, stmt\}.ts}, and the interpreter visitor in \texttt{interpreter/interpreter.ts}. 
+
+\subsection{Class hierarchy of the object model}
+In the Section \ref{chap3:object_model} we outlined the object model of Giflang. In order to implement it in a statically-typed language like TypeScript, we
+need to define a class hierarchy that will represent the object model. Since everything is an object, everything has to derive from a single class. We named
+this class \texttt{Instance}.
+\begin{figure}[!hbt]
+	\includegraphics[width=1\textwidth]{../img/class_hierarchy}
+	\label{fig:chap4:class_hierarchy}
+    \caption{Class hierarchy of the object model}
+\end{figure}
+
+Classes \texttt{Instance} and \texttt{Class} are \emph{abstract}. As we can see from the Figure \ref{fig:chap4:class_hierarchy}, classes have their
+respective instance classes; for example there is \texttt{NumberClass} and \texttt{NumberInstance}. This results in creating a relatively big number
+of classes, but we did not find any other suitable model, because different classes of instances need to hold different value types. To illustrate this,
+a \texttt{Number} need to hold a number, while \texttt{String} needs to hold a string, etc.
+
+We could create a templated \texttt{Instance<T>} class that would have a \texttt{value: T} property. This way, we would be able to reduce the number of
+classes. However, some of the instance classes also incorporate additional functionality, e.g., \texttt{UserFunctionInstance} implements a \texttt{call} method
+that allows calling the function. Since there are more cases like this one, we decided to create all instances in a uniform fashion and did not go with the
+generic \texttt{Instance<T>} approach.
+
+Classes define their methods as static functions and during their initialization these methods are assigned to the class objects they represent.
+A code snippet below demonstrates this:
+\begin{code}
+class NumberClass extends Class {
+    // Overloads '+' operation of two numbers.
+    static __add__(
+        args: Instance[],
+    ): NumberInstance {
+        CheckArity(args, /* expectedArity = */ 2)
+        const lhs = args[0].castOrThrow(NumberInstance)
+        const rhs = args[1].castOrThrow(NumberInstance)
+        return new NumberInstance(
+            /* klass = */ NumberClass.get(), lhs + rhs)
+    }
+
+    constructor() {
+        this.fields.set(
+            /* fieldName = */ '__add__',
+            new WrappedFunctionInstance(
+                /* klass = */ WrappedFunctionClass.get(),
+                NumberClass.__add__,
+                /* functionName = */ '__add__'
+            )
+        )
+    }
+}
+\end{code}
+
+Since \texttt{NumberClass.\_\_add\_\_} is a TypeScript function it needs to be wrapped around Giflang's object. We named this wrapper a \texttt{WrappedFunctionInstance}.
+The code in the actual implementation is a little more abstract since repeating this for every operation would need a lot of boilerplate.
+
+When writing the code, we often needed the class objects, usually for instantiation. This can be seen in the code example above, e.g.,
+\texttt{new NumberInstance(NumberClass.get(), lhs + rhs)}. In this case, \texttt{NumberClass.get()} is a \texttt{NumberClass} instance. Since only one
+instance of each class object is needed, we used \emph{the singleton pattern}. In hindsight, it was not the best choice, because it allows changing
+the interpreter state in between multiple invocations.
+\begin{code}
+const interpreter1 = new Interpreter()
+// This code can change state of the singletons, for example
+// override __add__ operation on the NumberClass.
+interpreter1.visitProgramStmt(ParseGiflang('"evil" source code'))
+
+const interpreter2 = new Interpreter()
+// The second interpreter uses the same singletons and hence
+// their state will be changed.
+interpreter2.visitProgramStmt(ParseGiflang('source code'))
+\end{code}
+
+However, since we spawn a new WebWorker with each code run, this was not an issue. If we decide to reuse the same WebWorker, we can use a global registry
+instead of singletons. Class objects in the registry can then be reinstantiated after each code execution.
 
 \subsection{Environment state}
 
