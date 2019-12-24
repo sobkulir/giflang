@@ -14,11 +14,11 @@ export function Stringify(interpreter: CodeExecuter, ...args: Instance[])
 export type PrintFunction = (str: string) => void
 export type InputFunction = () => Promise<string>
 
-export function GiflangPrint(print: PrintFunction)
+export function GiflangPrint(print: PrintFunction, end: string)
   : TWrappedFunction {
   return (interpreter: CodeExecuter, args: Instance[])
     : Instance => {
-    print((Stringify(interpreter, ...args)).join(' ') + '\n')
+    print((Stringify(interpreter, ...args)).join(' ') + end)
     return NoneInstance.getInstance()
   }
 }

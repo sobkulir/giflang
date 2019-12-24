@@ -186,7 +186,6 @@ export class ObjectClass extends Class {
           [MagicMethod.__bool__, ObjectClass.__bool__],
           [MagicMethod.__eq__, ObjectClass.__eq__],
           [MagicMethod.__ne__, ObjectClass.__ne__],
-
         ],
         WrappedFunctionClass.get())
     }

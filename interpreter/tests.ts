@@ -229,7 +229,7 @@ FUNC(ARG)→PROP ≔ 5;`,
               expected: ExpectedResult.PASS_PARSE,
             },
             {
-              name: 'Defining a lambda should fail (for now)',
+              name: 'Defining an anonymous function works',
               source: `
  J ≔ ƒ(){ };`,
               expected: ExpectedResult.FAIL_PARSE,

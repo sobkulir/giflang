@@ -17,15 +17,13 @@ class Giflang implements GiflangWorker {
     this.interpreter = new Interpreter(setup, isDebugMode)
   }
   run(code: string) {
-    setTimeout(() => {
-      try {
-        const rootNode = ParseGiflang(code)
-        this.interpreter.visitProgramStmt(rootNode)
-        this.setup.onFinish('')
-      } catch (e) {
-        this.setup.onFinish(`${e.toString()}`)
-      }
-    })
+    try {
+      const rootNode = ParseGiflang(code)
+      this.interpreter.visitProgramStmt(rootNode)
+      this.setup.onFinish('')
+    } catch (e) {
+      this.setup.onFinish(`${e.toString()}`)
+    }
   }
 
   resolveNextStep() {

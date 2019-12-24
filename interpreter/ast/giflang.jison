@@ -3,8 +3,6 @@
 DIGIT       [0-9]
 LETTER      [A-Z_✓✕αβγδεζηθικλμ]
 
-IDENTIFIER  {LETTER}({LETTER}|{DIGIT})*
-
 KEYWORDS    [<≤=≠≥>+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.→,]
 
 %%
@@ -55,7 +53,7 @@ KEYWORDS    [<≤=≠≥>+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.�
                             { yytext = yytext.substr(1, yytext.length - 2); return 'STRING' }
 
 {DIGIT}+("."{DIGIT}+)?      { return 'NUMBER' }
-{IDENTIFIER}                { return 'IDENTIFIER' }
+{LETTER}({LETTER}|{DIGIT})* { return 'IDENTIFIER' }
 
 
 \s+                         /* ignore whitespace */

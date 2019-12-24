@@ -47,10 +47,15 @@ export class Interpreter
   constructor(readonly setup: InterpreterSetup, isDebugMode: boolean = false) {
     this.globals = new Environment(null)
     this.environment = new Environment(this.globals)
-    this.globals.getRef(signToCharMap.get(PrintSign) as string).set(
+    const printChar = signToCharMap.get(PrintSign) as string
+    this.globals.getRef(`${printChar}`).set(
       new WrappedFunctionInstance(
         WrappedFunctionClass.get(),
-        GiflangPrint(setup.onPrint), 'PRINT'))
+        GiflangPrint(setup.onPrint, /*end=*/'\n'), 'PRINTLN'))
+    this.globals.getRef(printChar + printChar).set(
+      new WrappedFunctionInstance(
+        WrappedFunctionClass.get(),
+        GiflangPrint(setup.onPrint, /*end=*/''), 'PRINT'))
     this.globals.getRef(signToCharMap.get(InputSign) as string).set(
       new WrappedFunctionInstance(
         WrappedFunctionClass.get(),
