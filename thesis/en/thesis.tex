@@ -3,7 +3,7 @@
 %% Settings for single-side (simplex) printing
 % Margins: left 40mm, right 25mm, top and bottom 25mm
 % (but beware, LaTeX adds 1in implicitly)
-\documentclass[12pt,a4paper]{report}
+\documentclass[12pt,a4paper,rgb]{report}
 \setlength\textwidth{145mm}
 \setlength\textheight{247mm}
 \setlength\oddsidemargin{15mm}
@@ -31,6 +31,7 @@
 
 %% Character encoding: usually latin2, cp1250 or utf8:
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}	% ľľľ in abstract
 
 %% Prefer Latin Modern fonts
 \usepackage{lmodern}
@@ -52,7 +53,8 @@
 \usepackage{paralist}       % improved enumerate and itemize
 \usepackage{xcolor}         % typesetting in color
 \usepackage{enumitem}		% enumerations with letters, etc
-\usepackage{tikz}
+\usepackage{tikz}			% Graphs
+\usetikzlibrary{patterns}
 
 \usepackage{listings}		% Listings 
 \usepackage{adjustbox}
@@ -61,6 +63,7 @@
 
 % Thesis title in English (exactly as in the formal assignment)
 \def\ThesisTitle{A programming language presented in graphics}
+\def\ThesisTitleSK{Graficky prezentovaný programovací jazyk}
 
 % Author of the thesis
 \def\ThesisAuthor{Roman Sobkuliak}
@@ -72,46 +75,68 @@
 % (according to the Organizational Structure of MFF UK in English,
 % or a full name of a department outside MFF)
 \def\Department{Department of Software Engineering}
+\def\DepartmentSK{Katedra softwarového inžinierstva}
 
 % Is it a department (katedra), or an institute (ústav)?
 \def\DeptType{Department}
+\def\DeptTypeSK{Katedra}
 
 % Thesis supervisor: name, surname and titles
 \def\Supervisor{RNDr. David Bednárek, Ph.D.}
 
 % Supervisor's department (again according to Organizational structure of MFF)
 \def\SupervisorsDepartment{Department of Software Engineering}
+\def\SupervisorsDepartmentSK{Katedra softwarového inžinierstva}
 
 % Study programme and specialization
 \def\StudyProgramme{Computer Science}
 \def\StudyBranch{Software and Data Engineering}
 
 % An optional dedication: you can thank whomever you wish (your supervisor,
-% consultant, a person who lent the software, aetc.)
+% consultant, a person who lent the software, etc.)
 \def\Dedication{%
-Dedication.
+I would like to give thanks to my supervisor, RNDr. David Bednárek, Ph.D., for his time
+and advice, and also to my parents for their extensive support and patience.
 }
 
 % Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
 \def\Abstract{%
 The goal of this thesis is to create a programming language with characters and keywords substituted
-with images or animations (GIFs). We build a web IDE and a client-side interpreter for this language
+with images and animations (GIFs). We build a web IDE and a client-side interpreter for this language
 using modern web technologies including WebWorkers, TypeScript and React.
 
-The IDE features a code stepper with information about current location in the source
-code, environment variables and call stack. Additionally, there is a support for storing and loading
-source code from the cloud using Firebase. 
+The IDE features a code-stepping with information about current location in the source
+code, environment variables and a call stack. Additionally, there is a support for storing programs on the server
+and loading them later.
 
-Primarily, it will be used at programming camps for elementary and high schoolers. We create creative
-games for the camps usually related to Computer Science. The language from this thesis will be incorporated
-into the games.
+Primarily, it will be used at programming camps for elementary and high schoolers. The author of this thesis designs
+creative games for these camps, usually related to Computer Science. The language created in this thesis will
+be incorporated into the games.
 
 At the time of writing, we could not find any other such programming language.
 }
 
+\def\AbstractSK{%
+Cieľom práce je vytvoriť programovací jazyk so znakmi a kľúčovými slovami nahradenými za obrázky a animácie (GIFy).
+To zahŕňa naprogramovanie webového vývojového prostredia a interpreteru pre tento jazyk.
+V práci využijeme moderné webové technológie ako WebWorkers, TypeScript a React.
+
+Vývojové prostredie podporuje krokovanie programu s informáciami o aktuálnej pozícii v kóde, hodnotami premenných a
+volacieho zásobníku. Vývojové prostre\-die navyše ponúka možnosť ukladať a načítať užívateľské programy zo serveru.
+
+Primárne bude tento jazyk použitý na základoškolských a stredoškolských programovacích sústredeniach. Autor práce
+tvorí kreatívne táborové hry pre tieto sústredenia, typicky spojené s programovaním. Jazyk vytvorený v tejto práci
+bude zahrnutý v týchto hrách.
+
+V čase písania práce sa nám nepodarilo nájsť jazyk podobný tomu, ktorý tvoríme v tejto práci.
+}
+
 % 3 to 5 keywords (recommended), each enclosed in curly braces
 \def\Keywords{
-{visual programming language} {program interpretation} {symbolic debugger} {giflang}
+{Visual programming language} {Program interpretation} {Code-stepping} {GIF language}
+}
+\def\KeywordsSK{
+{Vizuálny programovací jazyk} {Interpreter programu} {Krokovanie kódu} {GIFový jazyk}
 }
 
 %% The hyperref package for clickable links in PDF and also for storing
@@ -136,8 +161,6 @@ At the time of writing, we could not find any other such programming language.
 \include{chap02}
 \include{chap03}
 \include{chap04}
-\include{chap05}
-
 \include{epilog}
 
 %%% Bibliography

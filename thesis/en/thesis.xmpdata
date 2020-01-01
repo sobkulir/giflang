@@ -1,7 +1,16 @@
 % Metadata to be stored in PDF, see documentation of the pdfx package for more details.
 
-\Author{Name Surname}
-\Title{Thesis title}
-\Keywords{keywords\sep more such\sep yet another}
-\Subject{Abstract of thesis}
+\Author{Roman Sobkuliak}
+\Title{A programming language presented in graphics}
+\Keywords{visual programming language\sep program interpretation\sep code-stepping\sep GIF language}
+\Subject{The goal of this thesis is to create a programming language with characters and keywords substituted
+with images and animations (GIFs). We build a web IDE and a client-side interpreter for this language
+using modern web technologies including WebWorkers, TypeScript and React.
+The IDE features a code-stepping with information about current location in the source
+code, environment variables and a call stack. Additionally, there is a support for storing programs on the server
+and loading them later.
+Primarily, it will be used at programming camps for elementary and high schoolers. The author of this thesis designs
+creative games for these camps, usually related to Computer Science. The language created in this thesis will
+be incorporated into the games.
+At the time of writing, we could not find any other such programming language.}
 \Publisher{Charles University}
