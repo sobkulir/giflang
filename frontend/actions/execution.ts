@@ -2,8 +2,9 @@ import * as Comlink from 'comlink'
 import produce from 'immer'
 import Worker from 'worker-loader!~/interpreter/giflang.worker'
 import { JisonLocator } from '~/interpreter/ast/ast-node'
+import { Barrier, InputBarrier } from '~/interpreter/barrier'
 import { SerializedEnvironment } from '~/interpreter/environment'
-import { GiflangSetup, GiflangWorker } from '~/interpreter/giflang.worker'
+import { GiflangBuffers, GiflangClbks, GiflangWorker } from '~/interpreter/giflang.worker'
 import { CallStack } from '~/interpreter/interpreter'
 import { storeInstance } from '../app'
 import { CharsToSigns, SignsToChars } from '../lib/editor'
@@ -45,7 +46,6 @@ export const finishExecution =
   })
 
 export type NextStepArgs = {
-  resolveNextStep: () => void,
   locator: JisonLocator,
   callStack: CallStack,
   environment: SerializedEnvironment
@@ -58,34 +58,42 @@ export const newNextStep =
   reducer: produce((state: State) => {
     state.execution.runState = RunState.DEBUG_WAITING
     state.execution.locator = args.locator
-    state.execution.resolveNextStep = args.resolveNextStep
     state.execution.callStack = args.callStack
     state.execution.environment = args.environment
     state.textAreaMap.mainEditor.scroll = ScrollableType.HIGHLIGHT
   })
 })
 
-export const giflangSetup: GiflangSetup = {
-  onPrint:
-    (str: string) => { storeInstance.dispatch(appendToOutput(str))},
-  onInput:
-    () => {
-      return storeInstance.getState().execution.inputBuffer.popFront()
+function createGiflangSetup():
+  {clbks: GiflangClbks, buffers: GiflangBuffers} {
+  const stepperBarrier = new Barrier()
+  const inputBarrier = new InputBarrier()
+  return {
+    clbks: {
+      onPrint:
+        (str: string) => { storeInstance.dispatch(appendToOutput(str))},
+      onFinish:
+        (errorMsg: string) =>
+          { storeInstance.dispatch(finishExecution(errorMsg))},
+      onNextStep:
+        (locator: JisonLocator,
+          callStack: CallStack, environment: SerializedEnvironment) => {
+          storeInstance.dispatch(newNextStep(
+            {locator, callStack, environment}))
+        },
+      onInput:
+        async () => {
+          inputBarrier.notify(
+            await storeInstance.getState().execution.inputBuffer.popFront())
+        },
     },
-  onFinish:
-    (errorMsg: string) =>
-      { storeInstance.dispatch(finishExecution(errorMsg))},
-  onNextStep:
-    (arr: Int32Array, locator: JisonLocator,
-      callStack: CallStack, environment: SerializedEnvironment) => {
-      const resolveNextStep = () => {
-        Atomics.store(arr, 0, 1)
-        Atomics.notify(arr, 0, 1)
-      }
-      storeInstance.dispatch(newNextStep(
-        {resolveNextStep, locator, callStack, environment}))
+    buffers: {
+      inputChars: inputBarrier.charBuffer,
+      inputSize: inputBarrier.sizeBuffer,
+      stepperFlag: stepperBarrier.flagBuffer
     }
   }
+}
 
 export const executionStarted =
   (resolveNextStep: () => void, worker: Worker, isDebugMode: boolean)
@@ -106,15 +114,18 @@ export async function StartExecution(code: string, isDebugMode: boolean) {
   const vanillaWorker = new Worker()
   const workerProxy =
     Comlink.wrap<
-      new (giflangSetup: GiflangSetup,
+      new (clbks: GiflangClbks, buffers: GiflangBuffers,
         isDebugMode: boolean) => Promise<GiflangWorker>
     >(vanillaWorker)
 
+  const setup = createGiflangSetup()
   const worker = await new workerProxy(
-    Comlink.proxy(giflangSetup), isDebugMode)
+    Comlink.proxy(setup.clbks), setup.buffers, isDebugMode)
+
+  const stepperBarrier = new Barrier(setup.buffers.stepperFlag)
   storeInstance.dispatch(executionStarted(
-    () => {worker.resolveNextStep()}, vanillaWorker, isDebugMode))
-    worker.run(code)
+    () => stepperBarrier.notify(), vanillaWorker, isDebugMode))
+  worker.run(code)
 }
 
 export const startExecution =

@@ -14,8 +14,7 @@ type Test = {
 type TestSuite = {
   name: string,
   tests?: Test[],
-  suites?: TestSuite[]
-  ,
+  suites?: TestSuite[],
 }
 
 async function testSingle(test: Test)
@@ -65,7 +64,7 @@ async function testSingle(test: Test)
   const outputs: string[] = []
   const interpreter = new Interpreter(
     {
-      onInput: () => Promise.resolve(''),
+      onInput: () => '',
       onPrint: (str) => outputs.push(str),
       onNextStep: async () => { return },
     })
@@ -232,7 +231,7 @@ FUNC(ARG)→PROP ≔ 5;`,
               name: 'Defining an anonymous function works',
               source: `
  J ≔ ƒ(){ };`,
-              expected: ExpectedResult.FAIL_PARSE,
+              expected: ExpectedResult.PASS_PARSE,
             },
           ]
         }

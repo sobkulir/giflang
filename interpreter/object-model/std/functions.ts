@@ -12,7 +12,7 @@ export function Stringify(interpreter: CodeExecuter, ...args: Instance[])
 }
 
 export type PrintFunction = (str: string) => void
-export type InputFunction = () => Promise<string>
+export type InputFunction = () => string
 
 export function GiflangPrint(print: PrintFunction, end: string)
   : TWrappedFunction {
@@ -28,6 +28,6 @@ export function GiflangInput(input: InputFunction)
   return (_interpreter: CodeExecuter, args: Instance[])
     : StringInstance => {
     CheckArityEq(args, 0)
-    return new StringInstance(StringClass.get(), 'INPUT')
+    return new StringInstance(StringClass.get(), input())
   }
 }

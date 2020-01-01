@@ -72,7 +72,7 @@ export class Instance {
     }
   }
 
-  // Calls magic method and binds 'this'.
+  // Calls a magic method and binds 'this'.
   callMagicMethod(
     functionName: MagicMethod,
     args: Instance[],
@@ -110,7 +110,7 @@ export class ObjectInstance extends Instance {
   }
 }
 
-export class NoneInstance extends ObjectInstance {
+export class NoneInstance extends Instance {
   private constructor(noneClass: NoneClass) {
     super(noneClass)
   }
@@ -123,13 +123,13 @@ export class NoneInstance extends ObjectInstance {
   }
 }
 
-abstract class FunctionInstance extends ObjectInstance {
+abstract class FunctionInstance extends Instance {
   abstract call(interpreter: CodeExecuter, args: Instance[]): Instance
 
-  // Returns true if method has "this" bound.
+  // Returns true if the method is already bound.
   abstract isBound(): boolean
 
-  // Gets original function name.
+  // Gets the original function name.
   abstract getName(): string
 
   bind(argToBind: Instance): FunctionInstance {
@@ -211,7 +211,7 @@ export class WrappedFunctionInstance extends FunctionInstance {
   }
 }
 
-export class BoolInstance extends ObjectInstance {
+export class BoolInstance extends Instance {
   constructor(boolClass: BoolClass, readonly value: boolean) {
     super(boolClass)
   }
@@ -231,7 +231,7 @@ export class BoolInstance extends ObjectInstance {
   }
 }
 
-export class StringInstance extends ObjectInstance {
+export class StringInstance extends Instance {
   constructor(klass: Class, public value: string) {
     super(klass)
   }

@@ -1,7 +1,7 @@
 import { Class } from '../class'
-import { ObjectInstance } from '../instance'
+import { Instance } from '../instance'
 
-export class NumberInstance extends ObjectInstance {
+export class NumberInstance extends Instance {
   constructor(klass: Class, readonly value: number) {
     super(klass)
   }

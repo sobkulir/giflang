@@ -19,15 +19,14 @@ import { RuntimeError } from './runtime-error'
 
 export type CallStack = string[]
 
-export type NextStepFunction =
-  (arr: Int32Array,
-    locator: JisonLocator,
-    callStack: CallStack, environment: SerializedEnvironment) => void
+export type NextStepFunction = (
+  locator: JisonLocator,
+  callStack: CallStack, environment: SerializedEnvironment) => void
 
 export interface InterpreterSetup {
   onNextStep: NextStepFunction,
   onPrint: PrintFunction,
-  onInput: InputFunction
+  onInput: InputFunction,
 }
 
 export class Interpreter
@@ -36,7 +35,6 @@ export class Interpreter
   VisitorValueExpr<Instance>,
   VisitorStmt<Completion>,
   CodeExecuter {
-  private readonly stepperBarrier: Barrier
   private readonly globals: Environment
   private environment: Environment
   public callStack: string[] = ['main']
@@ -44,7 +42,7 @@ export class Interpreter
     { first_column: 0, first_line: 0, last_column: 0, last_line: 0 }
   public waitForNextStep = (_locator: JisonLocator) => { return }
 
-  constructor(readonly setup: InterpreterSetup, isDebugMode: boolean = false) {
+  constructor(readonly setup: InterpreterSetup, stepperBarrier?: Barrier) {
     this.globals = new Environment(null)
     this.environment = new Environment(this.globals)
     const printChar = signToCharMap.get(PrintSign) as string
@@ -65,21 +63,14 @@ export class Interpreter
     this.globals.getRef(signToCharMap.get(Sign.FALSE) as string)
       .set(BoolInstance.getFalse())
 
-    this.stepperBarrier = new Barrier()
-
-    if (isDebugMode) {
+    if (stepperBarrier) {
       this.waitForNextStep = (locator: JisonLocator) => {
-        this.stepperBarrier.reset()
+        stepperBarrier.reset()
         setup.onNextStep(
-          this.stepperBarrier.int32arr,
           locator, this.callStack, this.environment.flatten(this))
-        this.stepperBarrier.wait()
+        stepperBarrier.wait()
       }
     }
-  }
-
-  public resolveNextStep() {
-    this.stepperBarrier.notify()
   }
 
   private evaluateRef(expr: RefExpr): ValueRef {

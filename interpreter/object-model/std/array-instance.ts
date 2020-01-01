@@ -1,7 +1,7 @@
 import { Class } from '../class'
-import { Instance, ObjectInstance } from '../instance'
+import { Instance } from '../instance'
 
-export class ArrayInstance extends ObjectInstance {
+export class ArrayInstance extends Instance {
   constructor(klass: Class, public values: Instance[]) {
     super(klass)
   }

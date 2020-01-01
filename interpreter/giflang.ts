@@ -5,7 +5,7 @@ const interpreter = new Interpreter(
   {
     onPrint: (str) => console.log(str),
     onNextStep: async () => { return },
-    onInput: () => Promise.resolve('')
+    onInput: () => '',
   })
 const root = ParseGiflang(`
 N≔100;C≔"_✓✕αβγδεζηθικλμ";♶( I≔0;I<N;I≔I+1){ ♶(  J≔0;J<N-I-1;J≔J+1){  λλ(" "); } ♶(  J≔0;  J<2*(I+1)-1;  J≔J+1){  λλ(C[I%10]); } λ();}

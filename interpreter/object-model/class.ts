@@ -141,7 +141,7 @@ export class ObjectClass extends Class {
     CheckArityEq(args, 1)
     const className = args[0].getClass().name
     return new StringInstance(
-      StringClass.get(), `Instance of class "${className}"`)
+      StringClass.get(), `"${className}-${args[0].id}"`.toUpperCase())
   }
 
   static __bool__(
@@ -210,6 +210,7 @@ export class WrappedFunctionClass extends Class {
     return new StringInstance(
       StringClass.get(),
       `${self.isBound() ? 'Bound' : 'Unbound'} function ${self.getName()}`
+        .toUpperCase()
     )
   }
 
@@ -260,6 +261,7 @@ export class UserFunctionClass extends Class {
     return new StringInstance(
       StringClass.get(),
       `${self.isBound() ? 'Bound' : 'Unbound'} function ${self.getName()}`
+        .toUpperCase()
     )
   }
 

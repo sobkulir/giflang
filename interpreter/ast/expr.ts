@@ -148,7 +148,7 @@ export class FunctionDeclExpr extends ValueExpr {
     super(loc)
     if (name === null) {
       this.isAnonymous = true
-      this.name = `$anonymous_${loc.first_line}:${loc.first_column}`
+      this.name = `ANONYM${loc.first_line}-${loc.first_column}`
     } else {
       this.isAnonymous = false
       this.name = name
