@@ -1,7 +1,7 @@
 %lex
 
 DIGIT       [0-9]
-LETTER      [A-Z_✓✕αβγδεζηθικλμ]
+LETTER      [A-Z_✓☐✕αβγδεζηθικλμ]
 
 KEYWORDS    [<≤=≠≥>+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.→,]
 
@@ -25,7 +25,6 @@ KEYWORDS    [<≤=≠≥>+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.�
 "∧"                         { return 'AND' }
 
 "≔"                         { return 'ASSIGN' }
-"☐"                         { return 'NONE' }
 
 "("                         { return 'LPAR' }
 ")"                         { return 'RPAR' }
@@ -98,8 +97,7 @@ PrimaryComnon
     ;
 
 Literal
-    : NONE                      { $$ = new yy.Expr.NoneValueExpr(@$) }
-    | NUMBER                      { $$ = new yy.Expr.NumberValueExpr($1, @$) }
+    : NUMBER                      { $$ = new yy.Expr.NumberValueExpr($1, @$) }
     | STRING                    { $$ = new yy.Expr.StringValueExpr($1, @$) }
     ;
 

@@ -1,6 +1,6 @@
 import { JisonLocator } from './ast/ast-node'
 import { BreakCompletion, Completion, CompletionType, ContinueCompletion, NormalCompletion, ReturnCompletion } from './ast/completion'
-import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, DotAccessorRefExpr, Expr, FunctionDeclExpr, NoneValueExpr, NumberValueExpr, RefExpr, SquareAccessorRefExpr, StringValueExpr, UnaryNotValueExpr, UnaryPlusMinusValueExpr, ValueExpr, VariableRefExpr, VisitorRefExpr, VisitorValueExpr } from './ast/expr'
+import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, DotAccessorRefExpr, Expr, FunctionDeclExpr, NumberValueExpr, RefExpr, SquareAccessorRefExpr, StringValueExpr, UnaryNotValueExpr, UnaryPlusMinusValueExpr, ValueExpr, VariableRefExpr, VisitorRefExpr, VisitorValueExpr } from './ast/expr'
 import { Operator } from './ast/operator'
 import { InputSign, PrintSign, Sign, signToCharMap } from './ast/sign'
 import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
@@ -62,6 +62,8 @@ export class Interpreter
       .set(BoolInstance.getTrue())
     this.globals.getRef(signToCharMap.get(Sign.FALSE) as string)
       .set(BoolInstance.getFalse())
+    this.globals.getRef(signToCharMap.get(Sign.NONE) as string)
+      .set(NoneInstance.getInstance())
 
     if (stepperBarrier) {
       this.waitForNextStep = (locator: JisonLocator) => {
@@ -110,9 +112,6 @@ export class Interpreter
   }
   visitStringValueExpr(expr: StringValueExpr): Instance {
     return new StringInstance(StringClass.get(), expr.value)
-  }
-  visitNoneValueExpr(_expr: NoneValueExpr): Instance {
-    return NoneInstance.getInstance()
   }
   visitAssignmentValueExpr(expr: AssignmentValueExpr): Instance {
     const l = this.evaluateRef(expr.lhs)

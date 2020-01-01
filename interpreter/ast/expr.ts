@@ -18,7 +18,6 @@ export interface VisitorValueExpr<T> {
   visitNumberValueExpr(expr: NumberValueExpr): T
   visitStringValueExpr(expr: StringValueExpr): T
   visitArrayValueExpr(expr: ArrayValueExpr): T
-  visitNoneValueExpr(expr: NoneValueExpr): T
   visitUnaryPlusMinusValueExpr(expr: UnaryPlusMinusValueExpr): T
   visitUnaryNotValueExpr(expr: UnaryNotValueExpr): T
   visitBinaryValueExpr(expr: BinaryValueExpr): T
@@ -72,16 +71,6 @@ export class ArrayValueExpr extends ValueExpr {
 
   accept<T>(visitor: VisitorValueExpr<T>): T {
     return visitor.visitArrayValueExpr(this)
-  }
-}
-
-export class NoneValueExpr extends ValueExpr {
-  constructor(loc: JisonLocator) {
-    super(loc)
-  }
-
-  accept<T>(visitor: VisitorValueExpr<T>): T {
-    return visitor.visitNoneValueExpr(this)
   }
 }
 
