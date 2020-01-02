@@ -9,7 +9,7 @@ import { ScrollableType, TextArea, TextAreaType } from '~/frontend/types/text-ar
 import { JisonLocator } from '~/interpreter/ast/ast-node'
 import { Content } from './content'
 import { Cursor } from './cursor'
-import { HandleMainEditorShorcuts } from './handle-shorcuts'
+import { HandleMainEditorShortcuts } from './handle-shortcuts'
 import { Highlighter } from './highlighter'
 import { LineNumbers } from './line-numbers'
 import * as styles from './main-text-area.scss'
@@ -86,7 +86,7 @@ class MainTextArea extends React.Component<MainTextAreaProps, {}> {
   }
 
   handleKeyPress = (e: React.KeyboardEvent) => {
-    HandleMainEditorShorcuts(e, this.props)
+    HandleMainEditorShortcuts(e, this.props)
   }
 
   render() {

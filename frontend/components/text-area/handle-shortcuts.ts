@@ -150,7 +150,7 @@ export function HandleExecutionInputShortcuts(
 }
 
 // Returns true if an event caused an action.
-export function HandleMainEditorShorcuts(
+export function HandleMainEditorShortcuts(
   e: React.KeyboardEvent, clbks: HandleMainEditorCallbacks)
   : boolean {
   const areaType = TextAreaType.MAIN_EDITOR

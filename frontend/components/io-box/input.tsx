@@ -8,7 +8,7 @@ import { State } from '~/frontend/types/redux'
 import { ScrollableType, Text, TextArea, TextAreaType } from '~/frontend/types/text-area'
 import { Content } from '../text-area/content'
 import { Cursor } from '../text-area/cursor'
-import { HandleExecutionInputShortcuts } from '../text-area/handle-shorcuts'
+import { HandleExecutionInputShortcuts } from '../text-area/handle-shortcuts'
 import * as styles from './input.scss'
 
 export interface InputProps extends TextArea {

@@ -6,7 +6,7 @@ DIGIT       [0-9]
 LETTER      [A-Z_✓☐✕αβγδεζηθικλμ]
 
 KEYWORDS                    [<≤=≠≥>#+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.→,]
-PRINTABLE_CHARS             ({KEYWORDS}|{LETTER}|{DIGIT})
+
 %%
 
 "<"                         { return 'LT' }
@@ -53,7 +53,7 @@ PRINTABLE_CHARS             ({KEYWORDS}|{LETTER}|{DIGIT})
 "#"                         { this.begin('comment') }
 <comment>[^\n]*\n           { this.popState() }
 
-\"({PRINTABLE_CHARS}|[ \n])*\"
+\"({KEYWORDS}|{LETTER}|{DIGIT}|[ \n])*\"
                             { yytext = yytext.substr(1, yytext.length - 2); return 'STRING' }
 
 {DIGIT}+("."{DIGIT}+)?      { return 'NUMBER' }
