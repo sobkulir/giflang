@@ -88,6 +88,8 @@ function HandleCommon(
       sign = Sign.QUOTE; break
     case ',':
       sign = Sign.COMMA; break
+    case '#':
+      sign = Sign.COMMENT; break
     // Boolean
     case '!':
       sign = Sign.NOT; break

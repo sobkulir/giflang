@@ -9,6 +9,7 @@ export enum Sign {
   LPAR, RPAR, LBRA, RBRA, LCURLY, RCURLY,
   IF, ELSE, WHILE, FOR,
   CLASS, FUNCTION, RETURN, CONTINUE, BREAK,
+  COMMENT,
 }
 
 export const PrintSign = Sign.AUX10
@@ -50,6 +51,7 @@ export const signToCharMap: Map<Sign, string> = new Map([
 
   [Sign.CLASS, '⚛'], [Sign.FUNCTION, 'ƒ'], [Sign.RETURN, '⚹'],
   [Sign.CONTINUE, '⚺'], [Sign.BREAK, '⚻'],
+  [Sign.COMMENT, '#']
 ])
 
 export const charToSignMap: Map<string, Sign> = new Map()

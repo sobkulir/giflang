@@ -1,10 +1,12 @@
 %lex
 
+%x comment
+
 DIGIT       [0-9]
 LETTER      [A-Z_✓☐✕αβγδεζηθικλμ]
 
-KEYWORDS    [<≤=≠≥>+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.→,]
-
+KEYWORDS                    [<≤=≠≥>#+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.→,]
+PRINTABLE_CHARS             ({KEYWORDS}|{LETTER}|{DIGIT})
 %%
 
 "<"                         { return 'LT' }
@@ -48,7 +50,10 @@ KEYWORDS    [<≤=≠≥>+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.�
 "."                         { return 'DOT' }
 "→"                         { return 'PROP' }
 ","                         { return 'COMMA' }
-\"({KEYWORDS}|{LETTER}|{DIGIT}|[ \n])*\"
+"#"                         { this.begin('comment') }
+<comment>[^\n]*\n           { this.popState() }
+
+\"({PRINTABLE_CHARS}|[ \n])*\"
                             { yytext = yytext.substr(1, yytext.length - 2); return 'STRING' }
 
 {DIGIT}+("."{DIGIT}+)?      { return 'NUMBER' }
@@ -56,7 +61,7 @@ KEYWORDS    [<≤=≠≥>+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.�
 
 
 \s+                         /* ignore whitespace */
-.                           { throw new Error(`Unknown char "${yytext}"`) }
+<INITIAL,comment>.         { throw new Error(`Unknown char "${yytext}"`) }
 <<EOF>>                     { return 'EOF' }
 
 %%
