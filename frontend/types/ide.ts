@@ -4,7 +4,8 @@ export interface LetterSize {
   edgePx: number
   marginPx: number
 }
-export type AlphabetCategory = { name: string, signs: Sign[] }
+export type LabeledSign = { sign: Sign, label: string }
+export type AlphabetCategory = { name: string, signs: LabeledSign[] }
 export type CategorizedAlphabet = AlphabetCategory[]
 export type FileName = string
 export type SignToGifMap = Map<Sign, FileName>

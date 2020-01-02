@@ -34,13 +34,14 @@ const Category: React.SFC<CategoryProps> = (props) => {
     props.addSignAfterFocusedCursor(sign)
   }
 
-  const row = props.category.signs.map((sign) =>
+  const row = props.category.signs.map((labeledSign) =>
     <img
+      key={labeledSign.sign.toString()}
       className={styles.letter}
-      key={sign.toString()}
       style={getLetterStyles(props.letterSize)}
-      src={`${props.signToGifMap.get(sign)}`}
-      onClick={addSign(sign)}
+      src={`${props.signToGifMap.get(labeledSign.sign)}`}
+      onClick={addSign(labeledSign.sign)}
+      title={labeledSign.label}
     />)
 
   return (

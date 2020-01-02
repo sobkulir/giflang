@@ -6,7 +6,7 @@ import { LetterImp, LetterRowImp } from '../lib/text-area'
 import { RunState } from '../types/execution'
 import { FocusedArea, LoadingBarState } from '../types/ide'
 import { MyAction, State } from '../types/redux'
-import { LoadState, SaveState } from '../types/storage'
+import { LoadState } from '../types/storage'
 import { createEmptyText, ScrollableType } from '../types/text-area'
 
 const getInitialState = (): State => (
@@ -50,14 +50,66 @@ const getInitialState = (): State => (
             ])
       ),
       alphabet: [
-        { name: 'Auxletters', signs: [Sign.AUX0, Sign.AUX1, Sign.AUX2, Sign.AUX3, Sign.AUX4, Sign.AUX5, Sign.AUX6, Sign.AUX7, Sign.AUX8, Sign.AUX9] },
-        { name: 'IO', signs: [PrintSign, InputSign] },
-        { name: 'Comparisons', signs: [Sign.LT, Sign.LE, Sign.EQ, Sign.NE, Sign.GE, Sign.GT] },
-        { name: 'Arithmetics', signs: [Sign.PLUS, Sign.MINUS, Sign.MUL, Sign.DIV, Sign.MOD, Sign.DOT] },
-        { name: 'Booleans', signs: [Sign.TRUE, Sign.FALSE, Sign.AND, Sign.OR, Sign.NOT] },
-        { name: 'Variables', signs: [Sign.ASSIGN, Sign.NONE] },
-        { name: 'Flow', signs: [Sign.IF, Sign.ELSE, Sign.WHILE, Sign.FOR, Sign.BREAK, Sign.CONTINUE] },
-        { name: 'Classes and functions', signs: [Sign.CLASS, Sign.PROP, Sign.FUNCTION, Sign.RETURN] }
+        {
+          name: 'Letters', signs: [
+            { sign: PrintSign, label: 'print' },
+            { sign: InputSign, label: 'input' },
+            { sign: Sign.NONE, label: 'none' },
+            { sign: Sign.TRUE, label: 'true' },
+            { sign: Sign.FALSE, label: 'false' },
+            { sign: Sign.AUX0, label: 'Aux0' },
+            { sign: Sign.AUX1, label: 'Aux1' },
+            { sign: Sign.AUX2, label: 'Aux2' },
+            { sign: Sign.AUX3, label: 'Aux3' },
+            { sign: Sign.AUX4, label: 'Aux4' },
+            { sign: Sign.AUX5, label: 'Aux5' },
+            { sign: Sign.AUX6, label: 'Aux6' },
+            { sign: Sign.AUX7, label: 'Aux7' },
+            { sign: Sign.AUX8, label: 'Aux8' },
+            { sign: Sign.AUX9, label: 'Aux9' }]
+        },
+        {
+          name: 'Comparisons', signs: [
+            { sign: Sign.LT, label: '<' },
+            { sign: Sign.LE, label: '<=' },
+            { sign: Sign.EQ, label: '==' },
+            { sign: Sign.NE, label: '!=' },
+            { sign: Sign.GE, label: '>=' },
+            { sign: Sign.GT, label: '>' }]
+        },
+        {
+          name: 'Arithmetics', signs: [
+            { sign: Sign.ASSIGN, label: ':=' },
+            { sign: Sign.PLUS, label: '+' },
+            { sign: Sign.MINUS, label: '-' },
+            { sign: Sign.MUL, label: '*' },
+            { sign: Sign.DIV, label: '/' },
+            { sign: Sign.MOD, label: '%' },
+            { sign: Sign.DOT, label: 'Decimal point' }]
+        },
+        {
+          name: 'Booleans', signs: [
+            { sign: Sign.AND, label: 'and' },
+            { sign: Sign.OR, label: 'or' },
+            { sign: Sign.NOT, label: 'not' }]
+        },
+        {
+          name: 'Flow', signs: [
+            { sign: Sign.COMMENT, label: 'comment' },
+            { sign: Sign.IF, label: 'if' },
+            { sign: Sign.ELSE, label: 'else' },
+            { sign: Sign.WHILE, label: 'while' },
+            { sign: Sign.FOR, label: 'for' },
+            { sign: Sign.BREAK, label: 'break' },
+            { sign: Sign.CONTINUE, label: 'continue' }]
+        },
+        {
+          name: 'Classes and functions', signs: [
+            { sign: Sign.CLASS, label: 'class' },
+            { sign: Sign.PROP, label: 'Property access' },
+            { sign: Sign.FUNCTION, label: 'function' },
+            { sign: Sign.RETURN, label: 'return' }]
+        }
       ],
       letterSize: { edgePx: 80, marginPx: 6 },
       focusedArea: FocusedArea.MAIN_EDITOR,
@@ -65,7 +117,6 @@ const getInitialState = (): State => (
     },
     storage: {
       loadState: LoadState.INITIAL,
-      saveState: SaveState.SAVED
     }
   })
 

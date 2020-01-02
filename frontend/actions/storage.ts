@@ -1,10 +1,11 @@
 import firebase from 'firebase/app'
+import 'firebase/auth'
 import 'firebase/firestore'
 import produce from 'immer'
 import { SignsToChars } from '../lib/editor'
 import { LoadingBarState } from '../types/ide'
 import { MyAction, MyThunkAction, State } from '../types/redux'
-import { DocumentReference, LoadState, SaveState } from '../types/storage'
+import { DocumentReference, LoadState } from '../types/storage'
 import { TextAreaType } from '../types/text-area'
 import { setLoadingBarState } from './ide'
 import { setText } from './text-area'
@@ -36,29 +37,34 @@ export const saveCode =
     async (dispatch, getState): Promise<void> => {
       const state = getState()
       dispatch(setLoadingBarState(LoadingBarState.START))
-      dispatch(setSaveState(SaveState.SAVING))
+      let userId = state.storage.userId
       let doc = state.storage.doc
+      if (!userId) {
+        const anonym = await firebase.auth().signInAnonymously()
+        if (anonym && anonym.user) {
+          userId = anonym.user.uid
+        } else {
+          alert('File not saved: anonymous session could not be created')
+          dispatch(setLoadingBarState(LoadingBarState.COMPLETE))
+          return
+        }
+      }
       if (!doc) {
         doc = await firebase.firestore().collection('programs').doc()
         window.history.pushState({}, '', `${doc.id}`)
         dispatch(setDoc(doc))
       }
+
       await doc.set({
         code: SignsToChars(
-          state.textAreaMap[TextAreaType.MAIN_EDITOR].text)
+          state.textAreaMap[TextAreaType.MAIN_EDITOR].text),
+        ownerUID: userId,
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch((reason) => {
+        alert('Saving unsuccessful. Programs can only be saved every 5s.')
       })
-      dispatch(setSaveState(SaveState.SAVED))
       dispatch(setLoadingBarState(LoadingBarState.COMPLETE))
     }
-
-const setSaveState =
-  (saveState: SaveState): MyAction<SaveState> => ({
-    type: 'Set load state',
-    payload: saveState,
-    reducer: produce((state: State) => {
-      state.storage.saveState = saveState
-    })
-  })
 
 const setLoadState =
   (loadState: LoadState): MyAction<LoadState> => ({
