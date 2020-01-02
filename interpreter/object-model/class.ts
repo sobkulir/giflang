@@ -2,10 +2,10 @@ import { FunctionDeclExpr } from '../ast/expr'
 import { Sign, signToCharMap } from '../ast/sign'
 import { CodeExecuter } from '../code-executer'
 import { Environment } from '../environment'
-import { BoolInstance, Instance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
+import { RuntimeError } from '../runtime-error'
+import { Stringify } from './functions'
+import { ArrayInstance, BoolInstance, Instance, NumberInstance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
 import { MagicMethod } from './magic-method'
-import { Stringify } from './std/functions'
-import { NumberInstance } from './std/number-instance'
 
 export function CheckArityEq(args: Instance[], n: number) {
   // TODO: Add fcn name.
@@ -392,13 +392,13 @@ export class BoolClass extends Class {
 
 export class StringClass extends Class {
   static __init__(
-    _interpreter: CodeExecuter,
+    interpreter: CodeExecuter,
     args: Instance[]
   ): StringInstance {
     CheckArityEq(args, 2)
     const self = args[0].castOrThrow(StringInstance)
-    const rhs = args[1].castOrThrow(StringInstance)
-    self.value = rhs.value.slice(0)
+    const str = args[1].callMagicMethod(MagicMethod.__str__, [], interpreter)
+    self.value = (str as StringInstance).value
     return self
   }
 
@@ -470,6 +470,46 @@ export class StringClass extends Class {
     }
   }
 
+  static _split_(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): ArrayInstance {
+    CheckArityEq(args, 2)
+    console.log('res')
+    const self = args[0].castOrThrow(StringInstance)
+    const sep = args[1].castOrThrow(StringInstance)
+    const res = self.value.split(sep.value)
+      .map((v) => new StringInstance(StringClass.get(), v))
+    console.log(res)
+    return new ArrayInstance(ArrayClass.get(), res)
+  }
+
+  static _slice_(
+    interpreter: CodeExecuter,
+    args: Instance[],
+  ): StringInstance {
+    CheckArityGe(args, 1)
+    let res: string
+    const self = args[0].castOrThrow(StringInstance)
+    if (args.length === 1) {
+      res = self.value.slice()
+    }
+    else if (args.length === 2) {
+      const start = args[1].castOrThrow(NumberInstance).value
+      res = self.value.slice(start)
+    } else if (args.length === 3) {
+      const start = args[1].castOrThrow(NumberInstance).value
+      const end = args[2].castOrThrow(NumberInstance).value
+      res = self.value.slice(start, end)
+    } else {
+      throw new RuntimeError(
+        interpreter.locator,
+        `String.slice expects 1, 2 or 3 arguments, ${args.length} provided`)
+    }
+
+    return new StringInstance(StringClass.get(), res)
+  }
+
   private constructor() {
     super(MetaClass.get(), nameof(StringClass), ObjectClass.get())
     this.addNativeMethods(
@@ -486,7 +526,9 @@ export class StringClass extends Class {
         [MagicMethod.__ge__, StringClass.comparatorOp((l, r) => l >= r)],
         [MagicMethod.__gt__, StringClass.comparatorOp((l, r) => l > r)],
         [MagicMethod.__getitem__, StringClass.__getitem__],
-        [MagicMethod.__setitem__, StringClass.__setitem__]
+        [MagicMethod.__setitem__, StringClass.__setitem__],
+        ['SPLIT', StringClass._split_],
+        ['SLICE', StringClass._slice_],
       ],
       WrappedFunctionClass.get()
     )
@@ -504,6 +546,269 @@ export class StringClass extends Class {
   }
   createBlankUserInstance(klass: Class): StringInstance {
     return new StringInstance(klass, /* value = */ '')
+  }
+}
+
+export class NumberClass extends Class {
+  static __init__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): NumberInstance {
+    CheckArityEq(args, 2)
+    const self = args[0].castOrThrow(NumberInstance)
+    const arg = args[1]
+    if (arg instanceof NumberInstance) {
+      self.value = arg.value
+    } else if (arg instanceof StringInstance) {
+      self.value = Number(arg.value)
+    }
+    return self
+  }
+
+  static __str__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): StringInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(NumberInstance)
+    return new StringInstance(
+      StringClass.get(), self.value.toString().toUpperCase())
+  }
+
+  static __pos__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): NumberInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(NumberInstance)
+    return self
+  }
+
+  static __neg__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): NumberInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(NumberInstance)
+    return new NumberInstance(NumberClass.get(), - self.value)
+  }
+
+  static __bool__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): BoolInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(NumberInstance)
+    return (self.value === 0) ? BoolInstance.getFalse() : BoolInstance.getTrue()
+  }
+
+  static binaryOpNumber(
+    action: (lhs: number, rhs: number) => number,
+  ): (_interpreter: CodeExecuter, args: Instance[]) => NumberInstance {
+    return (_interpreter: CodeExecuter, args: Instance[]) => {
+      CheckArityEq(args, 2)
+      const lhs = args[0].castOrThrow(NumberInstance)
+      const rhs = args[1].castOrThrow(NumberInstance)
+      return new NumberInstance(NumberClass.get(), action(lhs.value, rhs.value))
+    }
+  }
+
+  static binaryOpBool(
+    action: (lhs: number, rhs: number) => boolean,
+  ): (_interpreter: CodeExecuter, args: Instance[]) => BoolInstance {
+    return (_interpreter: CodeExecuter, args: Instance[]) => {
+      CheckArityEq(args, 2)
+      const lhs = args[0].castOrThrow(NumberInstance)
+      const rhs = args[1].castOrThrow(NumberInstance)
+      return (action(lhs.value, rhs.value))
+        ? BoolInstance.getTrue() : BoolInstance.getFalse()
+    }
+  }
+
+  constructor() {
+    super(MetaClass.get(), nameof(NumberClass), ObjectClass.get())
+    this.addNativeMethods(
+      [
+        [MagicMethod.__init__, NumberClass.__init__],
+        [MagicMethod.__str__, NumberClass.__str__],
+        [MagicMethod.__neg__, NumberClass.__neg__],
+        [MagicMethod.__bool__, NumberClass.__bool__],
+        [MagicMethod.__add__, NumberClass.binaryOpNumber((x, y) => x + y)],
+        [MagicMethod.__sub__, NumberClass.binaryOpNumber((x, y) => x - y)],
+        [MagicMethod.__mul__, NumberClass.binaryOpNumber((x, y) => x * y)],
+        [MagicMethod.__div__, NumberClass.binaryOpNumber((x, y) => {
+          if (y === 0) throw Error('Division by zero')
+          else return x / y
+        })],
+        [MagicMethod.__mod__, NumberClass.binaryOpNumber((x, y) => {
+          if (y === 0) throw Error('Modulo by zero')
+          else return x % y
+        })],
+        [MagicMethod.__lt__, NumberClass.binaryOpBool((x, y) => x < y)],
+        [MagicMethod.__le__, NumberClass.binaryOpBool((x, y) => x <= y)],
+        [MagicMethod.__eq__, NumberClass.binaryOpBool((x, y) => x === y)],
+        [MagicMethod.__ne__, NumberClass.binaryOpBool((x, y) => x !== y)],
+        [MagicMethod.__ge__, NumberClass.binaryOpBool((x, y) => x >= y)],
+        [MagicMethod.__gt__, NumberClass.binaryOpBool((x, y) => x > y)],
+      ],
+      WrappedFunctionClass.get()
+    )
+  }
+  private static instance: NumberClass
+  static get(): NumberClass {
+    if (!NumberClass.instance) {
+      NumberClass.instance = new NumberClass()
+    }
+    return NumberClass.instance
+  }
+
+  canUserDeriveFrom(): boolean {
+    return true
+  }
+  createBlankUserInstance(klass: Class): NumberInstance {
+    return new NumberInstance(klass, /* value = */ 0)
+  }
+}
+
+export class ArrayClass extends Class {
+  static __init__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): ArrayInstance {
+    CheckArityEq(args, 2)
+    const self = args[0].castOrThrow(ArrayInstance)
+    const rhs = args[1].castOrThrow(ArrayInstance)
+    self.values = rhs.values.slice()
+    return self
+  }
+
+  static __getitem__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): Instance {
+    CheckArityEq(args, 2)
+    const self = args[0].castOrThrow(ArrayInstance)
+    const key = args[1].castOrThrow(NumberInstance)
+    if (key.value >= 0 && key.value < self.values.length) {
+      return self.values[key.value]
+    } else {
+      throw new Error(`Index ${key.value} out of range.`)
+    }
+  }
+
+  static __setitem__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): Instance {
+    CheckArityEq(args, 3)
+    const self = args[0].castOrThrow(ArrayInstance)
+    const key = args[1].castOrThrow(NumberInstance)
+    const data = args[2]
+    if (key.value >= 0 && key.value < self.values.length) {
+      self.values[key.value] = data
+      return data
+    } else {
+      throw new Error(`Assignment index ${key.value} out of range.`)
+    }
+  }
+
+  static __str__(
+    interpreter: CodeExecuter,
+    args: Instance[],
+  ): StringInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(ArrayInstance)
+    const stringified =
+      (Stringify(interpreter, ...self.values)).join(',')
+    return new StringInstance(StringClass.get(), `[${stringified}]`)
+  }
+
+  static __bool__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): BoolInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(ArrayInstance)
+    if (self.values.length === 0) return BoolInstance.getFalse()
+    else return BoolInstance.getTrue()
+  }
+
+  static __add__(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): ArrayInstance {
+    CheckArityEq(args, 2)
+    const self = args[0].castOrThrow(ArrayInstance)
+    const rhs = args[1].castOrThrow(ArrayInstance)
+    return new ArrayInstance(
+      ArrayClass.get(),
+      self.values.concat(rhs.values)
+    )
+  }
+
+  static _length_(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): NumberInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(ArrayInstance)
+    return new NumberInstance(
+      NumberClass.get(),
+      self.values.length
+    )
+  }
+
+  static _push_(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): Instance {
+    CheckArityEq(args, 2)
+    const self = args[0].castOrThrow(ArrayInstance)
+    const data = args[1]
+    self.values.push(data)
+    return self
+  }
+
+  static _pop_(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): Instance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(ArrayInstance)
+    self.values.pop()
+    return self
+  }
+
+  constructor() {
+    super(MetaClass.get(), nameof(ArrayClass), ObjectClass.get())
+    this.addNativeMethods(
+      [
+        [MagicMethod.__init__, ArrayClass.__init__],
+        [MagicMethod.__str__, ArrayClass.__str__],
+        [MagicMethod.__getitem__, ArrayClass.__getitem__],
+        [MagicMethod.__setitem__, ArrayClass.__setitem__],
+        [MagicMethod.__bool__, ArrayClass.__bool__],
+        [MagicMethod.__add__, ArrayClass.__add__],
+        ['LEN', ArrayClass._length_],
+        ['PUSH', ArrayClass._push_],
+        ['POP', ArrayClass._pop_],
+      ],
+      WrappedFunctionClass.get()
+    )
+  }
+  private static instance: ArrayClass
+  static get(): ArrayClass {
+    if (!ArrayClass.instance) {
+      ArrayClass.instance = new ArrayClass()
+    }
+    return ArrayClass.instance
+  }
+
+  canUserDeriveFrom(): boolean {
+    return true
+  }
+  createBlankUserInstance(klass: Class): ArrayInstance {
+    return new ArrayInstance(klass, /* value = */[])
   }
 }
 

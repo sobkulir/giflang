@@ -1,6 +1,6 @@
 import { CodeExecuter } from './code-executer'
+import { Stringify } from './object-model/functions'
 import { Instance, ValueRef } from './object-model/instance'
-import { Stringify } from './object-model/std/functions'
 
 export type SerializedEnvironment = string[]
 

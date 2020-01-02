@@ -243,13 +243,13 @@ FUNC(ARG)→PROP ≔ 5;`,
         {
           name: 'Array literal',
           source: `
-[12, 42];`,
+[12,42];`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
           name: 'Multidimensional array literal with values',
           source: `
-[[1], 3];`,
+[[1],3];`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
@@ -267,7 +267,7 @@ FUNC(ARG)→PROP ≔ 5;`,
         {
           name: 'Assignment to an element.',
           source: `
-[12, 42][0] ≔ 1;`,
+[12,42][0] ≔ 1;`,
           expected: ExpectedResult.PASS_PARSE
         },
         {
@@ -392,7 +392,7 @@ const runtime = {
 λ(F());
 `,
           // tslint:disable-next-line:max-line-length
-          output: `[[A, 3], [${signToCharMap.get(Sign.TRUE)}, ${signToCharMap.get(Sign.FALSE)}]]\n`,
+          output: `[[A,3],[${signToCharMap.get(Sign.TRUE)},${signToCharMap.get(Sign.FALSE)}]]\n`,
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {

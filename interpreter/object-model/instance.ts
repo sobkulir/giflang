@@ -236,3 +236,15 @@ export class StringInstance extends Instance {
     super(klass)
   }
 }
+
+export class NumberInstance extends Instance {
+  constructor(klass: Class, public value: number) {
+    super(klass)
+  }
+}
+
+export class ArrayInstance extends Instance {
+  constructor(klass: Class, public values: Instance[]) {
+    super(klass)
+  }
+}

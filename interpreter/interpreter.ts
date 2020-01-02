@@ -7,14 +7,10 @@ import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, 
 import { Barrier } from './barrier'
 import { CodeExecuter } from './code-executer'
 import { Environment, SerializedEnvironment } from './environment'
-import { Class, ObjectClass, StringClass, UserClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
-import { BoolInstance, Instance, NoneInstance, StringInstance, UserFunctionInstance, ValueRef, WrappedFunctionInstance } from './object-model/instance'
+import { ArrayClass, Class, NumberClass, ObjectClass, StringClass, UserClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
+import { GiflangInput, GiflangPrint, InputFunction, PrintFunction } from './object-model/functions'
+import { ArrayInstance, BoolInstance, Instance, NoneInstance, NumberInstance, StringInstance, UserFunctionInstance, ValueRef, WrappedFunctionInstance } from './object-model/instance'
 import { MagicMethod } from './object-model/magic-method'
-import { ArrayClass } from './object-model/std/array-class'
-import { ArrayInstance } from './object-model/std/array-instance'
-import { GiflangInput, GiflangPrint, InputFunction, PrintFunction } from './object-model/std/functions'
-import { NumberClass } from './object-model/std/number-class'
-import { NumberInstance } from './object-model/std/number-instance'
 import { RuntimeError } from './runtime-error'
 
 export type CallStack = string[]
@@ -64,6 +60,8 @@ export class Interpreter
       .set(BoolInstance.getFalse())
     this.globals.getRef(signToCharMap.get(Sign.NONE) as string)
       .set(NoneInstance.getInstance())
+    this.globals.getRef('NUM').set(NumberClass.get())
+    this.globals.getRef('STR').set(StringClass.get())
 
     if (stepperBarrier) {
       this.waitForNextStep = (locator: JisonLocator) => {

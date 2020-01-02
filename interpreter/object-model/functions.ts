@@ -1,7 +1,7 @@
-import { CodeExecuter } from '../../code-executer'
-import { CheckArityEq, StringClass } from '../class'
-import { Instance, NoneInstance, StringInstance, TWrappedFunction } from '../instance'
-import { MagicMethod } from '../magic-method'
+import { CodeExecuter } from '../code-executer'
+import { CheckArityEq, StringClass } from './class'
+import { Instance, NoneInstance, StringInstance, TWrappedFunction } from './instance'
+import { MagicMethod } from './magic-method'
 
 export function Stringify(interpreter: CodeExecuter, ...args: Instance[])
   : string[] {

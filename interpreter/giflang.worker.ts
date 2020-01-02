@@ -1,7 +1,7 @@
 import * as Comlink from 'comlink'
 import { Barrier, InputBarrier } from './barrier'
 import { Interpreter, InterpreterSetup, NextStepFunction } from './interpreter'
-import { InputFunction, PrintFunction } from './object-model/std/functions'
+import { InputFunction, PrintFunction } from './object-model/functions'
 import { ParseGiflang } from './parser'
 
 export interface GiflangWorker {
