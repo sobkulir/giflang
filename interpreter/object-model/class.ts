@@ -625,6 +625,24 @@ export class NumberClass extends Class {
     }
   }
 
+  static _floor_(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): NumberInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(NumberInstance)
+    return new NumberInstance(NumberClass.get(), Math.floor(self.value))
+  }
+
+  static _ceil_(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): NumberInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(NumberInstance)
+    return new NumberInstance(NumberClass.get(), Math.ceil(self.value))
+  }
+
   constructor() {
     super(MetaClass.get(), nameof(NumberClass), ObjectClass.get())
     this.addNativeMethods(
@@ -650,6 +668,8 @@ export class NumberClass extends Class {
         [MagicMethod.__ne__, NumberClass.binaryOpBool((x, y) => x !== y)],
         [MagicMethod.__ge__, NumberClass.binaryOpBool((x, y) => x >= y)],
         [MagicMethod.__gt__, NumberClass.binaryOpBool((x, y) => x > y)],
+        ['CEIL', NumberClass._ceil_],
+        ['FLOOR', NumberClass._floor_],
       ],
       WrappedFunctionClass.get()
     )
