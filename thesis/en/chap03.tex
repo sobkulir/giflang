@@ -8,7 +8,7 @@ When creating Giflang we had two options:
     \item Create a~new language and a~web interpreter
 \end{enumerate}
 
-in~the~first section of this chapter we explain~why we decided to not reuse an~existing language. Later, we discuss the~design of our own language. We do not
+In~the~first section of this chapter we explain~why we decided to not reuse an~existing language. In this section we discuss the~design of our own language. We do not
 precisely define all the~semantics, but rather provide a~high-level overview. We think that it is more important to explain~\emph{why} Giflang uses specific
 constructs, rather than~list \emph{how} these constructs behave in~every case.
 
@@ -32,7 +32,8 @@ at each executed line by inserting a~trace function call there. Afterwards, it o
 It is possible to create a~``live'' code-stepping for Brython in~a~similar fashion, for example with the~aid of Atomics API discussed in~Section \ref{chap4:atomics}.
 We did not find a~simple way of increasing the~stepping granularity from just lines to arbitrary AST nodes, though. We definitely could have adjusted Brython instead
 of creating a~custom interpreter. However, it would take a~non-trivial effort to change the~Brython's internals and we rather put this effort into creating
-a~new interpreter from scratch and learning a~lot about languages and interpreters along the~way.
+a~new interpreter from scratch and learning a~lot about languages and interpreters along the~way. Additionally, we did not have a lot of experience with writing
+interpreters and compilers and hence it would be quite challenging to customize an existing one.
 
 \subsection{JavaScript}
 \label{chap3:javascript}
@@ -67,8 +68,12 @@ We could add support for ES6 features to the~JS-Interpreter and use it for our p
 creating a~new solution than~putting a~lot of effort an~existing one.
 
 \section{Text format}
-Before we dive into the~language itself, let us first discuss the~text representation of the~language. Since it is intended for being displayed in
-graphics using images, we considered defining the~language in~terms of semicolon delimited tokens where each token could be substituted with a~single image.
+Before we dive into the~language itself, let us first discuss the~underlying representation of the~language. We could represent programs either
+in a \emph{binary format} or a \emph{textual format}. Using a binary format, we could map images into numbers and considering that our ``alphabet of images''
+would be at most 256 characters long, we could use one byte per image. However, it is much simpler to develop the language with a textual format because
+when writing tests and debugging we can work with printable characters rather than seemingly random numbers. Therefore, we decided to use a textual format.
+
+We considered defining the~language in~terms of semicolon delimited tokens where each token could be substituted with a~single image.
 Below is an~identity function defined in~both a~\emph{token-level} and a~\emph{character-level format}.
 \begin{code}
 // Token-level
@@ -86,17 +91,7 @@ function ID(A) {
 ID(8);
 \end{code}
 
-We could just replace all characters of the~character-level format with images, but keywords like \texttt{function} would result in~multiple images. in~the~token-level
-format we define function as a~single token \texttt{FUNCTION} and is thus replaced with a~single image.
-
-in~case of the~character-level format, we could replace everything character by character with images unless \texttt{function} or any other keyword is found in~which
-case we would replace it with a~single image. However, there are some cases to keep an~eye on; for example we should consider:
-\begin{itemize}
-    \item an~identifier \texttt{functionA} should not have its \texttt{function} part replaced for an~image.
-    \item When an~image for a~keyword, e.g., \texttt{function} is used inside a~string, it should be represented as a~single character.
-\end{itemize}
-
-Another option is to represent keywords as single characters in~the~character-level format. This makes the~image substitution trivial, as we can~substitute
+A simpler option is to represent keywords as single characters in~the~character-level format. This makes the~image substitution trivial, as we can~substitute
 every character. The~``keyword characters'' have to be unique among other characters. To illustrate this, we can~use a~Unicode letter `f' with a~hook $f$
 to represent a~function and a~character $\hookleftarrow$ for return.
 \begin{code}
@@ -107,7 +102,7 @@ $f$ ID(A) {
 ID(8);
 \end{code}
 
-the~above approach that uses Unicode characters has a~nice property regarding the~use of the~keywords in~a~string. According to the~ECMAScript specification,
+The~above approach that uses Unicode characters has a~nice property regarding the~use of the~keywords in~a~string. According to the~ECMAScript specification,
 Section 8.4 \cite{Ecmascript}: \emph{When a~String contains actual textual data, each element is considered to be a~single UTF-16 code unit.} This means that if we
 only use characters that can~be encoded into a~single 16-bit code unit, all keywords will take space of a~single character in~a~string.
 
@@ -120,18 +115,19 @@ Since we have chosen to build our own language it is time to decide on what kind
 multiple types of programming languages and we will briefly go through the~most known ones.
 
 \subsection{Functional programming}
-Functional programming treats computation as an~evaluation of mathematical functions and avoids changing state and mutable data.\footnote{wikipedia}
+Functional programming treats computation as an~evaluation of mathematical functions and avoids changing state and mutable
+data.\footnote{https://en.wikipedia.org/wiki/Functional\_programming}
 This means that functional programming languages do not support imperative flow controls like loop statements.
 
 Pure functions are very typical for functional programming. \emph{Pure functions} are functions whose outcome depends solely on their arguments
 and create no side-effects (e.g., by changing a~global variable). Eliminating side effects can~make understanding a~program easier, which is one of the
-key motivations for the~development of functional programming.\footnote{wiki}
+key motivations for the~development of functional programming.
 
 Additionally, functional programming often relies on recursion and functions being first-class entities. Being a~first-class entity means that functions can~appear
 anywhere in~the~program where other first-class entities like numbers can, including arguments to other functions and their return values.
 
 One of the~typical examples of a~functional programming language is Haskell. It was created in~1990, it is statically typed, supports type inference,
-and lazy evaluation. Below is a~sample program in~Haskell finding the~edit distance\footnote{} between two strings from the~official docs.
+and lazy evaluation. Below is a~sample program in~Haskell finding the~edit distance between two strings from the~official docs.
 \begin{code}
 import Data.Array as Array
 
@@ -156,10 +152,10 @@ editDistance xs ys = table ! (m,n)
 
 \subsection{Object-oriented programing}
 Object-oriented programming (OOP) is based around the~concept of ``objects'' which can~contain~data, in~the~form of fields (also known as attributes or properties),
-and code, in~the~form of methods.\footnote{wiki} Object's methods can~access and modify the~object they are operating on using a~keyword like \texttt{this}
-or \texttt{self}. Programs then made out of objects that interact together.
+and code, in~the~form of methods.\footnote{https://en.wikipedia.org/wiki/Object-oriented\_programming} Object's methods can~access and modify the~object they are
+operating on using a~keyword like \texttt{this} or \texttt{self}. Programs then made out of objects that interact together.
 
-the~most popular OOP languages are class-based (e.g., C++, Java, Python), meaning that objects are instances of classes, which also determine their types.\footnote{wiki}
+The~most popular OOP languages are class-based (e.g., C++, Java, Python), meaning that objects are instances of classes, which also determine their types.
 There are also alternatives, for example JavaScript is prototype-based.
 
 OOP has a~few features that are common among most of the~object-oriented programming languages:
@@ -173,14 +169,12 @@ Below is an~example of polymorphism in~C++.
 \begin{code}
 class Animal {
 public:
-    Animal() : { }
+    virtual ~Base() { }
     virtual string make_sound() = 0;
 };
 
 class Dog: public Animal {
 public:
-    Dog() : Animal() { }
-      
     string make_sound() { 
         return "Woof, woof!"; 
     }
@@ -188,8 +182,6 @@ public:
 
 class Sheep: public Animal {
 public:
-    Sheep() : Animal() { }
-      
     string make_sound() { 
         return "Baa, baa!"; 
     }
@@ -197,8 +189,8 @@ public:
 
 int main() {
     Animal *animal;
-    Dog dog();
-    Sheep sheep();
+    Dog dog;
+    Sheep sheep;
 
     // Store the~address of Dog.
     animal = &dog;
@@ -206,7 +198,7 @@ int main() {
     // Call Dog's make_sound. Returns "Woof, woof!".
     animal->make_sound();
 
-    // a~similar example with sheep. Returns "Baa, baa!".
+    // A~similar example with sheep. Returns "Baa, baa!".
     animal = &sheep;
     animal->make_sound();
 
@@ -215,7 +207,7 @@ int main() {
 \end{code}
 
 \subsection{Esoteric programming languages}
-an~esoteric programming language is designed to experiment with weird ideas, to be hard to program in, or as a~joke, rather than~for practical use. We can~not
+An~esoteric programming language is designed to experiment with weird ideas, to be hard to program in, or as a~joke, rather than~for practical use. We can~not
 describe esoteric languages in~general as they all use different ideas.
 
 Probably the~most popular esoteric language is brainf***. It operates on an~array of memory cells, also referred to as the~tape. All of the~cells are initially
@@ -268,7 +260,8 @@ space on the~user screen and hence we tried to keep the~language concise. Adding
 As mentioned in~the~end of the~previous section we base Giflang on Python. Everything is an~object in~Python. We will now explain~in~more detail what exactly
 it means. an~object \texttt{A} can~have multiple related objects:
 \begin{itemize}
-    \item an~object \texttt{B} that denotes the~type of \texttt{A}. We call \texttt{B} \emph{a~klass} of the~instance \texttt{A} and we say that \texttt{A}
+    \item An~object \texttt{B} that denotes the~type of \texttt{A}. We call \texttt{B} a~\emph{class}\footnote{In the implementation we denote this \texttt{klass}
+    instead of \texttt{class} because of a name collision with the keyword \texttt{class}.} of the~instance \texttt{A} and we say that \texttt{A}
     is an~instance of \texttt{B}.
     \item If \texttt{A} is a~class it can~have multiple \emph{base classes}. Let \texttt{B} denote one of the~base classes. We say that \texttt{A}
     \emph{derives from} \texttt{B}. 
@@ -365,7 +358,7 @@ print(x + y)
 print(x())
 \end{code}
 
-the~example shows how to create a~constructor, overload an~operator and create a~new instance of a~class by calling the~class with arguments for the~constructor.
+The~example shows how to create a~constructor, overload an~operator and create a~new instance of a~class by calling the~class with arguments for the~constructor.
 \texttt{Number} class also defines a~\texttt{\_\_call\_\_} method so naturally we might expect the~call \texttt{Number(2)} to result in~the~string
 `an~instance was called :)'. However, it is not the~case. Instead, \texttt{Number(2)} results in~a~new instance of the~\texttt{Number} class. The~author of this
 thesis thinks that this is the~reason why magic method resolution in~Python starts from the~instance type rather than~from the~instance itself, as it is
@@ -389,7 +382,8 @@ in~reality, creating a~new instance is a~little more complicated. To give users 
 is called instead of a~made up function \texttt{instantiate} in~the~example above. We will not go into more details since we decided not to include the
 \texttt{\_\_new\_\_} magic method into Giflang as it is mainly used only for a~few specific use cases (e.g., creating a~singleton).
 
-Having a~keyword for introducing new variables, e.g., \texttt{var}, would mean~that magic methods could be resolved the~same way as normal methods. However,
+Having a~keyword for introducing new variables, e.g., \texttt{var}, would mean~that magic methods could be resolved the~same way as normal methods because
+it would allow us to distinguish between instantiation calls, e.g., \texttt{Number(3)}, and regular method call. However,
 we like the~simplicity of creating a~new instance via~calling a~class and hence used this approach in~Giflang as well.
 
 \section{Basic types}
@@ -410,7 +404,7 @@ we implemented conversions in~the~constructors of the~target types. For example,
 a~\texttt{Number}.
 
 \section{Control flow constructs}
-Giflang supports the~following control flow constructs: \texttt{if}, \texttt{while} and \texttt{for}. The~author of this thesis is a~fan~of the~C-like \texttt{for}
+Giflang supports the~following control flow constructs: \texttt{if}, \texttt{while} and \texttt{for}. The author of this thesis is a~fan~of the~C-like \texttt{for}
 and thus used it in~Giflang as well. When evaluating a~condition, a~\texttt{\_\_bool\_\_} magic method is called on the~resulting object to convert it to
 a~\texttt{boolean}. By default, everything except for \texttt{0}, \texttt{None}, \texttt{False}, an~empty string and an~empty array, evaluates to \texttt{True}.
 
@@ -425,5 +419,4 @@ and strings wrap standard JavaScript arrays and strings. The~I/O is provided in~
 \end{itemize}
 
 We did not extend the~library further since arrays, strings and I/O are the~necessary building blocks that should suffice for most of the~basic use-cases.
-This thesis is quite broad in~scope and the~standard library of Giflang was one of the~places where we cut a~corner. Extending the~library further would not
-be hard, but we decided to invest the~time into different areas of the~project.
+Extending the~library further would not be hard, but we decided to invest the~time into different areas of the~project.

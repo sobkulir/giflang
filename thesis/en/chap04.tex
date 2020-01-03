@@ -1,37 +1,85 @@
 \chapter{Implementation}
 In this chapter we describe the implementation of Giflang and provide insights into the decisions we made along the way. As Figure \ref{fig:chap4:overview} shows,
-the project consists of two major parts: an interpreter and a web IDE. It also outlines the API of the interpreter that allows the web IDE to execute programs.
+the project consists of two major parts: an interpreter and a~web IDE. It also outlines the API of the interpreter that allows the web IDE to execute programs.
+Additionally, there is a~lightweight HTTP server that only serves static files and a~BaaS service for storing user programs.
 \begin{figure}[!hbt]
     \centering
     \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
     \begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-    \draw   (37.5,92) -- (186.5,92) -- (186.5,228) -- (37.5,228) -- cycle ;
-    \draw    (352.5,220) -- (189.5,220) ;
-    \draw [shift={(186.5,220)}, rotate = 360] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (10.72,-5.15) -- (0,0) -- (10.72,5.15) -- (7.12,0) -- cycle    ;
-    \draw    (351.5,179) -- (189.5,179) ;
-    \draw [shift={(186.5,179)}, rotate = 360] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (10.72,-5.15) -- (0,0) -- (10.72,5.15) -- (7.12,0) -- cycle    ;
-    \draw    (349.5,139) -- (185.5,139) ;
-    \draw [shift={(352.5,139)}, rotate = 180] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (10.72,-5.15) -- (0,0) -- (10.72,5.15) -- (7.12,0) -- cycle    ;
-    \draw    (350.5,97) -- (188.5,97) ;
-    \draw [shift={(185.5,97)}, rotate = 360] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (10.72,-5.15) -- (0,0) -- (10.72,5.15) -- (7.12,0) -- cycle    ;
-    \draw  [dash pattern={on 0.84pt off 2.51pt}]  (269,55.2) -- (269,91.2) ;
-    \draw  [dash pattern={on 0.84pt off 2.51pt}]  (270,246.2) -- (270,264.2) ;
-    \draw   (351.5,90) -- (500.5,90) -- (500.5,226) -- (351.5,226) -- cycle ;
-    \draw (425,164) node   [align=left] {{\fontfamily{pcr}\selectfont IDE}};
-    \draw (112.02,161) node   [align=left] {{\fontfamily{pcr}\selectfont Interpreter}};
-    \draw (112.6,64.4) node  [font=\normalsize] [align=left] {{\fontfamily{pcr}\selectfont \textbf{WebWorker}}};
-    \draw (425.6,64.4) node  [font=\normalsize] [align=left] {{\fontfamily{pcr}\selectfont \textbf{Main thread}}};
-    \draw (276.02,232) node   [align=left] {{\fontfamily{pcr}\selectfont \textit{Execute code}}};
-    \draw (273.02,194) node   [align=left] {{\fontfamily{pcr}\selectfont \textit{Next code step}}};
-    \draw (272.02,152) node   [align=left] {{\fontfamily{pcr}\selectfont \textit{Get input}}};
-    \draw (271.02,110) node   [align=left] {{\fontfamily{pcr}\selectfont \textit{Print output}}};
+    %uncomment if require: \path (0,461); %set diagram left start at 0, and has height of 461
+
+    %Shape: Rectangle [id:dp6305366313237857] 
+    \draw   (102.67,227) -- (187.5,227) -- (187.5,340.33) -- (102.67,340.33) -- cycle ;
+    %Shape: Rectangle [id:dp2977546195918692] 
+    \draw   (319,227) -- (403.5,227) -- (403.5,341.67) -- (319,341.67) -- cycle ;
+    %Straight Lines [id:da951249052099123] 
+    \draw    (319.67,299) -- (190.5,299) ;
+    \draw [shift={(187.5,299)}, rotate = 360] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (10.72,-5.15) -- (0,0) -- (10.72,5.15) -- (7.12,0) -- cycle    ;
+
+    %Straight Lines [id:da5209602217060021] 
+    \draw    (319.67,331.33) -- (190.5,331.33) ;
+    \draw [shift={(187.5,331.33)}, rotate = 360] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (10.72,-5.15) -- (0,0) -- (10.72,5.15) -- (7.12,0) -- cycle    ;
+
+    %Straight Lines [id:da5690847035446265] 
+    \draw    (187,269) -- (315.33,269) ;
+    \draw [shift={(318.33,269)}, rotate = 180] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (10.72,-5.15) -- (0,0) -- (10.72,5.15) -- (7.12,0) -- cycle    ;
+
+    %Shape: Rectangle [id:dp07985742970290266] 
+    \draw  [dash pattern={on 0.84pt off 2.51pt}] (73,164.17) -- (430.33,164.17) -- (430.33,358.83) -- (73,358.83) -- cycle ;
+    %Shape: Rectangle [id:dp6103195242603674] 
+    \draw  [dash pattern={on 0.84pt off 2.51pt}] (82,47) -- (235.5,47) -- (235.5,98) -- (82,98) -- cycle ;
+    %Straight Lines [id:da14268622161668265] 
+    \draw    (98.17,166) -- (98.17,100.5) ;
+    \draw [shift={(98.17,97.5)}, rotate = 450] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (10.72,-5.15) -- (0,0) -- (10.72,5.15) -- (7.12,0) -- cycle    ;
+
+    %Straight Lines [id:da3579088417499019] 
+    \draw    (188,240) -- (316.33,240) ;
+    \draw [shift={(319.33,240)}, rotate = 180] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (10.72,-5.15) -- (0,0) -- (10.72,5.15) -- (7.12,0) -- cycle    ;
+
+    %Shape: Rectangle [id:dp03039338044969564] 
+    \draw  [dash pattern={on 0.84pt off 2.51pt}] (273,46.33) -- (425,46.33) -- (425,97.33) -- (273,97.33) -- cycle ;
+    %Straight Lines [id:da6622259233347125] 
+    \draw    (300.83,164.33) -- (300.83,98.83) ;
+    \draw [shift={(300.83,95.83)}, rotate = 450] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (10.72,-5.15) -- (0,0) -- (10.72,5.15) -- (7.12,0) -- cycle    ;
+
+    %Straight Lines [id:da628472813666374] 
+    \draw    (402.5,98) -- (402.5,160.33) ;
+    \draw [shift={(402.5,163.33)}, rotate = 270] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (10.72,-5.15) -- (0,0) -- (10.72,5.15) -- (7.12,0) -- cycle    ;
+
+
+    % Text Node
+    \draw (256.33,224) node   [align=left] {\textit{{\fontfamily{pcr}\selectfont {\footnotesize Print output}}}};
+    % Text Node
+    \draw (256,256.33) node   [align=left] {\textit{{\fontfamily{pcr}\selectfont {\footnotesize Get input}}}};
+    % Text Node
+    \draw (257.33,286) node   [align=left] {\textit{{\fontfamily{pcr}\selectfont {\footnotesize Next code step}}}};
+    % Text Node
+    \draw (256,317.33) node   [align=left] {\textit{{\fontfamily{pcr}\selectfont {\footnotesize Execute code}}}};
+    % Text Node
+    \draw (141,284) node  [rotate=-310.46] [align=left] {{\fontfamily{pcr}\selectfont {\footnotesize Interpreter}}};
+    % Text Node
+    \draw (361.25,284.33) node   [align=left] {{\fontfamily{pcr}\selectfont {\footnotesize IDE}}};
+    % Text Node
+    \draw (145.33,209.33) node   [align=left] {{\fontfamily{pcr}\selectfont {\footnotesize \textbf{WebWorker}}}};
+    % Text Node
+    \draw (361.33,208.67) node   [align=left] {{\fontfamily{pcr}\selectfont {\footnotesize \textbf{Main thread}}}};
+    % Text Node
+    \draw (163.75,72.5) node   [align=left] {{\fontfamily{pcr}\selectfont \textbf{HTTP server}}};
+    % Text Node
+    \draw (190.67,130) node   [align=left] {{\fontfamily{pcr}\selectfont {\footnotesize \textit{Get static resources}}}\\{\fontfamily{pcr}\selectfont {\footnotesize \textit{(images, JS/HTML/CSS)}}}};
+    % Text Node
+    \draw (352.08,71.83) node   [align=left] {{\fontfamily{pcr}\selectfont \textbf{BaaS (Firebase)}}};
+    % Text Node
+    \draw (353.67,129) node   [align=left] {{\fontfamily{pcr}\selectfont {\footnotesize \textit{Load/Save}}}\\{\fontfamily{pcr}\selectfont {\footnotesize \textit{programs}}}};
+    % Text Node
+    \draw (253.75,184.5) node   [align=left] {{\fontfamily{pcr}\selectfont \textbf{Client (browser)}}};
     \end{tikzpicture}
     \caption{A high-level diagram of the implementation}
     \label{fig:chap4:overview}
 \end{figure}
 
 \section{Interpreter}
-Every interpreter first \emph{parses} a source code and then \emph{executes} the parsed tree (Fig \ref{fig:chap4:interpreter}). There is a room for a lot of optimizations along the way in order
+Every interpreter first \emph{parses} a~source code and then \emph{executes} the parsed tree (Fig \ref{fig:chap4:interpreter}). There is a~room for a~lot of optimizations along the way in order
 to make the execution as fast as possible. However, we do not incorporate any optimizations into the interpreter and only execute the parsed tree node by node.
 
 \begin{figure}[!hbt]
@@ -72,7 +120,7 @@ to make the execution as fast as possible. However, we do not incorporate any op
 \end{figure}
 
 \subsection{Parsing}
-Parser is an interpreter component that checks whether the input source conforms to the rules of the formal grammar of a language. Additionally, parsers help
+Parser is an interpreter component that checks whether the input source conforms to the rules of the formal grammar of a~language. Additionally, parsers help
 building an AST from the source code. In the very beginning of this thesis we briefly explained what grammar rules and ASTs are
 (Fig \ref{fig:chap1:tokens_and_grammar}).
 
@@ -93,72 +141,64 @@ Grammar rules are then defined in terms of tokens, for example:
     factor -> IDENTIFIER
     factor -> NUMBER
     \end{code}
-    \caption{An example of a grammar definition.}
+    \caption{An example of a~grammar definition.}
     \label{fig:chap4:grammar}
 \end{figure}
 
-The grammar above defines a language consisting of expressions that can contain numbers and identifiers. It is very minimal as it does not account
+The grammar above defines a~language consisting of expressions that can contain numbers and identifiers. It is very minimal as it does not account
 for operator precedence or parenthesis. Lowercase words are nonterminals and capitalized words are terminals. \emph{Terminal symbols} are elementary
 symbols and can not be replaced by other terminals or nonterminals. \emph{Nonterminals} can appear on the left side of productions and they are replaced by groups
 of terminal symbols according to the production rules.
 
-In order to parse a grammar like the one above, we can either create our own parser or use \emph{a parser generator}. We will briefly describe both options.
-There are many ways of creating a custom parser, but we will discuss the most common one, a recursive-descent parser. Parsers are a large topic and
+In order to parse a~grammar like the one above, we can either create our own parser or use \emph{a parser generator}. We will briefly describe both options.
+There are many ways of creating a~custom parser, but we will discuss the most common one, a~recursive-descent parser. Parsers are a~large topic and
 we do not intent to dive deep into it.
 
 \subsubsection*{Recursive-descent parser}
-A recursive-descent parser is a method of creating a parser using mutually recursive procedures where each procedure implements one of the nonterminals
-of the grammar. To give us a better idea of what it means to create a function for each nonterminal, we created a parser for the grammar from Figure
+A recursive-descent parser is a~method of creating a~parser using mutually recursive procedures where each procedure implements one of the nonterminals
+of the grammar. To give us a~better idea of what it means to create a~function for each nonterminal, we created a~parser for the grammar from Figure
 \ref{fig:chap4:grammar} in Python.
 \begin{code}
 # Unimplemented functions:
 #   * curToken -- returns the current token
+#   * curTokenText -- returns the current token's text
 #   * nextToken -- advances to the next token
 
-def accept(token):
-    if curToken() == token:
-        nextToken()
-        return 1
-    return 0
-
-def expect(token):
-    if accept(token):
-        return 1
-    raise Exception("expect: unexpected token")
-
 def factor():
-    if accept('IDENTIFIER'):
-        # Action
-        pass
-    elif accept('NUMBER'):
-        # Action
-        pass 
+    if curToken() == 'IDENTIFIER':
+        # action1(curTokenText())
+        nextToken()
+    elif curToken() == 'NUMBER':
+        # action2(curTokenText())
+        nextToken() 
     else:
         raise Exception("factor: syntax error")
 
 def expression():
     factor()
-    if accept('OPERATOR'):
+    if curToken() == 'OPERATOR':
+        nextToken()
         expression()
-        # Action
+        # action3(curTokenText())
         return
-    # Action 
+
+    # action4(curTokenText())
 \end{code}
 
-We can see that the grammar can be transformed into the code very naturally using a recursive-descent parser. The \texttt{'\# Action'} comments mark places where
-grammar rules are applied and we could add bits of code there that would build a derivation tree.
+We can see that the grammar can be transformed into the code very naturally using a~recursive-descent parser. The \texttt{'\# actionX(curTokenText())'} comments
+mark places where grammar rules are applied and we could add bits of code there that would build a~derivation tree.
 
-Recursive-descent parsers can run in a linear time with respect to the input string size, granted that the parsed grammar is an LL(k). \emph{An LL(k) grammar} is
-a context-free grammar that is parsed by an LL parser, which parses the input from \textbf{L}eft to right and creates a \textbf{L}eftmost derivation.
-Additionally, it requires at most $k$ lookahead tokens to uniquely identify which rule should be applied next.
+Recursive-descent parsers can run in a~linear time with respect to the input string size, granted that the parsed grammar is an LL(k) \cite{aho_sethi_ullman_2002}.
+\emph{An LL(k) grammar} is a~context-free grammar that is parsed by an LL parser \cite{aho_sethi_ullman_2002}, which parses the input from \textbf{L}eft
+to right and creates a~\textbf{L}eftmost derivation. Additionally, it requires at most $k$ lookahead tokens to uniquely identify which rule should be applied next.
 
 \subsubsection*{Parser generators}
-Creating parsers can be a repetitive process -- applying the same patterns to different grammars. Parser generators solve this by generating parsers from grammar
+Creating parsers can be a~repetitive process -- applying the same patterns to different grammars. Parser generators solve this by generating parsers from grammar
 specifications. There are dozens of parser generators, but we will only describe one of them, GNU Bison \cite{Bison}
 
-We will also use Flex in the examples, a lexical analyzer generator that is often used alongside Bison. Both Flex and Bison can target C, C++, and Java.
+We will also use Flex in the examples, a~lexical analyzer generator that is often used alongside Bison. Both Flex and Bison can target C, C++, and Java.
 
-Flex takes token descriptions as regular expressions. The following code is not a valid Flex source, but it demonstrates the idea behind Flex:
+Flex takes token descriptions as regular expressions. The following code is not a~valid Flex source, but it demonstrates the idea behind Flex:
 \begin{code}
 %{ %}
 
@@ -172,7 +212,7 @@ LETTER          [a-zA-Z]
 %%
 \end{code}
 
-Flex can create a lexer from the source code above. Let us now show a Bison source for the grammar from Figure \ref{fig:chap4:grammar}:
+Flex can create a~lexer from the source code above. Let us now show a~Bison source for the grammar from Figure \ref{fig:chap4:grammar}:
 \begin{code}
 %{ %}
 
@@ -191,23 +231,23 @@ factor
 %%
 \end{code}
 
-Parser generators can employ many different parsing algorithms, but the most common ones are LL parser and LALR, as it is also case with Bison. We will not describe
-the mentioned parsers since we do not find it important in our case.
+Parser generators can employ many different parsing algorithms, but the most common ones are LL parser and LALR(1) \cite{aho_sethi_ullman_2002}, as it is also
+case with Bison. We will not describe the mentioned parsers since we do not find it important in our case.
 
 \subsubsection*{Conclusion}
-The main advantage of creating a custom parser over a parser generator is the option to create better error reporting and error recovery. It would also be a
-good learning experience to make a parser with a lexer from scratch. However, we opted for using a parser generator as in the very beginning of the project
+The main advantage of creating a~custom parser over a~parser generator is the option to create better error reporting and error recovery. It would also be a
+good learning experience to make a~parser with a~lexer from scratch. However, we opted for using a~parser generator as in the very beginning of the project
 we wanted to focus on interpreting the AST rather than parsing.
 
 There are numerous parser generators for JavaScript, most notably ANTLR \cite{ANTLR} and acorn \cite{acorn}. Since we had prior experience with Bison, we
-decided to use Jison \cite{Jison}, a Bison-like JavaScript library. Our Jison grammar is defined at \texttt{interpreter/ast/giflang.jison}.
+decided to use Jison \cite{Jison}, a~Bison-like JavaScript library. Our Jison grammar is defined at \texttt{interpreter/ast/giflang.jison}.
 
 \subsection{Employing the Visitor pattern}
-Probably the easiest way to create an interpreter is by using \emph{the interpreter design pattern}. The basic idea is to have a class for each symbol
+Probably the easiest way to create an interpreter is by using \emph{the interpreter design pattern}. The basic idea is to have a~class for each symbol
 (terminal or nonterminal). The syntax tree is then build from these classes. Every class defines an \texttt{evaluate} method that interprets given node
 of the syntax tree, possibly evaluating its child nodes as well.
 
-Below is a Python example of the interpreter pattern that evaluates the grammar from Figure \ref{fig:chap4:grammar}. We did not define a class for each
+Below is a~Python example of the interpreter pattern that evaluates the grammar from Figure \ref{fig:chap4:grammar}. We did not define a~class for each
 symbol to make it more concise.
 \begin{code}
 class Node:
@@ -254,7 +294,7 @@ print(exp.evaluate({'x': 10}))
 \end{code}
 
 When using the interpreter pattern, the execution logic in the form of \texttt{evalute} methods is spread among multiple classes. In order to couple the
-logic together we decided to use the visitor pattern. \emph{The visitor design pattern} is a way of separating an algorithm from an object structure on
+logic together we decided to use the visitor pattern. \emph{The visitor design pattern} is a~way of separating an algorithm from an object structure on
 which it operates. In this case it separates the \texttt{evaluate} methods from the AST node definitions.
 \begin{code}
 class Node:
@@ -306,21 +346,22 @@ interpreter = Interpreter({'x': 10})
 print(exp.accept(interpreter))
 \end{code}
 
-In the example above, the Interpreter class is a Visitor and its methods implement the execution logic.
+In the example above, the Interpreter class is a~Visitor and its methods implement the execution logic.
 
 The types of return values of different nodes might be different. When implementing the interpreter we found three different return types:
 \begin{enumerate}
     \item \emph{An instance} -- for example literal or expression nodes return an instance
-    \item \emph{An instance reference} -- accesing a variable, a property, or an array element has to result in an assignable value (i.e., a reference)
-    \item \emph{A completion} -- cycles can contain \texttt{break} or \texttt{continue} statements that do not result in an instance, but rather a completion
+    \item \emph{An instance reference} -- accesing a~variable, a~property, or an array element has to result in an assignable value (i.e., a~reference)
+    \item \emph{A completion} -- cycles can contain \texttt{break} or \texttt{continue} statements that do not result in an instance, but rather a~completion
+        that carries information about how a node finished its execution, i.e., normally, with a \texttt{break}, \texttt{continue} or a \texttt{return}
 \end{enumerate} 
 
 In the implementation, we split the nodes into three categories based on their return types: \texttt{ValueExpr}, \texttt{RefExpr}, and \texttt{Stmt}.
 The node classes can be found in \texttt{interpreter/ast/\{expr, stmt\}.ts} files and the interpreter visitor in \texttt{interpreter/interpreter.ts}. 
 
 \subsection{Class hierarchy of the object model}
-In Section \ref{chap3:object_model} we outlined the object model of Giflang. In order to implement it in a statically-typed language like TypeScript, we
-need to define a class hierarchy that will represent the object model. Since everything is an object, everything has to derive from a single class. We named
+In Section \ref{chap3:object_model} we outlined the object model of Giflang. In order to implement it in a~statically-typed language like TypeScript, we
+need to define a~class hierarchy that will represent the object model. Since everything is an object, everything has to derive from a~single class. We named
 this class \texttt{Instance}.
 \begin{figure}[!hbt]
 	\includegraphics[width=1\textwidth]{../img/class_hierarchy}
@@ -329,13 +370,13 @@ this class \texttt{Instance}.
 \end{figure}
 
 Classes \texttt{Instance} and \texttt{Class} are \emph{abstract}. As we can see from Figure \ref{fig:chap4:class_hierarchy}, classes have their
-respective instance classes; for example there is \texttt{NumberClass} and \texttt{NumberInstance}. This results in creating a relatively big number
+respective instance classes; for example there is \texttt{NumberClass} and \texttt{NumberInstance}. This results in creating a~relatively big number
 of classes, but we did not find any other suitable model, because different classes of instances need to hold different value types. To illustrate this,
-a \texttt{Number} needs to hold a number as its value, while \texttt{String} needs to hold a string, etc.
+a \texttt{Number} needs to hold a~number as its value, while \texttt{String} needs to hold a~string, etc.
 
-We could create a templated \texttt{Instance<T>} class that would have a \texttt{value: T} property. This way, we would be able to reduce the number of
-classes. However, some of the instance classes also incorporate additional functionality, e.g., \texttt{UserFunctionInstance} implements a \texttt{call} method
-that allows calling the function. Since there are more cases like this one, we decided to create all instances in a uniform fashion and did not op for the
+We could create a~templated \texttt{Instance<T>} class that would have a~\texttt{value: T} property. This way, we would be able to reduce the number of
+classes. However, some of the instance classes also incorporate additional functionality, e.g., \texttt{UserFunctionInstance} implements a~\texttt{call} method
+that allows calling the function. Since there are more cases like this one, we decided to create all instances in a~uniform fashion and did not opt for the
 generic \texttt{Instance<T>} approach.
 
 Classes define their methods as static functions and during their initialization these methods are assigned to the class objects they represent.
@@ -366,11 +407,11 @@ class NumberClass extends Class {
 }
 \end{code}
 
-Since \texttt{NumberClass.\_\_add\_\_} is a TypeScript function it needs to be wrapped around Giflang's object. We named this wrapper a \texttt{WrappedFunctionInstance}.
-The code in the actual implementation is a little more abstract since repeating this for every operation would need a lot of boilerplate.
+Since \texttt{NumberClass.\_\_add\_\_} is a~TypeScript function it needs to be wrapped around Giflang's object. We named this wrapper a~\texttt{WrappedFunctionInstance}.
+The code in the actual implementation is a~little more abstract since repeating this for every operation would need a~lot of boilerplate.
 
 When writing the code, we often needed the class objects, usually for instantiation, e.g.,
-\texttt{new NumberInstance(NumberClass.get(), lhs + rhs)} in the code example above. In this case, \texttt{NumberClass.get()} is a \texttt{NumberClass} instance. Since only one
+\texttt{new NumberInstance(NumberClass.get(), lhs + rhs)} in the code example above. In this case, \texttt{NumberClass.get()} is a~\texttt{NumberClass} instance. Since only one
 instance of each class object is needed, we used \emph{the singleton pattern}. In hindsight, it was not the best choice, because it allows changing
 the interpreter state in between multiple invocations.
 \begin{code}
@@ -385,20 +426,20 @@ const interpreter2 = new Interpreter()
 interpreter2.visitProgramStmt(ParseGiflang('source code'))
 \end{code}
 
-However, since we spawn a new WebWorker with each code run, this was not an issue. If we decide to reuse the same WebWorker, we can use a global registry
+However, since we spawn a~new WebWorker with each code run, this was not an issue. If we decide to reuse the same WebWorker, we can use a~global registry
 instead of singletons. Class objects in the registry can then be reinstantiated after each code execution.
 
 \subsection{Environments}
 The bindings that associate variables to values need to be stored somewhere. The data structure that holds these bindings is called an \emph{``environment''}.
-It is basically a \emph{map} where the keys are variable names and the values are the variable’s, uh, values. The environment also needs to store a reference
-to an enclosing environment, in order to support variable shadowing. To illustrate this, we show a JavaScript code snippet with a nested block.
+It is basically a~\emph{map} where the keys are variable names and the values are the variable’s, values. The environment also needs to store a~reference
+to an enclosing environment, in order to support variable shadowing. To illustrate this, we show a~JavaScript code snippet with a~nested block.
 \begin{code}
 let x = 'global'
 {
     let x = 'local'
 }
 \end{code}
-Inside the block enclosed with curly braces is a definition of a variable with the same name, \texttt{x}, as the one in the global scope. The inner \texttt{x}
+Inside the block enclosed with curly braces is a~definition of a~variable with the same name, \texttt{x}, as the one in the global scope. The inner \texttt{x}
 \emph{shadows} the outer \texttt{x}. The environment right after the creation of the inner variable with the text \texttt{'local'} is shown in Figure
 \ref{fig:chap4:environment}.
 
@@ -436,12 +477,12 @@ Inside the block enclosed with curly braces is a definition of a variable with t
     \draw (413.5,60.87) node   [align=left] {{\fontfamily{pcr}\selectfont \textbf{x \ \ \ 'local'}}};
     \end{tikzpicture}
 
-    \caption{An example of a nested environment.}
+    \caption{An example of a~nested environment.}
 	\label{fig:chap4:environment}
 \end{figure}
 
-We decided to use the native \texttt{Map} implementation of JavaSript in the interpreter. The standard \texttt{Map} is a mutable data structure. This means
-that environments captured by a closure might change outside of the closure function.
+We decided to use the native \texttt{Map} implementation of JavaSript in the interpreter. The standard \texttt{Map} is a~mutable data structure. This means
+that environments captured by a~closure might change outside of the closure function.
 \begin{code}
 $f$ F(){
     G = $f$(){ $\lambda$(Z); };
@@ -451,22 +492,22 @@ $f$ F(){
 # Prints 8
 F();
 \end{code}
-The code above is a Giflang source code, note that \texttt{$\lambda$} is a print function. The closure which prints variable \texttt{Z} is created on
-the second line, but at the time of its creation \texttt{Z} does not exist. Therefore, it is natural to expect that invoking \texttt{G} fails.
-However, it is not the case with mutable environments.
+The code above is a~Giflang source code, note that \texttt{$\lambda$} is a~print function. The closure which prints variable \texttt{Z} is created on
+the second line, but at the time of its creation \texttt{Z} does not exist. Therefore, we might expect that invoking \texttt{G} fails.
+However, it is not the case with mutable environments as the name resolution of free variables occurs at closure execution.
 
 The closure captures the environment created for the function \texttt{F}. In the same environment, \texttt{Z} is assigned after the closure definition and hence
-when \texttt{G} is invoked, \texttt{Z} exists inside the closure. It is interesting that the behavior is the same in Python.
+when \texttt{G} is invoked, \texttt{Z} exists inside the closure.
 
-To address this, we could use a persistent data structure. A \emph{persistent data structure} can never be directly modified. Instead, any ``modification''
-to an existing structure produces a brand new object that contains all of the original data and the new modification. The original is left unchanged.
+To resolve free variables occurs at closure creation, we could use a~persistent data structure. A \emph{persistent data structure} can never be directly modified. Instead, any ``modification''
+to an existing structure produces a~brand new object that contains all of the original data and the new modification. The original is left unchanged.
 
-By using a Persistent Map data structure we could create a persistent environment, i.e., an environment where any addition of a variable would create 
+By using a~Persistent Map data structure we could create a~persistent environment, i.e., an environment where any addition of a~variable would create 
 a new environment. This would require another layer of indirection in the map values, because multiple maps of different environments could contain the same
 variable. Changing the variable's value in one environment should change it in all others as well.
 
-We decided to stick with mutable environments because we believe that use of closures that leads to the issue described here is very rare. Using
-a Persistent Map would add more complexity and we do not think that this issue justifies it.
+We decided to stick with mutable environments because we believe that use of closures that leads to the issue described above is rare. Moreover, this behavior
+is consistent with both Python and JavaScript.
 
 \subsection{Code-stepping (debugger)}
 In order to support code-stepping, we need to be able to pause the execution at certain AST nodes and resume it until another AST node that stops the execution
@@ -484,24 +525,24 @@ class Interpreter {
     //...
 }
 \end{code}
-The above function implements a standard assignment. It evaluates left-hand side to a reference, right-hand side to a value, assigns the value to the
+The above function implements a~standard assignment. It evaluates left-hand side to a~reference, right-hand side to a~value, assigns the value to the
 referenced variable, and returns the value. Additionally, the method \texttt{waitForNextStep} is supposed to pause the execution after the evaluation of 
 both sides.
 
-We need a mechanism of capturing the current state of the interpreter, e.g., call stack and local variables, storing this state, and then resuming the execution
-from this state later on. What we described is essentially a \emph{continuation}.
+We need a~mechanism of capturing the current state of the interpreter, e.g., call stack and local variables, storing this state, and then resuming the execution
+from this state later on. What we described is essentially a~\emph{continuation}.
 
 \subsection*{Continuation-passing style}
 \label{chap4:continuations}
-Implementing continuations using the continuation-passing style uses two simple rules\footnote{TODO source: http://matt.might.net/articles/by-example-continuation-passing-style/}:
+Implementing continuations using the continuation-passing style uses two simple rules\footnote{http://matt.might.net/articles/by-example-continuation-passing-style/}:
 \begin{itemize}
-    \item No procedure is allowed to return to its caller
-    \item Procedures take a callback to invoke upon their return value
+    \item Procedures are not allowed to explicitly \texttt{return} to their callers
+    \item Procedures take a~callback to invoke upon their return value
 \end{itemize}
-An extra argument is added to every function which is used to pass the function's continuation. This continuation is a callback
+An extra argument is added to every function which is used to pass the function's continuation. This continuation is a~callback
 representing the actions that must happen after the function ``returns''. The call stack becomes obsolete in continuation-passing style -- when
 a function calls another function, that is the last thing it does. Instead of waiting for the called function to return, it puts any work
-it wants to do afterwards into a continuation, which it passes to the function.
+it wants to do afterwards into a~continuation, which it passes to the function.
 
 The previous example can be written as follows.
 \begin{code}
@@ -529,17 +570,22 @@ class Interpreter {
 }
 \end{code}
 
-On every function call, a continuation with the rest of the function code is passed. Finally, \texttt{waitForNextStep} uses its continuation as the \texttt{Button}'s
-\texttt{onClick} callback. In our case, we would need to employ a few more tricks as we want to run the interpreter in a separate WebWorker, but the idea
+On every function call, a~continuation with the rest of the function code is passed. Finally, \texttt{waitForNextStep} uses its continuation as the \texttt{Button}'s
+\texttt{onClick} callback. In our case, we would need to employ a~few more tricks as we want to run the interpreter in a~separate WebWorker, but the idea
 outlined here could still be used.
 
-There is also another way of bringing continuations to JavaScript described in the article \emph{Exceptional Continuations in JavaScript} \cite{ExceptionalContinuations}. The authors
-propose splitting every function into multiple states and record which state is currently being executed. Once a \texttt{suspend} function is called an exception
-is thrown. As the call stack unwinds, every function catches the exception, records its state in the exception object and rethrows it. The exception object now holds the state and it is
-essentially a continuation. A \texttt{resume} function takes the ``exceptional continuation'' created earlier and restore the state.
+The disadvantage of continuation-passing style is that in order to work efficiently, without overpopulating the call stack, the language should support the tail
+call optimization. The \emph{tail call optimization} (TCO) allows procedure calls in tail position to be implemented as efficiently as goto statements, instead of adding
+a new stack frame onto the call stack. Even though JavaScript ES6 standard explicitly requires TCO, as of January 1st, 2020, only Safari supports it.
+
+There is also another way of bringing continuations to JavaScript described in the article \emph{Exceptional Continuations in JavaScript}
+\cite{ExceptionalContinuations} that does not have the performance issues mentioned above. The authors propose splitting every function into
+multiple states and record which state is currently being executed. Once a~\texttt{suspend} function is called an exception is thrown. As
+the call stack unwinds, every function catches the exception, records its state in the exception object and rethrows it. The exception object
+now holds the state and it is essentially a~continuation. A \texttt{resume} function takes the ``exceptional continuation'' created earlier and restore the state.
 
 \subsection*{Async/await and generators}
-Another way of implementing the code-stepping is using promises. A \emph{Promise} is a proxy for a value not necessarily known when the promise is created.
+Another way of implementing the code-stepping is using promises. A \emph{Promise} is a~proxy for a~value not necessarily known when the promise is created.
 It allows associating handlers with an asynchronous action's eventual success value or failure reason. /TODO: cite MDN/ JavaScript also supports \emph{async/await}
 to ease working with promises.
 \begin{code}
@@ -570,8 +616,8 @@ class Interpreter {
 In order to resolve the \texttt{retPromise} returned from the \texttt{waitForNextStep} method only after the button is clicked, we store the promise's resolve
 function outside of the promise.
 
-Another option is to use \emph{generator functions}, an ES6 addition that allows \texttt{yield}ing from a function and resuming it later. However, both generators
-and async/await require propagation of generators and async/await through the whole interpreter codebase. There is no way of synchronously waiting for a promise
+Another option is to use \emph{generator functions}, an ES6 addition that allows \texttt{yield}ing from a~function and resuming it later. However, both generators
+and async/await require propagation of generators and async/await through the whole interpreter codebase. There is no way of synchronously waiting for a~promise
 in JavaScript as opposed to for example \texttt{promise.wait()} in C\#.
  
 \subsection*{Atomics API}
@@ -582,8 +628,8 @@ views on shared, typed memory. Rather than copying the data from the main thread
 Being able to update data from multiple threads might introduce race conditions and other synchronization issues. The \emph{Atomics API} addresses that by providing
 the basic means of synchronization.
 
-We can leverage these technologies to implement code-stepping. Our approach below sets the first (and only) element of the buffer \texttt{flag} to $0$ in a WebWorker
-and waits until its value is changed. The main thread sets the \texttt{flag} to $1$ when a button is clicked.
+We can leverage these technologies to implement code-stepping. Our approach below sets the first (and only) element of the buffer \texttt{flag} to $0$ in a~WebWorker
+and waits until its value is changed. The main thread sets the \texttt{flag} to $1$ when a~button is clicked.
 \begin{code}
 // WebWorker
 const sab = new SharedArrayBuffer(4)
@@ -609,16 +655,16 @@ document.getElementById('button').addEventListener(
 For simplicity, the example does not deal with sharing the buffer \texttt{flag} between the worker and the main thread.
 
 Atomics and SharedArrayBuffers were well supported by all major browsers, but due to the \emph{timing attacks} (Meltdown and Spectre) they were disabled on
-January 5th, 2018. Chrome has re-enabled it from the version $67$ and Firefox supports it under a flag from the version $57$. At the time of
+January 5th, 2018. Chrome has re-enabled it from the version $67$ and Firefox supports it under a~flag from the version $57$. At the time of
 writing this thesis\footnote{December 26th, 2019}, the discussions at the ECMAScript's official GitHub repository suggest that SharedArrayBuffers and Atomics
 will not be removed from the standard in the future and thus the browsers should once again support them.
 
 \subsection*{Iterative traversal of an AST}
-Earlier we mentioned JS-Interpreter \cite{JSInterpreter} in Section \ref{chap3:javascript}. It is a JavaScript interpreter that supports code-stepping, but
+Earlier we mentioned JS-Interpreter \cite{JSInterpreter} in Section \ref{chap3:javascript}. It is a~JavaScript interpreter that supports code-stepping, but
 it does not use any of the aforementioned methods to implement it. The idea behind JS-Interpreter is to simply traverse the AST iteratively, using an explicit
 stack, rather than recursively.
 
-It uses a stack that stores the path from the root to the current node. Nodes that need to pass values further up the tree, for example expression nodes, can store
+It uses a~stack that stores the path from the root to the current node. Nodes that need to pass values further up the tree, for example expression nodes, can store
 the return value in the object right above them in stack, i.e., their parent. Since nodes can have multiple children, they can be in different states
 based on how many of the children they already processed.
 
@@ -657,22 +703,22 @@ The above code very roughly illustrates the idea. It does not account for scopin
 
 \subsection*{Conclusion}
 We implemented the interpreter using recursive calls and the visitor pattern, and only after that started incorporating code-stepping into it. We first used
-the async/await approach and thus propagated async/await through the whole interpreter. This caused a very serious slowdown of the execution. Therefore, we ended
-up using the Atomics API approach, even though it has a limited support as of now. We found implementing our own continuations using the continuation-passing style
-very verbose and also prone to serious performance issues. The exceptional continuations do not have the performance issues, but at a price of even more boilerplate.
+the async/await approach and thus propagated async/await through the whole interpreter. This caused a~very serious slowdown of the execution. Therefore, we ended
+up using the Atomics API approach, even though it has a~limited support as of now. We found implementing our own continuations using the continuation-passing style
+very verbose and also prone to serious performance issues. The exceptional continuations do not have the performance issues, but at a~price of even more boilerplate.
 
 In retrospect, iteratively traversing the AST would be the best option, because it does not come with any browser compatibility issues. The author of this thesis
-will use Giflang at the programming camps with a full control over the installed software on the machines and hence the compatibility will not be an issue.
+will use Giflang at the programming camps with a~full control over the installed software on the machines and hence the compatibility will not be an issue.
 However, shall this project be released to the public while not enough browsers brought back the Atomics API, we will refactor the interpreter to
 use the method of iteratively traversing the AST.
 
 \section{IDE}
-We do not aspire to create a feature-rich IDE, but rather a minimal, proof-of-concept IDE. As discussed in Section \ref{chap2:spa}, we decided to use React
-for the development of the IDE. We did not find a way of reusing existing React text editors and decided to create our own.
+We do not aspire to create a~feature-rich IDE, but rather a~minimal, proof-of-concept IDE. As discussed in Section \ref{chap2:spa}, we decided to use React
+for the development of the IDE. We did not find a~way of reusing existing React text editors and decided to create our own.
 
 \subsection{Layout}
 IDEs usually share common patterns when it comes to their layouts. Big main editing area, console at the bottom, tree folder view in the sidebar, etc. We decided
-to use a very basic layout as we wanted to keep the main editing area as big as possible, because the images take a lot of screen space.
+to use a~very basic layout as we wanted to keep the main editing area as big as possible, because the images take a~lot of screen space.
 \begin{figure}[!hbt]
     \centering
     \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
@@ -709,43 +755,43 @@ to use a very basic layout as we wanted to keep the main editing area as big as 
     \caption{The layout of the IDE}
     \label{fig:chap4:layout}
 \end{figure}
-Figure \ref{fig:chap4:layout} shows our layout. Our IDE is a \emph{fullscreen web application}, i.e., a website that can not be scrolled as a whole, but
-its internal components might be scrollable. Creating a fullscreen web application requires some CSS trickery, but it is much easier nowadays, since Flexboxes
+Figure \ref{fig:chap4:layout} shows our layout. Our IDE is a~\emph{fullscreen web application}, i.e., a~website that can not be scrolled as a~whole, but
+its internal components might be scrollable. Creating a~fullscreen web application requires some CSS trickery, but it is much easier nowadays, since Flexboxes
 have been widely adopted across browsers.
 
 \subsection{Choosing an animation format}
 There are many image formats that support animations. We will briefly describe the ones supported by the most browsers.
 \begin{itemize}
-    \item \emph{GIF} is the oldest and simplest image format still commonly used on the web. It lacks alpha transparency\footnote{Alpha transparency is a way to
-    support \emph{gradations} of opacity.}, has a limited color pallete of only 256 colors per frame, and has a relatively large file size.
+    \item \emph{GIF} is the oldest and simplest image format still commonly used on the web. It lacks alpha transparency\footnote{Alpha transparency is a~way to
+    support \emph{gradations} of opacity.}, has a~limited color pallete of only 256 colors per frame, and has a~relatively large file size.
     Despite all of the cons we mentioned, it remains widely used and supported.
 
     \item \emph{APNG} is an extension of the PNG. It supports 24-bit images, an 8-bit alpha channel, and offers smaller file sizes compared to GIFs. The APNG format
     is now well supported in all major browsers except for Microsoft Edge.
 
-    \item \emph{WebP} is a relatively new image format that was created as a derivative of the VP8 video format. It employs both lossy and lossless compression.
+    \item \emph{WebP} is a~relatively new image format that was created as a~derivative of the VP8 video format. It employs both lossy and lossless compression.
     Compared to lossless compressions of GIF and APNG, lossy compression of WebP allows achieving better file sizes of animations. It is currently supported
     in all major browsers except for Safari and Internet Explorer.
 \end{itemize}
 
-Since we need to load a lot of animations, keeping file sizes small is a priority and hence we decided to use the WebP format.
+Since we need to load a~lot of animations, keeping file sizes small is a~priority and hence we decided to use the WebP format.
 
 \subsection{State management (Redux)}
-React is component-based, where a \emph{component} is a JavaScript class or function that describes how a section of the UI should look. 
-Every component can have multiple child components. This means that the components together form a tree. Components can hold data in
+React is component-based, where a~\emph{component} is a~JavaScript class or function that describes how a~section of the UI should look. 
+Every component can have multiple child components. This means that the components together form a~tree. Components can hold data in
 two forms:
 \begin{itemize}
     \item \emph{Props} -- passed to the component from its parent (similar to function parameters)
-    \item \emph{State} -- managed within the component (similar to variables declared within a function)
+    \item \emph{State} -- managed within the component (similar to variables declared within a~function)
 \end{itemize}
 
-\emph{Props} should not be mutated because React does not update the UI when props are changed. Only the \emph{state} of a component can be mutated via a special
-component method \texttt{setState}. We often need to change the state of a component \texttt{A} from its subcomponent \texttt{B}. In order to do so, we need to wrap
+\emph{Props} should not be mutated because React does not update the UI when props are changed. Only the \emph{state} of a~component can be mutated via a~special
+component method \texttt{setState}. We often need to change the state of a~component \texttt{A} from its subcomponent \texttt{B}. In order to do so, we need to wrap
 the call of \texttt{A}'s \texttt{setState} and pass this callback along the tree to \texttt{B}. This can be viewed as data flowing down the tree and state changes
 flowing up.
 
 This can result in passing \emph{a lot} of callbacks way down the tree, and it is commonly called \emph{prop drilling}. To mitigate this problem, React developers
-often use Redux library. Put very simply, Redux creates a global \emph{store} of the state. Every component defines which data from the store it needs and
+often use Redux library. Put very simply, Redux creates a~global \emph{store} of the state. Every component defines which data from the store it needs and
 \emph{subscribes} to the state change event. In order to be able to change the state, components call \emph{actions} that mutate the state and trigger the state
 changing event. This is only possible thanks to React's \emph{Context API} that allows creating `global' state across components, in this case the Redux store.
 
@@ -951,3 +997,36 @@ pattern radius = 1pt}
 \end{figure}
 
 We decided to use Redux to ease the state management in this project.
+
+\subsection{Storing programs in BaaS}
+For storing and loading the programs we decided to use a BaaS service called Firebase. It offers a NoSQL cloud database called Firestore which is very easy
+to integrate.
+\begin{code}
+// State
+// A Firestore document handle
+let doc: DocumentReference | undefined
+let userCode: string = 'some default'
+
+// Store
+// Create a new document on the first save
+if (!doc) {
+    doc = await firebase.firestore().collection('programs').doc()
+}
+// Save the current user code
+await doc.set({ code: userCode })
+
+// Load
+const initialDoc = 
+    await firebase.firestore()
+        .collection('programs').doc(GetCodeIdFromURL()).get()
+userCode = initialDoc.data().code
+\end{code}
+
+However, the above code allows users to spam the server with save operations which can be exploited very easily by malicious users. To mitigate this we employed a very simple
+throttling mechanism. Whenever user saves a program, the current server time is stored alongside the code. When the user tries to update the code later, we check
+on the Firebase server whether the update request is at least 5 seconds apart from the previous one. We use Firebase Security Rules to enforce this.
+
+Additionally, we use Firebase's anonymous user sessions to check whether the code is being updated by the same user that created it. This setup is still not
+bulletproof; for example an attacker could spam the database with requests to create a new program. This could be controlled by allowing users to create only
+a limited number of programs, but we did not implement this as we did not plan on releasing Giflang publicly and we considered our basic security measures
+adequate for the private use cases of the project. The storage logic can be found in \texttt{frontend/actions/storage.ts}.
