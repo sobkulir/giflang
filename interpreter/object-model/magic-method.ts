@@ -12,7 +12,7 @@ export enum MagicMethod {
   __eq__ = '__EQ__',
   __ne__ = '__NE__',
   __ge__ = '__GE__',
-  __gt__ = '__GTt__',
+  __gt__ = '__GT__',
 
   __bool__ = '__BOOL__',
   __neg__ = '__NEG__',

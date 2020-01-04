@@ -51,7 +51,9 @@ KEYWORDS                    [<≤=≠≥>#+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶
 "→"                         { return 'PROP' }
 ","                         { return 'COMMA' }
 "#"                         { this.begin('comment') }
-<comment>[^\n]*\n           { this.popState() }
+<comment>\n                 { this.popState() }
+<comment><<EOF>>            { this.popState(); return 'EOF' }
+<comment>[^\n]*             { /*no op*/ }
 
 \"({KEYWORDS}|{LETTER}|{DIGIT}|[ \n])*\"
                             { yytext = yytext.substr(1, yytext.length - 2); return 'STRING' }
