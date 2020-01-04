@@ -1,4 +1,6 @@
+import IconButton from '@material-ui/core/IconButton'
 import Typography from '@material-ui/core/Typography'
+import MaximizeSharpIcon from '@material-ui/icons/MaximizeSharp'
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { setIsIOBoxVisible } from '~/frontend/actions/ide'
@@ -39,7 +41,9 @@ const ToggleButton: React.SFC<ToggleButtonProps> = (props) => {
   const label = (props.isIOBoxVisible) ? 'Hide' : 'Show'
   return (
     <div className={styles.toggleButton}>
-      <button onClick={toggle}>{label}</button>
+      <IconButton onClick={toggle}>
+        <MaximizeSharpIcon fontSize="small" />
+      </IconButton>
     </div>
   )
 }
@@ -84,7 +88,7 @@ const IOBox: React.SFC<IOBoxProps> = (props) => {
   }
   return (
     <div className={styles.IOBox}>
-      <ToggleButton 
+      <ToggleButton
         isIOBoxVisible={props.isIOBoxVisible}
         setIsIOBoxVisible={props.setIsIOBoxVisible}
       />

@@ -1,3 +1,5 @@
+import Button from '@material-ui/core/Button'
+import ButtonGroup from '@material-ui/core/ButtonGroup'
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { finishExecution, startExecution } from '../actions/execution'
@@ -39,35 +41,40 @@ class Menu extends React.Component<MenuProps, {}> {
   render() {
     return (
       <div className={styles.menu}>
-        <button
-          disabled={this.props.runState !== RunState.NOT_RUNNING}
-          onClick={this.startExecutionNormal}
+        <ButtonGroup
+          size="large"
+          variant="text"
         >
-          Run
-        </button>
-        <button
-          disabled={!this.isWorkerRunning()}
-          onClick={this.stopExecution}
-        >
-          Stop
-        </button>
-        <button
-          onClick={this.saveCode}
-        >
-          Save
-        </button>
-        <button
-          onClick={this.startExecutionDebug}
-          disabled={this.props.runState !== RunState.NOT_RUNNING}
-        >
-          Debug
-        </button>
-        <button
-          onClick={this.resolveNextStep}
-          disabled={this.props.runState !== RunState.DEBUG_WAITING}
-        >
-          Next
-        </button>
+          <Button
+            disabled={this.props.runState !== RunState.NOT_RUNNING}
+            onClick={this.startExecutionNormal}
+          >
+            Run
+          </Button>
+          <Button
+            disabled={!this.isWorkerRunning()}
+            onClick={this.stopExecution}
+          >
+            Stop
+          </Button>
+          <Button
+            onClick={this.saveCode}
+          >
+            Save
+          </Button>
+          <Button
+            onClick={this.startExecutionDebug}
+            disabled={this.props.runState !== RunState.NOT_RUNNING}
+          >
+            Debug
+          </Button>
+          <Button
+            onClick={this.resolveNextStep}
+            disabled={this.props.runState !== RunState.DEBUG_WAITING}
+          >
+            Next
+          </Button>
+        </ButtonGroup>
       </div>
     )
   }
@@ -83,4 +90,3 @@ export default connect(
     finishExecution,
     saveCode,
   })(Menu)
-
