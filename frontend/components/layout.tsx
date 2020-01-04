@@ -8,12 +8,11 @@ import { isDebugMode, RunState } from '../types/execution'
 import { LoadingBarState } from '../types/ide'
 import { State, ThunkActionDispatch } from '../types/redux'
 import { LoadState } from '../types/storage'
-import DebugBox from './debug-box'
 import IOBox from './io-box/io-box'
 import * as styles from './layout.scss'
-import LetterPicker from './letter-picker'
 import MainSection from './main-section'
 import Menu from './menu'
+import { SidePanel } from './side-panel'
 
 interface LayoutProps extends RouteComponentProps<{ codeId: string }> {
   runState: RunState
@@ -57,7 +56,7 @@ class Layout extends React.PureComponent<LayoutProps> {
             <MainSection />
             <IOBox />
           </div>
-          {isDebugMode(this.props.runState) ? <DebugBox /> : <LetterPicker />}
+          <SidePanel isDebugMode={isDebugMode(this.props.runState)} />
         </div>
       </div >
     )

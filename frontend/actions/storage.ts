@@ -17,9 +17,7 @@ export const loadCode =
         dispatch(setLoadState(LoadState.LOADED))
         return
       }
-
       dispatch(setLoadingBarState(LoadingBarState.START))
-
       const doc =
         await firebase.firestore().collection('programs').doc(codeId).get()
       const res = doc.data()
