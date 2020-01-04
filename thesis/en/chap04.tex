@@ -212,7 +212,8 @@ LETTER          [a-zA-Z]
 %%
 \end{code}
 
-Flex can create a~lexer from the source code above. Let us now show a~Bison source for the grammar from Figure \ref{fig:chap4:grammar}:
+Flex can create a~lexer from the source code above. Let us now show a~Bison source for the grammar from Figure \ref{fig:chap4:grammar}.
+\newpage
 \begin{code}
 %{ %}
 
@@ -431,7 +432,7 @@ instead of singletons. Class objects in the registry can then be reinstantiated 
 
 \subsection{Environments}
 The bindings that associate variables to values need to be stored somewhere. The data structure that holds these bindings is called an \emph{``environment''}.
-It is basically a~\emph{map} where the keys are variable names and the values are the variable’s, values. The environment also needs to store a~reference
+It is basically a~\emph{map} where the keys are variable names and the values are the variable’s values. The environment also needs to store a~reference
 to an enclosing environment, in order to support variable shadowing. To illustrate this, we show a~JavaScript code snippet with a~nested block.
 \begin{code}
 let x = 'global'
@@ -545,6 +546,7 @@ a function calls another function, that is the last thing it does. Instead of wa
 it wants to do afterwards into a~continuation, which it passes to the function.
 
 The previous example can be written as follows.
+\newpage
 \begin{code}
 class Interpreter {
     //...
@@ -586,8 +588,8 @@ now holds the state and it is essentially a~continuation. A \texttt{resume} func
 
 \subsection*{Async/await and generators}
 Another way of implementing the code-stepping is using promises. A \emph{Promise} is a~proxy for a~value not necessarily known when the promise is created.
-It allows associating handlers with an asynchronous action's eventual success value or failure reason. /TODO: cite MDN/ JavaScript also supports \emph{async/await}
-to ease working with promises.
+It allows associating handlers with an asynchronous action's eventual success value or failure reason. JavaScript also supports \emph{async/await} to
+ease working with promises.
 \begin{code}
 class Interpreter {
     //...
@@ -630,6 +632,7 @@ the basic means of synchronization.
 
 We can leverage these technologies to implement code-stepping. Our approach below sets the first (and only) element of the buffer \texttt{flag} to $0$ in a~WebWorker
 and waits until its value is changed. The main thread sets the \texttt{flag} to $1$ when a~button is clicked.
+\newpage
 \begin{code}
 // WebWorker
 const sab = new SharedArrayBuffer(4)
@@ -789,11 +792,6 @@ two forms:
 component method \texttt{setState}. We often need to change the state of a~component \texttt{A} from its subcomponent \texttt{B}. In order to do so, we need to wrap
 the call of \texttt{A}'s \texttt{setState} and pass this callback along the tree to \texttt{B}. This can be viewed as data flowing down the tree and state changes
 flowing up.
-
-This can result in passing \emph{a lot} of callbacks way down the tree, and it is commonly called \emph{prop drilling}. To mitigate this problem, React developers
-often use Redux library. Put very simply, Redux creates a~global \emph{store} of the state. Every component defines which data from the store it needs and
-\emph{subscribes} to the state change event. In order to be able to change the state, components call \emph{actions} that mutate the state and trigger the state
-changing event. This is only possible thanks to React's \emph{Context API} that allows creating `global' state across components, in this case the Redux store.
 
 \begin{figure}[!hbt]
     \centering
@@ -996,6 +994,10 @@ pattern radius = 1pt}
     \label{fig:chap4:redux}
 \end{figure}
 
+This can result in passing \emph{a lot} of callbacks way down the tree, and it is commonly called \emph{prop drilling}. To mitigate this problem, React developers
+often use Redux library. Put very simply, Redux creates a~global \emph{store} of the state. Every component defines which data from the store it needs and
+\emph{subscribes} to the state change event. In order to be able to change the state, components call \emph{actions} that mutate the state and trigger the state
+changing event. This is only possible thanks to React's \emph{Context API} that allows creating `global' state across components, in this case the Redux store.
 We decided to use Redux to ease the state management in this project.
 
 \subsection{Storing programs in BaaS}
@@ -1022,7 +1024,7 @@ const initialDoc =
 userCode = initialDoc.data().code
 \end{code}
 
-However, the above code allows users to spam the server with save operations which can be exploited very easily by malicious users. To mitigate this we employed a very simple
+However, the above code allows users to spam the server with save operations which can be exploited very easily by malicious users. To mitigate this, we employed a very simple
 throttling mechanism. Whenever user saves a program, the current server time is stored alongside the code. When the user tries to update the code later, we check
 on the Firebase server whether the update request is at least 5 seconds apart from the previous one. We use Firebase Security Rules to enforce this.
 

@@ -12,7 +12,7 @@ In~the~first section of this chapter we explain~why we decided to not reuse an~e
 precisely define all the~semantics, but rather provide a~high-level overview. We think that it is more important to explain~\emph{why} Giflang uses specific
 constructs, rather than~list \emph{how} these constructs behave in~every case.
 
-the~language documentation with examples can~be found in~the~web IDE. /TODO: Where?/
+The~language documentation with examples can~be found in~the~web IDE by clicking ``Docs'' button in the top navigation.
 
 \section{Reusing an~existing interpreter}
 in~the~previous Chapter \ref{chap2} we concluded that interpreting a~user code on the~client-side is the~best option for our project. Therefore, when
@@ -33,7 +33,7 @@ It is possible to create a~``live'' code-stepping for Brython in~a~similar fashi
 We did not find a~simple way of increasing the~stepping granularity from just lines to arbitrary AST nodes, though. We definitely could have adjusted Brython instead
 of creating a~custom interpreter. However, it would take a~non-trivial effort to change the~Brython's internals and we rather put this effort into creating
 a~new interpreter from scratch and learning a~lot about languages and interpreters along the~way. Additionally, we did not have a lot of experience with writing
-interpreters and compilers and hence it would be quite challenging to customize an existing one.
+interpreters and compilers prior to this project and hence it would be quite challenging to customize an existing one.
 
 \subsection{JavaScript}
 \label{chap3:javascript}
@@ -69,7 +69,7 @@ creating a~new solution than~putting a~lot of effort an~existing one.
 
 \section{Text format}
 Before we dive into the~language itself, let us first discuss the~underlying representation of the~language. We could represent programs either
-in a \emph{binary format} or a \emph{textual format}. Using a binary format, we could map images into numbers and considering that our ``alphabet of images''
+in a \emph{binary format} or a \emph{textual format}. Using a binary format, we could map images to numbers and considering that our ``alphabet of images''
 would be at most 256 characters long, we could use one byte per image. However, it is much simpler to develop the language with a textual format because
 when writing tests and debugging we can work with printable characters rather than seemingly random numbers. Therefore, we decided to use a textual format.
 
@@ -197,7 +197,6 @@ int main() {
 
     // Call Dog's make_sound. Returns "Woof, woof!".
     animal->make_sound();
-
     // A~similar example with sheep. Returns "Baa, baa!".
     animal = &sheep;
     animal->make_sound();
