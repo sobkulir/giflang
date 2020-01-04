@@ -42,7 +42,7 @@ class Menu extends React.Component<MenuProps, {}> {
     return (
       <div className={styles.menu}>
         <ButtonGroup
-          size="large"
+          size="medium"
           variant="text"
         >
           <Button
