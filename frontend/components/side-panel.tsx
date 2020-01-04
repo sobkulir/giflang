@@ -20,13 +20,15 @@ export class SidePanel extends React.Component<Props, State> {
       isDebugBoxShown: false
     }
   }
-  componentWillReceiveProps(newProps: Props) {
-    if (newProps.isDebugMode !== this.state.wasDebugModeLastRender) {
-      this.setState({
-        wasDebugModeLastRender: newProps.isDebugMode,
-        isDebugBoxShown: newProps.isDebugMode
-      })
+
+  static getDerivedStateFromProps(props: Props, state: State) {
+    if (props.isDebugMode !== state.wasDebugModeLastRender) {
+      return {
+        wasDebugModeLastRender: props.isDebugMode,
+        isDebugBoxShown: props.isDebugMode
+      }
     }
+    return null
   }
 
   clickHandler = () => {
