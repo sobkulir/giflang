@@ -1,11 +1,17 @@
 import { immerable } from 'immer'
-import { Sign } from '~/interpreter/ast/sign'
+import { charToSign, Sign } from '~/interpreter/ast/sign'
 import { LetterSize } from '../types/ide'
 import { Letter, LetterRow, PositionPixels, PositionRowCol, Text } from '../types/text-area'
 
 function CreateId(): string {
   // Source: https://stackoverflow.com/a/8084248
   return Math.random().toString(36).substr(2, 5)
+}
+
+export function stringToSigns(text: string): Text {
+  return text.split('\n').map((line) =>
+    new LetterRowImp(line.split('').map((char) =>
+      new LetterImp(charToSign(char)))))
 }
 
 export class LetterImp implements Letter {

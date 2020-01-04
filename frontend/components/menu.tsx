@@ -42,6 +42,7 @@ class Menu extends React.Component<MenuProps, {}> {
     return (
       <div className={styles.menu}>
         <ButtonGroup
+          className={styles.executionMenu}
           size="medium"
           variant="text"
         >
@@ -75,6 +76,21 @@ class Menu extends React.Component<MenuProps, {}> {
             Next
           </Button>
         </ButtonGroup>
+
+        <div className={styles.auxMenu}>
+          <Button
+            href="docs"
+            target="_blank"
+            size="small"
+            variant="outlined"
+            color="primary"
+          >
+            Docs
+          </Button>
+          <Button size="small" variant="outlined" color="primary">
+            Examples
+          </Button>
+        </div>
       </div>
     )
   }

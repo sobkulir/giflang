@@ -1,6 +1,6 @@
 import produce from 'immer'
-import { charToSign, Sign } from '~/interpreter/ast/sign'
-import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRight, MoveCursorUp, PositionPixelsToRowCol, TrimPositionRowCol } from '../lib/text-area'
+import { Sign } from '~/interpreter/ast/sign'
+import { LetterImp, LetterRowImp, MoveCursorDown, MoveCursorLeft, MoveCursorRight, MoveCursorUp, PositionPixelsToRowCol, stringToSigns, TrimPositionRowCol } from '../lib/text-area'
 import { FocusedArea } from '../types/ide'
 import { MyAction, State } from '../types/redux'
 import { createEmptyText, PositionPixels, ScrollableType, TextArea, TextAreaType } from '../types/text-area'
@@ -11,12 +11,9 @@ export const setText =
       type: 'Set cursor position',
       payload: text,
       reducer: produce((state: State) => {
-        state.textAreaMap[areaType].text = text.split('\n').map((line) =>
-          new LetterRowImp(line.split('').map((char) =>
-            new LetterImp(charToSign(char)))))
+        state.textAreaMap[areaType].text = stringToSigns(text)
       })
     })
-
 export const setCursorPosition =
   (areaType: TextAreaType, positionPixels: PositionPixels)
     : MyAction<PositionPixels> => ({
