@@ -53,7 +53,7 @@ const Category: React.SFC<CategoryProps> = (props) => {
 }
 
 class LetterPicker extends React.Component<LetterPickerProps, {}> {
-  readonly shrinkFactor: number = 0.8
+  readonly shrinkFactor: number = 0.9
 
   getLetterPickerStyles(): React.CSSProperties {
     const originalLetterPx =

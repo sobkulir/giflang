@@ -111,7 +111,7 @@ const getInitialState = (): State => (
             { sign: Sign.RETURN, label: 'return' }]
         }
       ],
-      letterSize: { edgePx: 80, marginPx: 6 },
+      letterSize: { edgePx: 60, marginPx: 6 },
       focusedArea: FocusedArea.MAIN_EDITOR,
       isIOBoxVisible: false
     },

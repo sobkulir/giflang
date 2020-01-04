@@ -56,7 +56,7 @@ const MinimizedIO: React.SFC = (_) => (
 
 const MaximizedIO: React.SFC<IOBoxProps> = (props) => {
   const factoredLetterSize = {
-    edgePx: props.letterSize.edgePx * 0.5,
+    edgePx: props.letterSize.edgePx * 0.7,
     marginPx: props.letterSize.marginPx * 0.8,
   }
 
