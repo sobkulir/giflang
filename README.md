@@ -14,7 +14,7 @@ You'll need the following:
 * npm (>= 6.13.1)
 * **Chrome (>= 68) or Firefox (>= 57)**
 
-Giflang uses [SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) which are only supported in Chrome and Firefox. In case of Firefox, you will need to explicitly enable the following two flags in `about:config`:
+Giflang uses [SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) which is only supported in Chrome and Firefox. In case of Firefox, you will need to explicitly enable the following two flags in `about:config`:
 ```
 dom.postMessage.sharedArrayBuffer.withCOOP_COEP
 javascript.options.shared_memory
