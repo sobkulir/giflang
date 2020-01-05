@@ -62,7 +62,7 @@ const Docs: React.SFC<DocsProps> = (props: DocsProps) => {
           with semicolons and blocks are not delimited with indentation as in Python.
           And now, behold the Hello World example.
         </Par>
-        {listing('λ(\n "HELLO WORLD"\n);')}
+        {listing('λ("δ ε");')}
         <Par>
           Before we start describing the language constructs, let's see how comments look like. The
           image introducing a comment can be added by inputting a hashtag "#" in the IDE.

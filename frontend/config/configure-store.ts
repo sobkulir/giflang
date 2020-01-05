@@ -2,7 +2,7 @@ import { AnyAction, applyMiddleware, createStore } from 'redux'
 import thunk, { ThunkMiddleware } from 'redux-thunk'
 import { InputSign, PrintSign, Sign } from '~/interpreter/ast/sign'
 import { InputBuffer } from '../lib/input-buffer'
-import { LetterImp, LetterRowImp } from '../lib/text-area'
+import { stringToSigns } from '../lib/text-area'
 import { RunState } from '../types/execution'
 import { FocusedArea, LoadingBarState } from '../types/ide'
 import { MyAction, State } from '../types/redux'
@@ -14,10 +14,7 @@ const getInitialState = (): State => (
     textAreaMap: {
       mainEditor: {
         cursorPosition: { row: 0, col: 0 },
-        text: [
-          new LetterRowImp([new LetterImp(Sign.X), new LetterImp(Sign.ASSIGN), new LetterImp(Sign.D8), new LetterImp(Sign.SEMICOLON)]),
-          new LetterRowImp([new LetterImp(Sign.AUX10), new LetterImp(Sign.LPAR), new LetterImp(Sign.D8), new LetterImp(Sign.RPAR), new LetterImp(Sign.SEMICOLON)]),
-        ],
+        text: stringToSigns('λ(\n "HELLO WORLD"\n);'),
         scroll: ScrollableType.NONE
       },
       executionInput: {
@@ -57,6 +54,7 @@ const getInitialState = (): State => (
             { sign: Sign.NONE, label: 'none' },
             { sign: Sign.TRUE, label: 'true' },
             { sign: Sign.FALSE, label: 'false' },
+            { sign: Sign._, label: '_' },
             { sign: Sign.AUX0, label: 'Aux0' },
             { sign: Sign.AUX1, label: 'Aux1' },
             { sign: Sign.AUX2, label: 'Aux2' },
@@ -79,13 +77,12 @@ const getInitialState = (): State => (
         },
         {
           name: 'Arithmetics', signs: [
-            { sign: Sign.ASSIGN, label: ':=' },
             { sign: Sign.PLUS, label: '+' },
             { sign: Sign.MINUS, label: '-' },
             { sign: Sign.MUL, label: '*' },
             { sign: Sign.DIV, label: '/' },
             { sign: Sign.MOD, label: '%' },
-            { sign: Sign.DOT, label: 'Decimal point' }]
+            { sign: Sign.FLOAT, label: 'Decimal point' }]
         },
         {
           name: 'Booleans', signs: [
@@ -95,20 +92,36 @@ const getInitialState = (): State => (
         },
         {
           name: 'Flow', signs: [
-            { sign: Sign.COMMENT, label: 'comment' },
             { sign: Sign.IF, label: 'if' },
             { sign: Sign.ELSE, label: 'else' },
             { sign: Sign.WHILE, label: 'while' },
             { sign: Sign.FOR, label: 'for' },
             { sign: Sign.BREAK, label: 'break' },
-            { sign: Sign.CONTINUE, label: 'continue' }]
+            { sign: Sign.CONTINUE, label: 'continue' },
+            { sign: Sign.RETURN, label: 'return' }
+          ]
         },
         {
           name: 'Classes and functions', signs: [
             { sign: Sign.CLASS, label: 'class' },
             { sign: Sign.PROP, label: 'Property access' },
-            { sign: Sign.FUNCTION, label: 'function' },
-            { sign: Sign.RETURN, label: 'return' }]
+            { sign: Sign.FUNCTION, label: 'function' }]
+        },
+        {
+          name: 'Other', signs: [
+            { sign: Sign.ASSIGN, label: ':=' },
+            { sign: Sign.COMMENT, label: 'comment' },
+            { sign: Sign.SEMICOLON, label: ';' },
+            { sign: Sign.SPACE, label: '(space)' },
+            { sign: Sign.COMMA, label: ',' },
+            { sign: Sign.LCURLY, label: '{' },
+            { sign: Sign.RCURLY, label: '}' },
+            { sign: Sign.LPAR, label: '(' },
+            { sign: Sign.RPAR, label: ')' },
+            { sign: Sign.LBRA, label: '[' },
+            { sign: Sign.RBRA, label: ']' },
+
+          ]
         }
       ],
       letterSize: { edgePx: 60, marginPx: 6 },

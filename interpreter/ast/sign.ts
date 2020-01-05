@@ -4,7 +4,7 @@ export enum Sign {
   D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
   AUX0, AUX1, AUX2, AUX3, AUX4, AUX5, AUX6, AUX7, AUX8, AUX9, AUX10, AUX11,
   LT, LE, EQ, NE, GE, GT,
-  PLUS, MINUS, MUL, DIV, MOD, DOT,
+  PLUS, MINUS, MUL, DIV, MOD, FLOAT,
   NOT, OR, AND, TRUE, FALSE, NONE, ASSIGN,
   LPAR, RPAR, LBRA, RBRA, LCURLY, RCURLY,
   IF, ELSE, WHILE, FOR,
@@ -39,7 +39,7 @@ export const signToCharMap: Map<Sign, string> = new Map([
   [Sign.GE, '≥'], [Sign.GT, '>'],
 
   [Sign.PLUS, '+'], [Sign.MINUS, '-'], [Sign.MUL, '*'], [Sign.DIV, '/'],
-  [Sign.MOD, '%'], [Sign.DOT, '.'],
+  [Sign.MOD, '%'], [Sign.FLOAT, '.'],
 
   [Sign.NOT, '˜'], [Sign.OR, '|'], [Sign.AND, '∧'], [Sign.TRUE, '✓'],
   [Sign.FALSE, '✕'], [Sign.NONE, '☐'], [Sign.ASSIGN, '≔'],

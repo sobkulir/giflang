@@ -47,7 +47,6 @@ KEYWORDS                    [<≤=≠≥>#+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶
 "⚻"                         { return 'BREAK' }
 
 ";"                         { return 'SEMICOLON' }
-"."                         { return 'DOT' }
 "→"                         { return 'PROP' }
 ","                         { return 'COMMA' }
 "#"                         { this.begin('comment') }

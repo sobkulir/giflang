@@ -18,7 +18,7 @@ const options = [
   {
     label: 'Fibonacci', val:
       `#PROGRAM TAKES
-#A SIGNLE NUMBER
+#A SINGLE NUMBER
 #N AND PRINTS
 #FIB(N)
 
@@ -128,7 +128,7 @@ Bβ≔B→LEN()+1;
   I<Aβ;
   I≔I+1)
  ε[I][0]≔I;
- 
+
 ♶(I≔1;
   I<Aβ;
   I≔I+1){

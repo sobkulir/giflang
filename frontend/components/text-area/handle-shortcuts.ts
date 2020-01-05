@@ -84,7 +84,7 @@ function HandleCommon(
       sign = Sign.SEMICOLON; break
     case '.':
       sign = Sign.PROP; break
-    case '"':
+    case `'`:
       sign = Sign.QUOTE; break
     case ',':
       sign = Sign.COMMA; break

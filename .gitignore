@@ -1,6 +1,4 @@
 node_modules
 dist
 .vscode
-frontend/public/img
-frontend/config/firebase.ts
 package-lock.json
