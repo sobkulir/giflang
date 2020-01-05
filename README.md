@@ -2,7 +2,7 @@
 *The most up to date version of this repository can be found at <https://github.com/sobkulir/giflang>.*
 
 ## Hello World
-![](name-of-giphy.gif)
+![Hello World](hello_world.gif)
 
 ## Running the IDE
 Currently, there exists no live demo of Giflang and hence you'll need to build and host it on your machine.
