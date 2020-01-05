@@ -64,7 +64,8 @@ const Docs: React.SFC<DocsProps> = (props: DocsProps) => {
         </Par>
         {listing('λ(\n "HELLO WORLD"\n);')}
         <Par>
-          Before we start describing the language constructs, let's see how comments look like.
+          Before we start describing the language constructs, let's see how comments look like. The
+          image introducing a comment can be added by inputting a hashtag "#" in the IDE.
         </Par>
         {listing('#ALL COMMENTS\n#START WITH #')}
 
@@ -78,6 +79,10 @@ const Docs: React.SFC<DocsProps> = (props: DocsProps) => {
           Blocks are defined similar to C or JavaScript.
         </Par>
         {listing('{\n #BLOCK\n}')}
+        <Par>
+          Statements must be delimited. The delimiter can be added in the IDE by inputting a semicolon ";".
+        </Par>
+        {listing('#; SEMICOLON\nX≔1;\nY≔2;')}
 
         {section('Basic I/O')}
         <Par>

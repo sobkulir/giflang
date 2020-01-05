@@ -4,8 +4,11 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 import { finishExecution, startExecution } from '../actions/execution'
 import { saveCode } from '../actions/storage'
+import { setText } from '../actions/text-area'
 import { RunState } from '../types/execution'
 import { State, ThunkActionDispatch } from '../types/redux'
+import { TextAreaType } from '../types/text-area'
+import { ExamplesButton } from './examples'
 import * as styles from './menu.scss'
 
 interface MenuProps {
@@ -14,9 +17,18 @@ interface MenuProps {
   startExecution: typeof startExecution,
   finishExecution: typeof finishExecution
   saveCode: ThunkActionDispatch<typeof saveCode>,
+  setText: typeof setText,
 }
 
-class Menu extends React.Component<MenuProps, {}> {
+interface MenuState {
+  isExamplesOpen: boolean
+}
+
+class Menu extends React.Component<MenuProps, MenuState> {
+  setCode = (code: string) => {
+    this.props.setText(TextAreaType.MAIN_EDITOR, code)
+  }
+
   startExecutionNormal = (_: any) => {
     this.props.startExecution(/*debugMode=*/false)
   }
@@ -79,17 +91,15 @@ class Menu extends React.Component<MenuProps, {}> {
 
         <div className={styles.auxMenu}>
           <Button
-            href="docs"
-            target="_blank"
             size="small"
             variant="outlined"
             color="primary"
+            href="docs"
+            target="_blank"
           >
             Docs
           </Button>
-          <Button size="small" variant="outlined" color="primary">
-            Examples
-          </Button>
+          <ExamplesButton setCode={this.setCode} />
         </div>
       </div>
     )
@@ -105,4 +115,5 @@ export default connect(
     startExecution,
     finishExecution,
     saveCode,
+    setText,
   })(Menu)
