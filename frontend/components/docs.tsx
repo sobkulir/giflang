@@ -147,6 +147,11 @@ const Docs: React.SFC<DocsProps> = (props: DocsProps) => {
         </Par>
         {listing('X≔STR(2);\n#12\nλ("1"+X);')}
 
+        <Par>
+          To get the length of the string, there is a LEN method.
+        </Par>
+        {listing('X≔"HELLO";\nλ(X→LEN());')}
+
         {subsection('Array')}
         <Par>
           Arrays are yet again wrappers around JavaScript arrays. Example below shows creation of an array literal and

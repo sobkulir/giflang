@@ -470,12 +470,20 @@ export class StringClass extends Class {
     }
   }
 
+  static _len_(
+    _interpreter: CodeExecuter,
+    args: Instance[],
+  ): NumberInstance {
+    CheckArityEq(args, 1)
+    const self = args[0].castOrThrow(StringInstance)
+    return new NumberInstance(NumberClass.get(), self.value.length)
+  }
+
   static _split_(
     _interpreter: CodeExecuter,
     args: Instance[],
   ): ArrayInstance {
     CheckArityEq(args, 2)
-    console.log('res')
     const self = args[0].castOrThrow(StringInstance)
     const sep = args[1].castOrThrow(StringInstance)
     const res = self.value.split(sep.value)
@@ -527,6 +535,7 @@ export class StringClass extends Class {
         [MagicMethod.__gt__, StringClass.comparatorOp((l, r) => l > r)],
         [MagicMethod.__getitem__, StringClass.__getitem__],
         [MagicMethod.__setitem__, StringClass.__setitem__],
+        ['LEN', StringClass._len_],
         ['SPLIT', StringClass._split_],
         ['SLICE', StringClass._slice_],
       ],
