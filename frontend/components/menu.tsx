@@ -16,8 +16,8 @@ interface MenuProps {
   resolveNextStep: () => void,
   startExecution: typeof startExecution,
   finishExecution: typeof finishExecution
-  saveCode: ThunkActionDispatch<typeof saveCode>,
-  setText: typeof setText,
+  saveCode: ThunkActionDispatch<typeof saveCode>
+  setText: typeof setText
 }
 
 interface MenuState {

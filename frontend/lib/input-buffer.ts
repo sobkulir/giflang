@@ -1,3 +1,5 @@
+// InputBuffer<T> is a normal queue, but popFront can be awaited on,
+// returning only when the buffer is not empty.
 export class InputBuffer<T> {
   private pushResolve: () => void = () => { return }
   constructor(readonly arr: T[]) { }

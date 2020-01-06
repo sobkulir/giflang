@@ -14,6 +14,8 @@ export interface VisitorStmt<T> {
   visitExprStmt(stmt: ExprStmt): T
 }
 
+// Stmt (statement) is a type of node that doesn't result in
+// an Instance (value), but a Completion.
 export abstract class Stmt extends AstNode {
   abstract accept<T>(visitor: VisitorStmt<T>): T
 }
@@ -137,7 +139,7 @@ export class ExprStmt extends Stmt {
   }
 }
 
-// Function encapsulates a single statement into a block
+// Encapsulates a single statement into a block
 // if it's not a BlockStmt already.
 function ensureIsBlockStmt(stmt: Stmt): BlockStmt {
   if (stmt instanceof BlockStmt) return stmt

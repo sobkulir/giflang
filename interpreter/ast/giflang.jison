@@ -5,7 +5,7 @@
 DIGIT       [0-9]
 LETTER      [A-Z_✓☐✕αβγδεζηθικλμ]
 
-KEYWORDS                    [<≤=≠≥>#+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.→,]
+KEYWORD                     [<≤=≠≥>#+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶⚛ƒ⚹⚺⚻;.→,]
 
 %%
 
@@ -54,7 +54,7 @@ KEYWORDS                    [<≤=≠≥>#+\-*/%˜|∧≔☐()\[\]{}☝☞⟳♶
 <comment><<EOF>>            { this.popState(); return 'EOF' }
 <comment>[^\n]*             { /*no op*/ }
 
-\"({KEYWORDS}|{LETTER}|{DIGIT}|[ \n])*\"
+\"({KEYWORD}|{LETTER}|{DIGIT}|[ \n])*\"
                             { yytext = yytext.substr(1, yytext.length - 2); return 'STRING' }
 
 {DIGIT}+("."{DIGIT}+)?      { return 'NUMBER' }
@@ -103,7 +103,7 @@ PrimaryComnon
     ;
 
 Literal
-    : NUMBER                      { $$ = new yy.Expr.NumberValueExpr($1, @$) }
+    : NUMBER                    { $$ = new yy.Expr.NumberValueExpr($1, @$) }
     | STRING                    { $$ = new yy.Expr.StringValueExpr($1, @$) }
     ;
 
@@ -175,8 +175,7 @@ Expr
                                         || $1 instanceof yy.Expr.SquareAccessorRefExpr) {
                                         $$ = new yy.Expr.AssignmentValueExpr($1, $3, @$)
                                       } else {
-                                        // TODO: Update this when working on error reporting.
-                                        throw new Error('TODO: Cannot assign to non-lvalue type.')
+                                        throw new Error('Cannot assign to non-lvalue type.')
                                         YYABORT;
                                       }
                                     }

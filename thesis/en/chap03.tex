@@ -15,7 +15,7 @@ constructs, rather than~list \emph{how} these constructs behave in~every case.
 The~language documentation with examples can~be found in~the~web IDE by clicking ``Docs'' button in the top navigation.
 
 \section{Reusing an~existing interpreter}
-in~the~previous Chapter \ref{chap2} we concluded that interpreting a~user code on the~client-side is the~best option for our project. Therefore, when
+In~the~previous Chapter \ref{chap2} we concluded that interpreting user code on the~client-side is the~best option for our project. Therefore, when
 looking for a~language to reuse we need to limit ourselves to the~ones that have an~existing web interpreter, i.e., an~interpreter written in~either
 JavaScript or WebAssembly. The~two major languages that have existing web interpreters are Python and JavaScript.
 
@@ -65,12 +65,12 @@ class Person {
 \end{code}
 
 We could add support for ES6 features to the~JS-Interpreter and use it for our project. However, as in~the~case of Brython we decided to rather put the~effort into
-creating a~new solution than~putting a~lot of effort an~existing one.
+creating a~new solution than~put a~lot of effort into an~existing one.
 
 \section{Text format}
-Before we dive into the~language itself, let us first discuss the~underlying representation of the~language. We could represent programs either
+Before we dive into the~language itself, let us first discuss the~underlying representation of the~language. We can represent programs either
 in a \emph{binary format} or a \emph{textual format}. Using a binary format, we could map images to numbers and considering that our ``alphabet of images''
-would be at most 256 characters long, we could use one byte per image. However, it is much simpler to develop the language with a textual format because
+would contain at most 256 characters, we could use one byte per image. However, it is much simpler to develop the language with a textual format because
 when writing tests and debugging we can work with printable characters rather than seemingly random numbers. Therefore, we decided to use a textual format.
 
 We considered defining the~language in~terms of semicolon delimited tokens where each token could be substituted with a~single image.
@@ -112,7 +112,7 @@ Unicode characters. We changed the~format mostly because we realized that the~to
 
 \section{Deciding on a~language type}
 Since we have chosen to build our own language it is time to decide on what kind of language it should be and what features it should have. There are
-multiple types of programming languages and we will briefly go through the~most known ones.
+multiple types of programming languages and we will briefly go through the~most common ones.
 
 \subsection{Functional programming}
 Functional programming treats computation as an~evaluation of mathematical functions and avoids changing state and mutable
@@ -153,7 +153,7 @@ editDistance xs ys = table ! (m,n)
 \subsection{Object-oriented programing}
 Object-oriented programming (OOP) is based around the~concept of ``objects'' which can~contain~data, in~the~form of fields (also known as attributes or properties),
 and code, in~the~form of methods.\footnote{https://en.wikipedia.org/wiki/Object-oriented\_programming} Object's methods can~access and modify the~object they are
-operating on using a~keyword like \texttt{this} or \texttt{self}. Programs then made out of objects that interact together.
+operating on using a~keyword like \texttt{this} or \texttt{self}. Programs are then made out of objects that interact together.
 
 The~most popular OOP languages are class-based (e.g., C++, Java, Python), meaning that objects are instances of classes, which also determine their types.
 There are also alternatives, for example JavaScript is prototype-based.
@@ -192,12 +192,12 @@ int main() {
     Dog dog;
     Sheep sheep;
 
-    // Store the~address of Dog.
+    // Store the address of Dog.
     animal = &dog;
 
     // Call Dog's make_sound. Returns "Woof, woof!".
     animal->make_sound();
-    // A~similar example with sheep. Returns "Baa, baa!".
+    // A similar example with sheep. Returns "Baa, baa!".
     animal = &sheep;
     animal->make_sound();
 
@@ -245,7 +245,7 @@ Other examples of esoteric languages are:
 \subsection{Conclusion}
 There are also other programming language types apart from the~ones mentioned here, for example logic programming. We did not plan~on using
 concepts from these languages and hence we did not list them. It would be great to combine a~language presented in~images with an~esoteric language
-of some sort. However, we did not come up with an~interesting enough model and we did not want to blindly reuse an~existing one. in~the~end we settled on
+of some sort. However, we did not come up with an~interesting enough model and we did not want to blindly reuse an~existing one. IAn~the~end we settled on
 a~more conservative approach.
 
 Since our intended audience is typically experienced in~Python we decided to base our language around "Pythonic" features. We also think
@@ -257,7 +257,7 @@ space on the~user screen and hence we tried to keep the~language concise. Adding
 \section{Object model}
 \label{chap3:object_model}
 As mentioned in~the~end of the~previous section we base Giflang on Python. Everything is an~object in~Python. We will now explain~in~more detail what exactly
-it means. an~object \texttt{A} can~have multiple related objects:
+it means. An~object \texttt{A} can~have multiple related objects:
 \begin{itemize}
     \item An~object \texttt{B} that denotes the~type of \texttt{A}. We call \texttt{B} a~\emph{class}\footnote{In the implementation we denote this \texttt{klass}
     instead of \texttt{class} because of a name collision with the keyword \texttt{class}.} of the~instance \texttt{A} and we say that \texttt{A}
@@ -303,7 +303,7 @@ Figure \ref{fig:chap3:python_structure} describes the~Python's object structure 
         \draw (357.87,110.72) node   [align=left] {{\fontfamily{pcr}\selectfont Derives from}};
         \end{tikzpicture}
     }
-    \caption{Object structure in~Python.}
+    \caption{Object structure in~Python}
 	\label{fig:chap3:python_structure}
 \end{figure}
 
@@ -364,20 +364,20 @@ thesis thinks that this is the~reason why magic method resolution in~Python star
 the~case with regular methods.
 
 Because the~call \texttt{Number(2)} does not result in~the~call of the~\texttt{\_\_call\_\_} function on the
-\texttt{Number} type, it has to result in~a~\texttt{\_\_call\_\_} method further up the~chain. in~this case, \texttt{Number} is an~instance of the~\texttt{type},
+\texttt{Number} type, it has to result in~a~\texttt{\_\_call\_\_} method further up the~chain. In~this case, \texttt{Number} is an~instance of the~\texttt{type},
 or the~\texttt{MetaClass} class. Its \texttt{\_\_call\_\_} method is responsible for creating a~new instance and calling the~\texttt{\_\_init\_\_} method. Oversimplified,
 the~\texttt{type}'s \texttt{\_\_call\_\_} function might look like this:
 \begin{code}
 class type:
-    # Since classes are instances of the~'type' class, self
-    # in~this method is a~class object. 
+    # Since classes are instances of the 'type' class, self
+    # in~this method is a class object. 
     def __call__(self, *args, **kwargs):
         obj = instantiate(self)
         obj.__init__(*args, **kwargs)
         return obj
 \end{code}
 
-in~reality, creating a~new instance is a~little more complicated. To give users more control over the~instantiation, another magic method (\texttt{\_\_new\_\_})
+In~reality, creating a~new instance is a~little more complicated. To give users more control over the~instantiation, another magic method (\texttt{\_\_new\_\_})
 is called instead of a~made up function \texttt{instantiate} in~the~example above. We will not go into more details since we decided not to include the
 \texttt{\_\_new\_\_} magic method into Giflang as it is mainly used only for a~few specific use cases (e.g., creating a~singleton).
 

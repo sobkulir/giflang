@@ -12,11 +12,11 @@ import * as styles from './io-box.scss'
 import { Output } from './output'
 
 interface IOBoxProps {
-  output: Text,
-  signToGifMap: SignToGifMap,
-  letterSize: LetterSize,
-  errorMsg: string,
-  isIOBoxVisible: boolean,
+  output: Text
+  signToGifMap: SignToGifMap
+  letterSize: LetterSize
+  errorMsg: string
+  isIOBoxVisible: boolean
   setIsIOBoxVisible: typeof setIsIOBoxVisible
 }
 

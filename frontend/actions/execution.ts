@@ -2,12 +2,12 @@ import * as Comlink from 'comlink'
 import produce from 'immer'
 import Worker from 'worker-loader!~/interpreter/giflang.worker'
 import { JisonLocator } from '~/interpreter/ast/ast-node'
-import { Barrier, InputBarrier } from '~/interpreter/barrier'
+import { InputBarrier, SteppingBarrier } from '~/interpreter/barrier'
 import { SerializedEnvironment } from '~/interpreter/environment'
 import { GiflangBuffers, GiflangClbks, GiflangWorker } from '~/interpreter/giflang.worker'
 import { CallStack } from '~/interpreter/interpreter'
 import { storeInstance } from '../app'
-import { CharsToSigns, SignsToChars } from '../lib/editor'
+import { CharsToImageText, ImageTextToChars } from '../lib/editor'
 import { InputBuffer } from '../lib/input-buffer'
 import { RunState } from '../types/execution'
 import { FocusedArea } from '../types/ide'
@@ -20,7 +20,7 @@ export const appendToOutput =
     payload: output,
     reducer: produce((state: State) => {
       if (output === '') return
-      const newSigns = CharsToSigns(output)
+      const newSigns = CharsToImageText(output)
       if (state.execution.output.length === 0) {
         state.execution.output = newSigns
       } else {
@@ -66,7 +66,7 @@ export const newNextStep =
 
 function createGiflangSetup():
   {clbks: GiflangClbks, buffers: GiflangBuffers} {
-  const stepperBarrier = new Barrier()
+  const stepperBarrier = new SteppingBarrier()
   const inputBarrier = new InputBarrier()
   return {
     clbks: {
@@ -110,7 +110,7 @@ export const executionStarted =
     })
   })
 
-export async function StartExecution(code: string, isDebugMode: boolean) {
+async function StartWorker(code: string, isDebugMode: boolean) {
   const vanillaWorker = new Worker()
   const workerProxy =
     Comlink.wrap<
@@ -122,7 +122,7 @@ export async function StartExecution(code: string, isDebugMode: boolean) {
   const worker = await new workerProxy(
     Comlink.proxy(setup.clbks), setup.buffers, isDebugMode)
 
-  const stepperBarrier = new Barrier(setup.buffers.stepperFlag)
+  const stepperBarrier = new SteppingBarrier(setup.buffers.stepperFlag)
   storeInstance.dispatch(executionStarted(
     () => stepperBarrier.notify(), vanillaWorker, isDebugMode))
   worker.run(code)
@@ -136,13 +136,13 @@ export const startExecution =
       const execution = state.execution
       execution.runState = RunState.STARTING
       execution.output = []
-      execution.commitedInput = []
+      execution.committedInput = []
       execution.inputBuffer = new InputBuffer<string>([])
       execution.errorMsg = ''
       state.textAreaMap.executionInput.text = createEmptyText()
       state.textAreaMap.executionInput.cursorPosition = {row: 0, col: 0}
-      StartExecution(
-        SignsToChars(state.textAreaMap.mainEditor.text),
+      StartWorker(
+        ImageTextToChars(state.textAreaMap.mainEditor.text),
         isDebugMode)
     })
   })
@@ -152,8 +152,8 @@ export const addLineToInput =
     type: 'Add line to input',
     reducer: produce((state: State) => {
       const executionInput = state.textAreaMap.executionInput
-      state.execution.commitedInput.push(executionInput.text[0])
-      state.execution.inputBuffer.push(SignsToChars(executionInput.text))
+      state.execution.committedInput.push(executionInput.text[0])
+      state.execution.inputBuffer.push(ImageTextToChars(executionInput.text))
       executionInput.text = createEmptyText()
       executionInput.cursorPosition = {row: 0, col: 0}
       state.textAreaMap.executionInput.scroll = ScrollableType.CURSOR

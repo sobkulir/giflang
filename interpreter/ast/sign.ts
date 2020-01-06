@@ -1,3 +1,7 @@
+// Sign enum holds all letters of Giflang alphabet. These letters have
+// a 1:1 mapping to:
+//    * Displayed images, defined in `frontend/types/ide.ts`
+//    * Unicode letters, defined below as signToCharMap
 export enum Sign {
   A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
   _, SPACE, SEMICOLON, QUOTE, COMMA, PROP,
@@ -13,9 +17,12 @@ export enum Sign {
 }
 
 export const PrintSign = Sign.AUX10
-export const PrintToken = Sign[Sign.AUX10].toString()
 export const InputSign = Sign.AUX11
 
+// Mapping of signs to characters. This representation is
+// used in the interpreter. All used characters can be encoded as
+// single 16-bit code units to make sure that they are represented
+// as a single element in JavaScript strings.
 export const signToCharMap: Map<Sign, string> = new Map([
   [Sign.A, 'A'], [Sign.B, 'B'], [Sign.C, 'C'], [Sign.D, 'D'], [Sign.E, 'E'],
   [Sign.F, 'F'], [Sign.G, 'G'], [Sign.H, 'H'], [Sign.I, 'I'], [Sign.J, 'J'],

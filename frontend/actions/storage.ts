@@ -2,13 +2,31 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
 import produce from 'immer'
-import { SignsToChars } from '../lib/editor'
+import { ImageTextToChars } from '../lib/editor'
 import { LoadingBarState } from '../types/ide'
 import { MyAction, MyThunkAction, State } from '../types/redux'
 import { DocumentReference, LoadState } from '../types/storage'
 import { TextAreaType } from '../types/text-area'
 import { setLoadingBarState } from './ide'
 import { setText } from './text-area'
+
+const setLoadState =
+  (loadState: LoadState): MyAction<LoadState> => ({
+    type: 'Set load state',
+    payload: loadState,
+    reducer: produce((state: State) => {
+      state.storage.loadState = loadState
+    })
+  })
+
+const setDoc =
+  (doc: DocumentReference): MyAction<DocumentReference> => ({
+    type: 'Set load state',
+    payload: doc,
+    reducer: produce((state: State) => {
+      state.storage.doc = doc
+    })
+  })
 
 export const loadCode =
   (codeId: string): MyThunkAction<void> =>
@@ -54,7 +72,7 @@ export const saveCode =
       }
 
       await doc.set({
-        code: SignsToChars(
+        code: ImageTextToChars(
           state.textAreaMap[TextAreaType.MAIN_EDITOR].text),
         ownerUID: userId,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
@@ -63,21 +81,3 @@ export const saveCode =
       })
       dispatch(setLoadingBarState(LoadingBarState.COMPLETE))
     }
-
-const setLoadState =
-  (loadState: LoadState): MyAction<LoadState> => ({
-    type: 'Set load state',
-    payload: loadState,
-    reducer: produce((state: State) => {
-      state.storage.loadState = loadState
-    })
-  })
-
-const setDoc =
-  (doc: DocumentReference): MyAction<DocumentReference> => ({
-    type: 'Set load state',
-    payload: doc,
-    reducer: produce((state: State) => {
-      state.storage.doc = doc
-    })
-  })

@@ -10,16 +10,16 @@ import * as styles from './letter-picker.scss'
 
 interface LetterPickerProps {
   addSignAfterFocusedCursor: typeof addSignAfterFocusedCursor
-  alphabet: CategorizedAlphabet,
-  letterSize: LetterSize,
-  signToGifMap: SignToGifMap,
+  alphabet: CategorizedAlphabet
+  letterSize: LetterSize
+  signToGifMap: SignToGifMap
 }
 
 interface CategoryProps {
   addSignAfterFocusedCursor: typeof addSignAfterFocusedCursor
-  category: AlphabetCategory,
-  signToGifMap: SignToGifMap,
-  letterSize: LetterSize,
+  category: AlphabetCategory
+  signToGifMap: SignToGifMap
+  letterSize: LetterSize
   shrinkFactor: number
 }
 

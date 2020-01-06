@@ -4,6 +4,7 @@ import { Instance, ValueRef } from './object-model/instance'
 
 export type SerializedEnvironment = string[]
 
+// Represents an environment that holds variable names and values.
 export class Environment {
   private readonly values: Map<string, Instance>
 
@@ -13,10 +14,6 @@ export class Environment {
 
   public get(name: string): Instance {
     return this.getRecursive(name)
-  }
-
-  public shallowSet(name: string, value: Instance) {
-    this.values.set(name, value)
   }
 
   private getRecursive(name: string): Instance {
@@ -29,6 +26,10 @@ export class Environment {
     }
 
     throw new Error(`Unknown variable ${name} accessed`)
+  }
+
+  public shallowSet(name: string, value: Instance) {
+    this.values.set(name, value)
   }
 
   private set(name: string, value: Instance): void {

@@ -15,17 +15,17 @@ import { LineNumbers } from './line-numbers'
 import * as styles from './main-text-area.scss'
 
 export interface MainTextAreaProps extends TextArea {
-  locator?: JisonLocator,
-  runState: RunState,
-  signToGifMap: SignToGifMap,
-  letterSize: LetterSize,
-  focusedArea: FocusedArea,
-  setCursorPosition: typeof setCursorPosition,
-  addSignAfterCursor: typeof addSignAfterCursor,
-  moveCursor: typeof moveCursor,
-  removeAfterCursor: typeof removeAfterCursor,
-  newlineAfterCursor: typeof newlineAfterCursor,
-  scrollToType: typeof scrollToType,
+  locator?: JisonLocator
+  runState: RunState
+  signToGifMap: SignToGifMap
+  letterSize: LetterSize
+  focusedArea: FocusedArea
+  setCursorPosition: typeof setCursorPosition
+  addSignAfterCursor: typeof addSignAfterCursor
+  moveCursor: typeof moveCursor
+  removeAfterCursor: typeof removeAfterCursor
+  newlineAfterCursor: typeof newlineAfterCursor
+  scrollToType: typeof scrollToType
   setFocusedArea: typeof setFocusedArea
 }
 
@@ -149,4 +149,3 @@ export default connect(
     setFocusedArea
   }
 )(MainTextArea)
-

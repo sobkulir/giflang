@@ -7,6 +7,8 @@ export enum CompletionType {
   CONTINUE,
 }
 
+// Completion represents results of nodes that don't evaluate to
+// Instance or ValueRef. These are defined in `stmt.ts`. 
 export abstract class Completion {
   isNormal(): this is NormalCompletion {
     return this instanceof NormalCompletion
@@ -25,7 +27,7 @@ export abstract class Completion {
   }
 }
 
-// Why "brand" members were added to all derivates of Completion?
+// Why "brand" members were added to all derivatives of Completion?
 // Empty classes would be structurally equal to each other and thus
 // typeguards from Copmletion would not work as intended.
 // Issue: https://github.com/microsoft/TypeScript/issues/33475

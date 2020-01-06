@@ -31,8 +31,8 @@ file access and higher performance.
 \section{Client-side vs server-side interpreter}
 
 Giflang programs can be either interpreted on the server side or client side. By server-side we mean any code that runs on the server. This means that
-the interpret could be written in almost any language using any technologies, because it is up to us to choose what we run on the server. On the other hand,
-client-side code is executed in a browser which can only run JavaScript or WebAssembly.
+the interpret could be written in almost any language using any technologies because it is up to us to choose what we run on the server. On the other hand,
+client-side code is executed in browsers that can only run JavaScript or WebAssembly.
 
 \subsection{Server side execution}
 Executing code on the server side means that in order to interact with it, for example provide an interactive input or see a gradual output, the browser and
@@ -53,9 +53,9 @@ the server need to communicate during the execution. There are $3$ basic approac
 We will introduce two Web IDEs that use server side execution -- REPL.it and Ideone. They both support numerous languages such
 as Python, C, C++ and Java.
 
-Ideone uses HTTP polling to get updates about the execution. First, it sends a request to the backend containing a source code and an input.
+Ideone uses HTTP polling to get updates about the execution. First, it sends a request to the backend containing source code and input.
 After that, it polls the server for an update every second. The server can respond with a new output, an error report, a finish status, etc. Users of Ideone need to
-specify all the input at once before the start. While it would be possible to implement an interactive I/O with the polling, Ideone chose not to do so.
+specify all the input at once before the start. While it would be possible to implement an interactive I/O with polling, Ideone chose not to do so.
 We did not find out why.
 
 Having to poll the server for updates is awkward. If the granularity of polling is high, requests are send frequently, but
@@ -71,8 +71,8 @@ Before WebSockets were introduced around the year 2012, Server-Sent events allow
 REPL.it is more modern compared to Ideone and uses WebSockets. It also provides an interactive I/O and debugging.
 
 \subsection{Client side execution}
-By default, browsers use a single thread, also called the main thread, to run all the JavaScript of a webpage, as well as to perform layout
-changes, reflows, and garbage collection. As a result of this, long-running JavaScript functions can block the thread, leading to an unresponsive
+By default, browsers use a single thread, also called the main thread, to run all the JavaScript of a webpage as well as to perform layout
+changes, reflows, and garbage collection. As a result of this, long-running JavaScript functions can block the main thread, leading to an unresponsive
 page.\footnote{https://developer.mozilla.org/en-US/docs/Glossary/Main\_thread}
 
 \subsubsection{WebWorkers}
@@ -91,7 +91,7 @@ onmessage = function(msg) {
     console.log('Got a message from main: ' + msg);
 }
 \end{code}
-    \caption{A communication between a WebWorker and the main thread using messages.}
+    \caption{A communication between a WebWorker and the main thread using messages}
     \label{fig:chap2:messages}
 \end{figure}
 
@@ -132,7 +132,7 @@ server side execution for a different reason, though. It is simpler than impleme
 porting the existing interpreters to WebAssembly. Since in our project we do not care so much about execution speed and
 we do not have an existing interpreter or compiler, we can do better than server-side execution.
 
-The client-side execution requires no special support from a server and it also works offline, i.e., after a user looses connection. Running an interpreter
+The client-side execution requires no special support from a server and it also works offline, i.e., after user looses connection. Running an interpreter
 compiled to WebAssembly in a WebWorker would be the best approach as it would provide performance and also offloading from the main thread.
 However, when we started working on the thesis we did not have any prior experience with writing an interpreter and adding another layer into the stack in the
 form of WebAssembly seemed very complex. It would allow us to use a language like C++ or Rust for the development. To keep things simpler we
@@ -152,7 +152,7 @@ a statically typed language. It seems like every Silicon Valley tech giant tried
 Facebook made Flow and finally, Microsoft created TypeScript. All of these languages can be transpiled to JavaScript while enforcing the static types.
 
 Dart is a Java-like programming language, quite far from JavaScript in terms of its syntax. Flow lets programmers
-annotate a JavaScript code with types and enforces them. TypeScript is similar to Flow, but it is more popular and has a bigger community.
+annotate JavaScript code with types and enforces them. TypeScript is similar to Flow, but it is more popular and has a bigger community.
 
 From the languages described above we picked TypeScript, mainly because as of now it has a lot of momentum and it is being widely adopted.
 
@@ -250,7 +250,7 @@ the tree\footnote{taken from React docs}. Therefore, React decided to implement 
 	\label{fig:chap2:virtual_dom}
 \end{figure}
 
-There are many other frameworks (e.g., Angular, Vue.js, Ember.js). Each of them has a different approach to solving the UI and the state syncing. However, we picked
+There are many other frameworks (e.g., Angular, Vue.js, Ember.js). Each of them has a different approach to solving the UI and the state syncing. We picked
 React for this project, mainly because we used it in previous projects where it proved itself very useful and easy to use.
 
 \section{Storing programs}
@@ -274,10 +274,10 @@ with custom services.
 \label{chap2:program_id}
 
 In order to allow users sharing their programs with other users, we need to give each program a unique ID which can then be used to load the program later.
-This ID can be a part of the URL, for example as a GET parameter or part of the path.
+This ID can be a part of the URL, for example a GET parameter or part of the path.
 
-When a program is saved for the first time after a page load, it is given a unique ID. Any subsequent saves overwrite the current version. If we keep overwriting
-a saved program even after a page reload, user A might load a program of user B and overwrite the work of user B.
+When a program is saved for the first time after a page load, it is given a unique ID. Any subsequent saves overwrite the current version. If we kept overwriting
+a saved program even after a page reload, user A could load a program of user B and overwrite the work of user B.
 
 To prevent users from overwriting each others' programs, we decided to always assign a new ID to a program that is saved for the first time after
 a page load. This allows users to fork an existing program without having an ability to change it.
@@ -304,7 +304,7 @@ a page load. This allows users to fork an existing program without having an abi
     \draw (67.6,-39.35) node [below] {Edits\mbox{ }and\mbox{ }saves};
     \fill [black] (66.28,-34.78) -- (65.4,-35.13) -- (66.21,-35.72);
     \end{tikzpicture}
-	\caption{A state machine showing when a new program ID is assigned in the web IDE.}
+	\caption{A state machine showing when a new program ID is assigned in the web IDE}
 	\label{fig:chap2:page_url}
 \end{figure}
 

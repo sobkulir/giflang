@@ -7,16 +7,16 @@ import { Stringify } from './functions'
 import { ArrayInstance, BoolInstance, Instance, NumberInstance, ObjectInstance, StringInstance, TWrappedFunction, UserFunctionInstance, WrappedFunctionInstance } from './instance'
 import { MagicMethod } from './magic-method'
 
+// Checks whether `args` length is exactly `n`. If it isn't, throws.
 export function CheckArityEq(args: Instance[], n: number) {
-  // TODO: Add fcn name.
   if (args.length !== n) {
     throw Error(
       `Wrong number of operands, expected ${n} got ${args.length}.`)
   }
 }
 
+// Checks whether `args` length greater or equal to `n`. If it isn't, throws.
 export function CheckArityGe(args: Instance[], n: number) {
-  // TODO: Add fcn name.
   if (args.length < n) {
     throw Error(
       // tslint:disable-next-line:max-line-length
@@ -24,8 +24,10 @@ export function CheckArityGe(args: Instance[], n: number) {
   }
 }
 
+// A class representing a Giflang's class.
 export abstract class Class extends Instance {
-  // Nulls for initial bootstrapping.
+  // `klass` can't be null for any class, but we need to allow it for initial
+  // creation of MetaClass. 
   constructor(
     klass: MetaClass | null,
     readonly name: string,
@@ -36,21 +38,35 @@ export abstract class Class extends Instance {
 
   // Returns true if users can derive from given class.
   abstract canUserDeriveFrom(): boolean
+
+  // When user instantiates any class, this class is either one of native
+  // classes or it must have a native class in its base chain. This native
+  // class's `createBlankUserInstance` is used to create an instance.
+  //
+  // We use this approach to allow users deriving from native classes whose
+  // instances might hold different native values like numbers, strings, arrays.
   createBlankUserInstance(klass: Class): Instance {
     throw new Error(`${klass.name} class instance cannot be user-instantiated.`)
   }
 
+  // Searches for a field `name` in any of the 
   getInBases(name: string): Instance | null {
     let curBase: Class | null = this
-    do {
+    while (curBase !== null) {
       if (curBase.fields.has(name)) {
         return curBase.fields.get(name) as Instance
       }
       curBase = curBase.base
-    } while (curBase !== null)
+    }
     return null
   }
 
+  // First searches for a field `name` in this class and its bases.
+  //    If the field exists, it is returned (in case of a method, an unbound
+  //    method is returned).
+  // Otherwise searches in classes `klass` (MetaClass) and
+  //    its bases (ObjectClass).
+  // This behavior is consistent with Python.
   getOrThrow(name: string): Instance {
     // Walk up the bases and don't bind.
     if (this instanceof Class) {
@@ -60,13 +76,15 @@ export abstract class Class extends Instance {
     return super.getOrThrow(name)
   }
 
+  // Wraps native functions `methods` in `WrappedFunctionInstance`
+  // and adds them as fields to this class.
   addNativeMethods(
     methods: Array<[string, TWrappedFunction]>,
     wrappedFunctionClass: WrappedFunctionClass
   ) {
     for (const m of methods) {
       this.fields.set(
-        m[0],
+        /* name */ m[0],
         new WrappedFunctionInstance(
           wrappedFunctionClass,
           (interpreter: CodeExecuter, args: Instance[]) => {
@@ -79,8 +97,9 @@ export abstract class Class extends Instance {
   }
 }
 
+// Class of classes.
 export class MetaClass extends Class {
-  // MetaClass's __call__ is responsible for creation of new objects.
+  // MetaClass's __call__ is responsible for the creation of new objects.
   static __call__(
     interpreter: CodeExecuter,
     args: Instance[],
@@ -139,7 +158,7 @@ export class ObjectClass extends Class {
     args: Instance[]
   ): StringInstance {
     CheckArityEq(args, 1)
-    const className = args[0].getClass().name
+    const className = args[0].getKlass().name
     return new StringInstance(
       StringClass.get(), `"${className}-${args[0].id}"`.toUpperCase())
   }

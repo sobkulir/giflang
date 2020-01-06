@@ -4,11 +4,14 @@ import { BlockStmt } from './stmt'
 
 export type Expr = RefExpr | ValueExpr
 
+// ValueExpr (value expression) is an expression that always
+// results in a value that can't be assigned, e.g., a literal.
 export abstract class ValueExpr extends AstNode {
   abstract accept<T>(visitor: VisitorValueExpr<T>): T
 }
 
-/* Expressions that can appear on the left hand side of an assignment. */
+// RefExpr (reference expression) is an expression that can
+// appear on the left hand side of an assignment.
 export abstract class RefExpr extends AstNode {
   abstract accept<T>(visitor: VisitorRefExpr<T>): T
 }

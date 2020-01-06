@@ -5,7 +5,6 @@ module.exports = {
   devtool: "source-map",
   entry: {
     frontend: "./frontend/app.tsx",
-    main: "./interpreter/giflang.ts",
     test: "./interpreter/tests.ts",
   },
   mode: "development",

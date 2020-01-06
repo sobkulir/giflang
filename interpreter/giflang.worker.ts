@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink'
-import { Barrier, InputBarrier } from './barrier'
+import { InputBarrier, SteppingBarrier } from './barrier'
 import { Interpreter, InterpreterSetup, NextStepFunction } from './interpreter'
 import { InputFunction, PrintFunction } from './object-model/functions'
 import { ParseGiflang } from './parser'
@@ -15,6 +15,7 @@ export interface GiflangClbks {
   onInput: () => void
 }
 
+// Buffers that are used to synchronize the UI and the interpreter.
 export interface GiflangBuffers {
   stepperFlag: Int32Array
   inputSize: Int32Array
@@ -26,7 +27,7 @@ class Giflang implements GiflangWorker {
 
   constructor(readonly clbks: GiflangClbks,
     buffers: GiflangBuffers, isDebugMode: boolean) {
-    const stepperBarrier = new Barrier(buffers.stepperFlag)
+    const stepperBarrier = new SteppingBarrier(buffers.stepperFlag)
     const inputBarrier = new InputBarrier({
       sizeBuffer: buffers.inputSize,
       charBuffer: buffers.inputChars
@@ -34,15 +35,13 @@ class Giflang implements GiflangWorker {
     const onInput: InputFunction = () => {
       inputBarrier.reset()
       clbks.onInput()
-      const w = inputBarrier.wait()
-      return w
+      const s = inputBarrier.wait()
+      return s
     }
     const interpreterSetup: InterpreterSetup =
       { onNextStep: clbks.onNextStep, onPrint: clbks.onPrint, onInput }
     this.interpreter = new Interpreter(
       interpreterSetup, (isDebugMode) ? stepperBarrier : undefined)
-
-    interpreterSetup.onNextStep(this.interpreter.locator, [], [])
   }
 
   run(code: string) {

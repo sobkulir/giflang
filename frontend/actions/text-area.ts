@@ -14,6 +14,7 @@ export const setText =
         state.textAreaMap[areaType].text = stringToSigns(text)
       })
     })
+
 export const setCursorPosition =
   (areaType: TextAreaType, positionPixels: PositionPixels)
     : MyAction<PositionPixels> => ({

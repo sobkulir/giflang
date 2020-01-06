@@ -79,7 +79,7 @@ Additionally, there is a~lightweight HTTP server that only serves static files a
 \end{figure}
 
 \section{Interpreter}
-Every interpreter first \emph{parses} a~source code and then \emph{executes} the parsed tree (Fig \ref{fig:chap4:interpreter}). There is a~room for a~lot of optimizations along the way in order
+Every interpreter first \emph{parses} source code and then \emph{executes} the parsed tree (Fig \ref{fig:chap4:interpreter}). There is a~room for a~lot of optimizations along the way in order
 to make the execution as fast as possible. However, we do not incorporate any optimizations into the interpreter and only execute the parsed tree node by node.
 
 \begin{figure}[!hbt]
@@ -135,13 +135,13 @@ For example it can split an input \texttt{'4 + size'} into following tokens:
 
 Grammar rules are then defined in terms of tokens, for example:
 \begin{figure}[!hbt]
-    \begin{code}
-    expression -> factor OPERATOR expression
-    expression -> factor
-    factor -> IDENTIFIER
-    factor -> NUMBER
-    \end{code}
-    \caption{An example of a~grammar definition.}
+\begin{code}
+expression -> factor OPERATOR expression
+expression -> factor
+factor -> IDENTIFIER
+factor -> NUMBER
+\end{code}
+    \caption{An example of a~grammar definition}
     \label{fig:chap4:grammar}
 \end{figure}
 
@@ -478,7 +478,7 @@ Inside the block enclosed with curly braces is a~definition of a~variable with t
     \draw (413.5,60.87) node   [align=left] {{\fontfamily{pcr}\selectfont \textbf{x \ \ \ 'local'}}};
     \end{tikzpicture}
 
-    \caption{An example of a~nested environment.}
+    \caption{An example of a~nested environment}
 	\label{fig:chap4:environment}
 \end{figure}
 
@@ -541,8 +541,8 @@ Implementing continuations using the continuation-passing style uses two simple 
     \item Procedures take a~callback to invoke upon their return value
 \end{itemize}
 An extra argument is added to every function which is used to pass the function's continuation. This continuation is a~callback
-representing the actions that must happen after the function ``returns''. The call stack becomes obsolete in continuation-passing style -- when
-a function calls another function, that is the last thing it does. Instead of waiting for the called function to return, it puts any work
+representing actions that must happen after the function ``returns''. The call stack becomes obsolete in continuation-passing style -- when
+a function calls another function, it is the last thing it does. Instead of waiting for the called function to return, it puts any work
 it wants to do afterwards into a~continuation, which it passes to the function.
 
 The previous example can be written as follows.
@@ -582,9 +582,9 @@ a new stack frame onto the call stack. Even though JavaScript ES6 standard expli
 
 There is also another way of bringing continuations to JavaScript described in the article \emph{Exceptional Continuations in JavaScript}
 \cite{ExceptionalContinuations} that does not have the performance issues mentioned above. The authors propose splitting every function into
-multiple states and record which state is currently being executed. Once a~\texttt{suspend} function is called an exception is thrown. As
+multiple states and record which state is currently being executed. Once a~\texttt{suspend} function is called, an exception is thrown. As
 the call stack unwinds, every function catches the exception, records its state in the exception object and rethrows it. The exception object
-now holds the state and it is essentially a~continuation. A \texttt{resume} function takes the ``exceptional continuation'' created earlier and restore the state.
+now holds the state and it is essentially a~continuation. A \texttt{resume} function takes the ``exceptional continuation'' created earlier and restores the state.
 
 \subsection*{Async/await and generators}
 Another way of implementing the code-stepping is using promises. A \emph{Promise} is a~proxy for a~value not necessarily known when the promise is created.
@@ -625,7 +625,7 @@ in JavaScript as opposed to for example \texttt{promise.wait()} in C\#.
 \subsection*{Atomics API}
 \label{chap4:atomics}
 In order to allow sharing memory between WebWorkers and the main thread, \texttt{SharedArrayBuffer}s were introduced. This construct allows us to create
-views on shared, typed memory. Rather than copying the data from the main thread to the Worker and back again, we can update the same shared memory from both sides.
+views on shared, typed memory. Rather than copying data from the main thread to the Worker and back again, we can update the same shared memory from both sides.
 
 Being able to update data from multiple threads might introduce race conditions and other synchronization issues. The \emph{Atomics API} addresses that by providing
 the basic means of synchronization.
@@ -658,8 +658,8 @@ document.getElementById('button').addEventListener(
 For simplicity, the example does not deal with sharing the buffer \texttt{flag} between the worker and the main thread.
 
 Atomics and SharedArrayBuffers were well supported by all major browsers, but due to the \emph{timing attacks} (Meltdown and Spectre) they were disabled on
-January 5th, 2018. Chrome has re-enabled it from the version $67$ and Firefox supports it under a~flag from the version $57$. At the time of
-writing this thesis\footnote{December 26th, 2019}, the discussions at the ECMAScript's official GitHub repository suggest that SharedArrayBuffers and Atomics
+January 5th, 2018. Chrome has re-enabled it from the version $68$ and Firefox supports it under a~flag from the version $57$. At the time of
+writing this thesis\footnote{December 26th, 2019}, discussions at the ECMAScript's official GitHub repository suggest that SharedArrayBuffers and Atomics
 will not be removed from the standard in the future and thus the browsers should once again support them.
 
 \subsection*{Iterative traversal of an AST}
@@ -667,7 +667,7 @@ Earlier we mentioned JS-Interpreter \cite{JSInterpreter} in Section \ref{chap3:j
 it does not use any of the aforementioned methods to implement it. The idea behind JS-Interpreter is to simply traverse the AST iteratively, using an explicit
 stack, rather than recursively.
 
-It uses a~stack that stores the path from the root to the current node. Nodes that need to pass values further up the tree, for example expression nodes, can store
+It uses a~stack that stores a path from the root to the current node. Nodes that need to pass values further up the tree, for example expression nodes, can store
 the return value in the object right above them in stack, i.e., their parent. Since nodes can have multiple children, they can be in different states
 based on how many of the children they already processed.
 
@@ -708,11 +708,11 @@ The above code very roughly illustrates the idea. It does not account for scopin
 We implemented the interpreter using recursive calls and the visitor pattern, and only after that started incorporating code-stepping into it. We first used
 the async/await approach and thus propagated async/await through the whole interpreter. This caused a~very serious slowdown of the execution. Therefore, we ended
 up using the Atomics API approach, even though it has a~limited support as of now. We found implementing our own continuations using the continuation-passing style
-very verbose and also prone to serious performance issues. The exceptional continuations do not have the performance issues, but at a~price of even more boilerplate.
+very verbose and also prone to serious performance issues. The exceptional continuations do not have the performance issues, but come at a~price of even more boilerplate.
 
-In retrospect, iteratively traversing the AST would be the best option, because it does not come with any browser compatibility issues. The author of this thesis
+In retrospect, iteratively traversing the AST would be the best option because it does not come with any browser compatibility issues. The author of this thesis
 will use Giflang at the programming camps with a~full control over the installed software on the machines and hence the compatibility will not be an issue.
-However, shall this project be released to the public while not enough browsers brought back the Atomics API, we will refactor the interpreter to
+However, shall this project be released to the public while not enough browsers brought back the Atomics API, we would refactor the interpreter to
 use the method of iteratively traversing the AST.
 
 \section{IDE}
@@ -766,7 +766,7 @@ have been widely adopted across browsers.
 There are many image formats that support animations. We will briefly describe the ones supported by the most browsers.
 \begin{itemize}
     \item \emph{GIF} is the oldest and simplest image format still commonly used on the web. It lacks alpha transparency\footnote{Alpha transparency is a~way to
-    support \emph{gradations} of opacity.}, has a~limited color pallete of only 256 colors per frame, and has a~relatively large file size.
+    support \emph{gradations} of opacity}, has a~limited color pallete of only 256 colors per frame, and has a~relatively large file size.
     Despite all of the cons we mentioned, it remains widely used and supported.
 
     \item \emph{APNG} is an extension of the PNG. It supports 24-bit images, an 8-bit alpha channel, and offers smaller file sizes compared to GIFs. The APNG format
@@ -1009,19 +1009,21 @@ to integrate.
 let doc: DocumentReference | undefined
 let userCode: string = 'some default'
 
-// Store
-// Create a new document on the first save
-if (!doc) {
-    doc = await firebase.firestore().collection('programs').doc()
+async function store() {
+    // Create a new document on the first save
+    if (!doc) {
+        doc = await firebase.firestore().collection('programs').doc()
+    }
+    // Save the current user code
+    await doc.set({ code: userCode })
 }
-// Save the current user code
-await doc.set({ code: userCode })
 
-// Load
-const initialDoc = 
-    await firebase.firestore()
-        .collection('programs').doc(GetCodeIdFromURL()).get()
-userCode = initialDoc.data().code
+async function load() {
+    const initialDoc = 
+        await firebase.firestore()
+            .collection('programs').doc(GetCodeIdFromURL()).get()
+    userCode = initialDoc.data().code
+}
 \end{code}
 
 However, the above code allows users to spam the server with save operations which can be exploited very easily by malicious users. To mitigate this, we employed a very simple

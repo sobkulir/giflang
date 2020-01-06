@@ -14,7 +14,7 @@ const getInitialState = (): State => (
     textAreaMap: {
       mainEditor: {
         cursorPosition: { row: 0, col: 0 },
-        text: stringToSigns('λ(\n "HELLO WORLD"\n);'),
+        text: stringToSigns('λ("δ ε");'),
         scroll: ScrollableType.NONE
       },
       executionInput: {
@@ -29,7 +29,7 @@ const getInitialState = (): State => (
       locator: undefined,
       callStack: [],
       environment: [],
-      commitedInput: [],
+      committedInput: [],
       inputBuffer: new InputBuffer<string>([]),
       worker: null,
       errorMsg: '',
@@ -114,6 +114,7 @@ const getInitialState = (): State => (
             { sign: Sign.SEMICOLON, label: ';' },
             { sign: Sign.SPACE, label: '(space)' },
             { sign: Sign.COMMA, label: ',' },
+            { sign: Sign.QUOTE, label: `'` },
             { sign: Sign.LCURLY, label: '{' },
             { sign: Sign.RCURLY, label: '}' },
             { sign: Sign.LPAR, label: '(' },

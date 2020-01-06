@@ -4,7 +4,7 @@ import { ArrayValueExpr, AssignmentValueExpr, BinaryValueExpr, CallValueExpr, Do
 import { Operator } from './ast/operator'
 import { InputSign, PrintSign, Sign, signToCharMap } from './ast/sign'
 import { BlockStmt, ClassDefStmt, CompletionStmt, EmptyStmt, ExprStmt, ForStmt, IfStmt, ProgramStmt, Stmt, VisitorStmt, WhileStmt } from './ast/stmt'
-import { Barrier } from './barrier'
+import { SteppingBarrier } from './barrier'
 import { CodeExecuter } from './code-executer'
 import { Environment, SerializedEnvironment } from './environment'
 import { ArrayClass, Class, NumberClass, ObjectClass, StringClass, UserClass, UserFunctionClass, WrappedFunctionClass } from './object-model/class'
@@ -38,9 +38,12 @@ export class Interpreter
     { first_column: 0, first_line: 0, last_column: 0, last_line: 0 }
   public waitForNextStep = (_locator: JisonLocator) => { return }
 
-  constructor(readonly setup: InterpreterSetup, stepperBarrier?: Barrier) {
+  constructor(readonly setup: InterpreterSetup,
+    stepperBarrier?: SteppingBarrier) {
     this.globals = new Environment(null)
     this.environment = new Environment(this.globals)
+
+    // Set globals
     const printChar = signToCharMap.get(PrintSign) as string
     this.globals.getRef(`${printChar}`).set(
       new WrappedFunctionInstance(
@@ -73,12 +76,12 @@ export class Interpreter
     }
   }
 
-  private evaluateRef(expr: RefExpr): ValueRef {
+  evaluateRef(expr: RefExpr): ValueRef {
     this.locator = expr.locator
     return expr.accept(this)
   }
 
-  private evaluate(expr: Expr): Instance {
+  evaluate(expr: Expr): Instance {
     this.locator = expr.locator
     if (expr instanceof ValueExpr) {
       return expr.accept(this)
@@ -186,15 +189,13 @@ export class Interpreter
           else return r.callMagicMethod(MagicMethod.__bool__, [], this)
         }
       default:
-        throw Error('TODO: Internal.')
+        throw Error(`Internal error: Unknown operator "${expr.operator}"`)
     }
   }
-
   visitExprStmt(stmt: ExprStmt): Completion {
     this.evaluate(stmt.expr)
     return new NormalCompletion()
   }
-
   visitCallValueExpr(expr: CallValueExpr): Instance {
     const args = []
     for (const arg of expr.args) {
@@ -204,20 +205,14 @@ export class Interpreter
     return (this.evaluate(expr.callee))
       .callMagicMethod(MagicMethod.__call__, args, this)
   }
-
   visitFunctionDeclExpr(expr: FunctionDeclExpr): Instance {
     const func = new UserFunctionInstance(
-      UserFunctionClass.get(),
-      expr,
-      this.environment,
-      expr.name
-    )
+      UserFunctionClass.get(), expr, this.environment, expr.name)
     if (!expr.isAnonymous) {
       this.environment.shallowSet(expr.name, func)
     }
     return func
   }
-
   visitVariableRefExpr(expr: VariableRefExpr): ValueRef {
     return this.environment.getRef(expr.name)
   }
@@ -237,7 +232,6 @@ export class Interpreter
   visitEmptyStmt(_: EmptyStmt): Completion {
     return new NormalCompletion()
   }
-
   visitIfStmt(stmt: IfStmt): Completion {
     this.waitForNextStep(stmt.condition.locator)
 
@@ -305,7 +299,6 @@ export class Interpreter
     if (lastCompletion.isReturn()) return lastCompletion
     else return new NormalCompletion()
   }
-
   visitClassDefStmt(stmt: ClassDefStmt): Completion {
     let base: Class = ObjectClass.get()
     if (stmt.baseName) {
@@ -340,7 +333,6 @@ export class Interpreter
     return retVal
   }
   visitProgramStmt(stmt: ProgramStmt): Completion {
-    /* TODO: Hoisting? i.e. separate fncs, classes, stmts. */
     try {
       for (const s of stmt.body) {
         this.execute(s)
@@ -355,8 +347,7 @@ export class Interpreter
   }
 
   isTruthy(r: Instance): boolean {
-    const boolRes = r.callMagicMethod(MagicMethod.__bool__, [], this)
-    // TODO: Enforce boolRes type
-    return (boolRes as BoolInstance).value
+    return r.callMagicMethod(MagicMethod.__bool__, [], this)
+      .castOrThrow(BoolInstance).value
   }
 }

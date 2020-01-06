@@ -3,7 +3,12 @@ import { ProgramStmt } from './ast/stmt'
 import { Interpreter } from './interpreter'
 import { ParseGiflang } from './parser'
 
+// This file contains a simple test framework and interpreter tests.
+// Each test consists of a Giflang source and an expected result. If the
+// expected result is met, then the test passes, otherwise it fails.
+
 enum ExpectedResult { FAIL_PARSE, PASS_PARSE, FAIL_RUNTIME, MATCH_OUTPUT }
+
 type Test = {
   name: string,
   source: string,
@@ -22,11 +27,11 @@ async function testSingle(test: Test)
   let didPass: boolean | null = null
   let desc: string = ''
 
-  let parseFailed: boolean = false
   // The default value PraseGiflang('') here is used to silence
   // an unreasonable TS warning about "program" being unassigned.
   // Issue: https://github.com/Microsoft/TypeScript/issues/12916
   let program: ProgramStmt = ParseGiflang('')
+  let parseFailed: boolean = false
   try {
     program = ParseGiflang(test.source)
   } catch (e) {
@@ -434,7 +439,7 @@ F() ;
           expected: ExpectedResult.MATCH_OUTPUT
         },
         {
-          name: '(Bug) Break statement outside for/while break execution',
+          name: 'Breaking out of function fails',
           source: `
 ƒ F() {
   ⚻;
@@ -444,10 +449,10 @@ F() ;
 F();
 `,
           output: '',
-          expected: ExpectedResult.MATCH_OUTPUT
+          expected: ExpectedResult.FAIL_RUNTIME
         },
         {
-          name: '(Bug) Continue statement outside for/while break execution',
+          name: 'Continuing out of function fails',
           source: `
 ƒ F() {
   ⚺;
@@ -457,7 +462,7 @@ F();
 F();
 `,
           output: '',
-          expected: ExpectedResult.MATCH_OUTPUT
+          expected: ExpectedResult.FAIL_RUNTIME
         },
         {
           name: 'Passing callback',
@@ -946,9 +951,3 @@ testSuites([parser, runtime]).then((results) =>
 >>> Total passed: ${results.passCount}
 >>> Total failed: ${results.failCount}`)
 )
-
-//   /* Classes */
-//   `CLAS S C{
-//     ƒ  METHOD() { }
-// }`,m85;`,
-// ])

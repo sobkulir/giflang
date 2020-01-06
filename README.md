@@ -38,3 +38,6 @@ Tests of the interpreter can be found in `interpreter/tests.ts`. Here's a snippe
 ```
 $ npm build && node dist/tests.js
 ```
+
+## Substituting GIFs
+In order to substitute GIFs for your own, simply change the ones in `frontend/public/img` folder.

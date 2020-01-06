@@ -19,7 +19,7 @@ export interface ExecutionState {
   callStack: CallStack
   environment: SerializedEnvironment
   inputBuffer: InputBuffer<string>
-  commitedInput: Text
+  committedInput: Text
   errorMsg: string
   worker: Worker | null
   resolveNextStep: () => void

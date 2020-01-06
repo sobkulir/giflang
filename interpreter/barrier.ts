@@ -1,4 +1,4 @@
-export class Barrier {
+export class SteppingBarrier {
   readonly flagBuffer: Int32Array
 
   constructor(flagBuffer?: Int32Array) {
@@ -45,6 +45,9 @@ export class InputBarrier {
     const encoder = new TextEncoder()
     const encoded = encoder.encode(input)
     this.charBuffer.set(encoded, 0)
+    if (encoded.length > this.charBuffer.length) {
+      throw Error('Input too long.')
+    }
     Atomics.store(this.sizeBuffer, 0, encoded.length)
     Atomics.notify(this.sizeBuffer, 0, 1)
   }

@@ -14,8 +14,8 @@ import * as styles from './input.scss'
 export interface InputProps extends TextArea {
   letterSize: LetterSize
   signToGifMap: SignToGifMap
-  commitedInput: Text,
-  focusedArea: FocusedArea,
+  committedInput: Text
+  focusedArea: FocusedArea
   addSignAfterCursor: typeof addSignAfterCursor
   moveCursor: typeof moveCursor
   removeAfterCursor: typeof removeAfterCursor
@@ -66,7 +66,7 @@ class Input extends React.Component<InputProps> {
       >
         <Content
           letterSize={this.props.letterSize}
-          text={this.props.commitedInput}
+          text={this.props.committedInput}
           signToGifMap={this.props.signToGifMap}
         />
         <div
@@ -94,7 +94,7 @@ class Input extends React.Component<InputProps> {
 export default connect(
   (state: State) => ({
     ...state.textAreaMap[TextAreaType.EXECUTION_INPUT],
-    commitedInput: state.execution.commitedInput,
+    committedInput: state.execution.committedInput,
     signToGifMap: state.ide.signToGifMap,
     focusedArea: state.ide.focusedArea
   }),

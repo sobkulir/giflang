@@ -3,6 +3,7 @@ import { CheckArityEq, StringClass } from './class'
 import { Instance, NoneInstance, StringInstance, TWrappedFunction } from './instance'
 import { MagicMethod } from './magic-method'
 
+// Calls `__str__` magic method on all `args` and returns the resulting strings.
 export function Stringify(interpreter: CodeExecuter, ...args: Instance[])
   : string[] {
   return args.map((arg) => ((arg.callMagicMethod(

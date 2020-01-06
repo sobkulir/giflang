@@ -4,9 +4,12 @@ import { Environment } from '../environment'
 import { BoolClass, CheckArityEq, Class, NoneClass, WrappedFunctionClass } from './class'
 import { MagicMethod } from './magic-method'
 
+// Since JavaScript doesn't have pointers or references, we represent
+// a value reference as an object that can get or set the value.
+// Both get and set methods are closures.
 export interface ValueRef {
-  set(value: Instance): void
   get(): Instance
+  set(value: Instance): void
 }
 
 export type TWrappedFunction = (
@@ -14,6 +17,7 @@ export type TWrappedFunction = (
   args: Instance[],
 ) => Instance
 
+// The core class, all Giflang runtime objects are instances of `Instance`.
 export class Instance {
   public fields: Map<string, Instance> = new Map()
   private static nextId: number = 0
@@ -24,7 +28,7 @@ export class Instance {
     this.id = Instance.nextId++
   }
 
-  getClass(): Class {
+  getKlass(): Class {
     if (this.klass instanceof Class) {
       return this.klass
     } else {
@@ -32,6 +36,9 @@ export class Instance {
     }
   }
 
+  // Gets a field named `name`. Firstly, the instance's fields are
+  // looked through. After that instance's `klass` and its bases.
+  // If the field is a function, the instance is bound to it.
   getOrThrow(name: string): Instance {
     if (this.klass == null) throw Error('Internal error: klass === null')
 
@@ -64,6 +71,8 @@ export class Instance {
     }
   }
 
+  // Casts instance to TConstructor or if it is not an instance
+  // of TConstructor, throws.
   castOrThrow<T extends Instance>(TConstructor: new (...args: any[]) => T): T {
     if (this instanceof TConstructor) {
       return this as T
@@ -72,17 +81,16 @@ export class Instance {
     }
   }
 
-  // Calls a magic method and binds 'this'.
+  // Calls a magic method and binds 'this'. The resolution of `functionName`
+  // starts at the instances klass.
   callMagicMethod(
     functionName: MagicMethod,
     args: Instance[],
     interpreter: CodeExecuter
   ): Instance {
-    const method = this.getClass().getInBases(functionName)
-
+    const method = this.getKlass().getInBases(functionName)
     if (method) {
       if (method instanceof FunctionInstance) {
-
         let descriptiveName = ''
         if (this instanceof FunctionInstance) {
           descriptiveName = this.getName()
@@ -132,6 +140,8 @@ abstract class FunctionInstance extends Instance {
   // Gets the original function name.
   abstract getName(): string
 
+  // Return a new function, but it has `argToBind` bound as
+  // its first argument.
   bind(argToBind: Instance): FunctionInstance {
     if (this.isBound()) return this
 
@@ -174,8 +184,10 @@ export class UserFunctionInstance extends FunctionInstance {
     )
     if (completion.isReturn()) {
       return completion.value
-    } else {
+    } else if (completion.isNormal()) {
       return NoneInstance.getInstance()
+    } else {
+      throw new Error('Cannot continue or break from a function.')
     }
   }
 

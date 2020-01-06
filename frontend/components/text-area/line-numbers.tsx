@@ -8,9 +8,9 @@ interface LineNumbersProps {
 }
 
 interface LinenoProps {
-  lineno: number,
-  letterSize: LetterSize,
-  width: number,
+  lineno: number
+  letterSize: LetterSize
+  width: number
 }
 
 const Lineno: React.SFC<LinenoProps> = React.memo((props) => {
@@ -35,14 +35,6 @@ const Lineno: React.SFC<LinenoProps> = React.memo((props) => {
     </div>
   )
 })
-
-// Unused until GIFs are used for numbering lines.
-// function GetWidth(
-//   textRowCount: number, shrinkFactor: number, letterSize: LetterSize) {
-//   const digits = textRowCount.toString().length
-//   const boxSize = 2 * letterSize.marginPx + letterSize.edgePx
-//   return shrinkFactor * digits * boxSize
-// }
 
 export class LineNumbers extends React.PureComponent<LineNumbersProps>  {
   readonly width: number = 40
